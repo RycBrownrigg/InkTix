@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.4.0] - 2025-08-04
+
+### Updated
+
+- 1.6 Business Model and Revenue Streams
+
+### Added
+
+- 1.6.1 Primary Revenue Streams
+- 1.6.2 Pricing Strategy
+- 1.7 Competitive Advantages
+- 1.7.1 Technology Advantages
+- 1.7.2 Market Position Advantages
+- 1.7.3 Economic Model Advantages
+
+---
+
 ## [v0.3.0] - 2025-08-04
 
 ### Updated

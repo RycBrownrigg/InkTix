@@ -338,9 +338,67 @@ InkTix creates a unified network where specialized ticket brokers can maintain t
 - **Additional APAC Markets**: Singapore, Hong Kong, Taiwan
 - **Strategy**: Local broker partnerships, community-driven growth
 
-### 1.6 Success Metrics
-- **Network TVL**: Total value of tickets traded across all chains
-- **Cross-Chain Transaction Volume**: Number of inter-parachain trades
-- **User Acquisition**: New users discovering events through cross-chain recommendations
-- **Broker Satisfaction**: Revenue and user engagement on broker parachains
-- **Fraud Reduction**: Percentage decrease in counterfeit ticket incidents
+### 1.6 Business Model and Revenue Streams
+
+#### 1.6.1 Primary Revenue Streams
+
+**Transaction Fees (60% of revenue)**
+- **Cross-Chain Transaction Fees**: 1.5-2.5% of ticket value for cross-chain purchases
+- **Resale Marketplace Fees**: 3-5% split between buyer and seller for secondary market
+- **Payment Processing Fees**: 0.5-1% for currency conversion and DeFi integration
+- **Premium Features**: Fast-track processing, priority customer support, advanced analytics
+
+**Broker Partnership Fees (25% of revenue)**
+- **Integration Fees**: One-time setup and ongoing API access fees for brokers
+- **Revenue Sharing**: 10-15% of incremental revenue generated through network effects
+- **Premium Broker Features**: Advanced analytics, marketing tools, priority placement
+- **White-Label Solutions**: Custom branding and features for large broker partners
+
+**DeFi and Financial Services (10% of revenue)**
+- **Yield Generation**: Share of returns from staking and DeFi protocol integration
+- **Currency Exchange**: Spread on currency conversions through integrated DEX
+- **Financial Product Fees**: Insurance, lending, and other financial service partnerships
+- **Staking Rewards Distribution**: Fee for managing and distributing loyalty staking rewards
+
+**Data and Analytics Services (5% of revenue)**
+- **Market Intelligence**: Aggregated market data and trends for brokers and organizers
+- **User Analytics**: Anonymized user behavior insights for marketing optimization
+- **Pricing Optimization**: AI-driven pricing recommendations for dynamic pricing
+- **Fraud Prevention**: Advanced fraud detection and prevention service licensing
+
+#### 1.6.2 Pricing Strategy
+
+**Consumer Pricing (Transparent and Competitive)**
+- **Free Basic Search**: No cost for event discovery and basic recommendations
+- **Low Transaction Fees**: 1.5-2.5% vs 10-15% for traditional platforms (75-85% savings)
+- **Premium Subscriptions**: $9.99/month for advanced features, priority access, exclusive deals
+- **Group Purchase Discounts**: Bulk pricing and coordination tools for group organizers
+
+**Broker Pricing (Value-Based Partnership)**
+- **Tiered Partnership Levels**: Bronze (5% revenue share), Silver (10%), Gold (15%)
+- **Integration Support**: Free setup and training for qualified brokers
+- **Performance Incentives**: Reduced fees for high-quality service and user satisfaction
+- **Success-Based Pricing**: Lower upfront costs, higher revenue sharing for mutual success
+
+### 1.7 Competitive Advantages
+
+#### 1.7.1 Technology Advantages
+- **Cross-Chain Interoperability**: Only platform enabling true cross-blockchain ticket trading
+- **Lower Costs**: ink! smart contracts provide 85% lower transaction costs than EVM alternatives
+- **Fraud Prevention**: Cryptographic NFT tickets eliminate counterfeiting entirely
+- **DeFi Integration**: Native yield generation and multi-currency support unique in ticketing
+- **Scalability**: Polkadot's shared security model enables unlimited scaling without compromising security
+
+#### 1.7.2 Market Position Advantages
+- **First-Mover Advantage**: First cross-chain ticket marketplace in the Polkadot ecosystem
+- **Network Effects**: Each new broker increases value for all users and other brokers
+- **Specialization Strategy**: Allows brokers to maintain expertise while accessing broader markets
+- **Community Focus**: Strong emphasis on fair access and anti-scalping resonates with consumers
+- **Global Accessibility**: Cross-chain technology enables true global reach from day one
+
+#### 1.7.3 Economic Model Advantages
+- **Lower Fee Structure**: 75-85% lower fees than traditional platforms increase adoption
+- **Revenue Sharing**: Aligns incentives between platform, brokers, artists, and venues
+- **Token Economics**: Network governance token creates long-term stakeholder alignment
+- **DeFi Yield**: Additional revenue streams through staking and yield generation
+- **Transparent Pricing**: Blockchain transparency builds trust and reduces price manipulation
