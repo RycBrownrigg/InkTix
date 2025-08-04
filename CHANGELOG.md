@@ -7,6 +7,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.3.0] - 2025-08-04
+
+### Updated
+
+- 1.4 Parachain Specialization Strategy
+- 1.5 Target Users
+
+### Added
+
+- 1.4.1 Hub Chain (Moonbeam) - Central Coordination
+- 1.4.2 SportChain (Acala) - Sports and Athletic Events
+- 1.4.3 ConcertChain (Astar) - Music and Entertainment
+- 1.4.4 LocalChain (Custom Substrate) - Community and Regional Events
+- 1.5.1 Primary Consumer Segments
+- 1.5.2 Business User Segments
+- 1.5.3 Geographic Market Priorities
+
+---
+
 ## [v0.2.0] - 2025-08-04
 
 ### Updated
