@@ -7,6 +7,25 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.2.0] - 2025-08-04
+
+### Updated
+
+- 1. Product Specification
+    - 1.1 Product Overview
+    - 1.2 Core Value Proposition
+    - 1.3 Key Features
+
+### Added
+
+- 1.2.1 For Ticket Buyers
+- 1.2.2 For Ticket Sellers & Resellers
+- 1.2.3 For Brokers & Marketplaces
+- 1.2.4 For Event Organizers & Venues
+- 1.3.6 Social and Community Features
+
+---
+
 ## [v0.1.0] - 2025-08-03
 
 ### Added
