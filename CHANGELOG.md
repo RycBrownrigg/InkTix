@@ -7,6 +7,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.5.0] - 2025-08-05
+
+### Updated
+
+- System Architecture
+    - Updated the System Architecture to reflect the changes to the Product Specification.
+
+### Added
+
+- Product Specification 
+    - 1.8 Success Metrics and KPIs
+        - 1.8.1 User Growth and Engagement Metrics
+        - 1.8.2 Transaction and Volume Metrics
+        - 1.8.3 Network and Partnership Metrics
+        - 1.8.4 Financial Performance Metrics
+        - 1.8.5 Quality and Trust Metrics
+    - 1.9 Risk Assessment and Mitigation
+        - 1.9.1 Market Risks
+        - 1.9.2 Technical Risks
+        - 1.9.3 Business Risks
+---
+
 ## [v0.4.0] - 2025-08-04
 
 ### Updated

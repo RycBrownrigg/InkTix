@@ -13,22 +13,22 @@
                     │     (Cross-Chain Governance)        │
                     └─────────────────┬───────────────────┘
                                       │ XCM Message Router
-                    ┌─────────────────┼───────────────────┐
-                    │                 │                   │
-        ┌───────────▼──┐    ┌────────▼────────┐    ┌────▼────────┐
-        │   Hub Chain  │    │     Acala       │    │  ConcertCh. │
-        │ (Moonbeam)   │    │  Multi-Service  │    │   (Astar)   │
-        │              │    │   Parachain     │    │             │
-        │┌────────────┐│    │┌───────────────┐│    │  ┌────────┐ │
-        ││ Discovery  ││    ││ SportChain +  ││    │  │Concert │ │
-        ││   Engine   ││    ││ CultureChain  ││    │  │Market- │ │
-        ││ XCM Router ││    ││   (ink!)      ││    │  │place   │ │
-        │└────────────┘│    │└───────────────┘│    │  └────────┘ │
-        │              │    │                 │    │             │
-        │ • Cross-Chain│    │ • Sports Events │    │• Concerts   │
-        │   Discovery  │    │ • Cultural Arts │    │• Festivals  │
-        │ • Escrow Hub │    │ • DeFi Integration│  │• Fan Tokens │
-        └──────────────┘    └─────────────────┘    └─────────────┘
+                    ┌─────────────────┼─────────────────────┐
+                    │                 │                     │
+        ┌───────────▼──┐    ┌─────────▼─────────┐    ┌──────▼─────┐
+        │   Hub Chain  │    │     Acala         │    │ ConcertCh. │
+        │ (Moonbeam)   │    │  Multi-Service    │    │  (Astar)   │
+        │              │    │   Parachain       │    │            │
+        │┌────────────┐│    │ ┌───────────────┐ │    │ ┌────────┐ │
+        ││ Discovery  ││    │ │ SportChain +  │ │    │ │Concert │ │
+        ││   Engine   ││    │ │ CultureChain  │ │    │ │Market- │ │
+        ││ XCM Router ││    │ │   (ink!)      │ │    │ │place   │ │
+        │└────────────┘│    │ └───────────────┘ │    │ └────────┘ │
+        │              │    │                   │    │            │
+        │ • Cross-Chain│    │ • Sports Events   │    │• Concerts  │
+        │   Discovery  │    │ • Cultural Arts   │    │• Festivals │
+        │ • Escrow Hub │    │ • DeFi Integration│    │• Fan Tokens│
+        └──────────────┘    └───────────────────┘    └────────────┘
                     │                 │                   │
                     └─────────────────┼───────────────────┘
                                       │
@@ -66,21 +66,21 @@
 
 **Layer 2: XCM Communication Layer**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   XCM Message Bus                           │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │   XCMP      │  │    VMP      │  │   HRMP      │          │
-│  │ (Parachain  │  │ (Vertical   │  │(Horizontal  │          │
-│  │    to       │  │  Message    │  │  Relay      │          │
-│  │ Parachain)  │  │  Passing)   │  │  Message    │          │
-│  └─────────────┘  └─────────────┘  │  Passing)   │          │
-│                                    └─────────────┘          │
-│  • Message queuing and prioritization                       │
-│  • Fee calculation and payment                              │
-│  • Message lifecycle management                             │
-│  • Error handling and retry logic                           │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                   XCM Message Bus                    │
+│                                                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│  │   XCMP      │  │    VMP      │  │   HRMP      │   │
+│  │ (Parachain  │  │ (Vertical   │  │(Horizontal  │   │
+│  │    to       │  │  Message    │  │  Relay      │   │
+│  │ Parachain)  │  │  Passing)   │  │  Message    │   │
+│  └─────────────┘  └─────────────┘  │  Passing)   │   │
+│                                    └─────────────┘   │
+│  • Message queuing and prioritization                │
+│  • Fee calculation and payment                       │
+│  • Message lifecycle management                      │
+│  • Error handling and retry logic                    │
+└──────────────────────────────────────────────────────┘
 ```
 
 **Layer 3: Parachain Application Layer**
@@ -97,153 +97,217 @@
 
 #### 2.2.2 Central Hub Components (Moonbeam)
 
+**Discovery Engine Architecture**
+```rust
+// Core discovery service written in Rust
+pub struct DiscoveryEngine {
+    // Cross-chain event indexer
+    event_indexer: CrossChainIndexer,
+    // AI recommendation engine
+    recommendation_ai: RecommendationEngine,
+    // Real-time price monitoring
+    price_monitor: PriceMonitor,
+    // User behavior analytics
+    user_analytics: UserAnalytics,
+    // Search optimization
+    search_engine: SearchEngine,
+}
+
+pub struct CrossChainIndexer {
+    // Connections to all broker chains
+    chain_connections: HashMap<ChainId, ChainConnection>,
+    // Event cache with TTL
+    event_cache: LRUCache<EventId, CachedEvent>,
+    // Real-time update subscriptions
+    update_subscriptions: Vec<EventSubscription>,
+}
+```
+
+**XCM Message Router**
+```rust
+pub struct XCMRouter {
+    // Message queue management
+    message_queues: HashMap<ChainId, MessageQueue>,
+    // Route optimization engine
+    route_optimizer: RouteOptimizer,
+    // Fee estimation service
+    fee_estimator: FeeEstimator,
+    // Retry and error handling
+    retry_manager: RetryManager,
+    // Message lifecycle tracking
+    message_tracker: MessageTracker,
+}
+
+pub struct RouteOptimizer {
+    // Network topology mapping
+    topology: NetworkTopology,
+    // Historical performance data
+    performance_metrics: PerformanceTracker,
+    // Cost analysis engine
+    cost_analyzer: CostAnalyzer,
+}
+```
+
+**Cross-Chain Escrow System**
+```rust
+pub struct EscrowManager {
+    // Active escrow contracts
+    active_escrows: HashMap<EscrowId, EscrowContract>,
+    // Multi-signature coordination
+    multisig_coordinator: MultisigCoordinator,
+    // Automated settlement triggers
+    settlement_engine: SettlementEngine,
+    // Dispute resolution system
+    dispute_resolver: DisputeResolver,
+}
+```
 
 #### 2.2.3 Specialized Broker Architecture
 
 **Hub Chain (Moonbeam EVM + Rust Services)**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    InkTix Hub Architecture                  │
-├─────────────────────────────────────────────────────────────┤
-│  Frontend Layer (React + Polkadot.js)                       │
-├─────────────────────────────────────────────────────────────┤
-│  API Layer (Rust Actix-Web)                                 │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │ Discovery   │ │    XCM      │ │   Escrow    │            │
-│  │   Engine    │ │   Router    │ │ Management  │            │
-│  │             │ │             │ │             │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Smart Contract Layer (Solidity on Moonbeam EVM)            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │  Discovery  │ │    XCM      │ │ Cross-Chain │            │
-│  │     Hub     │ │ Message Hub │ │   Escrow    │            │
-│  │  Contract   │ │  Contract   │ │  Contract   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Substrate Runtime (Moonbeam)                               │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│               InkTix Hub Architecture             │
+├───────────────────────────────────────────────────┤
+│       Frontend Layer (React + Polkadot.js)        │
+├───────────────────────────────────────────────────┤
+│              API Layer (Rust Actix-Web)           │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │ Discovery   │ │    XCM      │ │   Escrow    │  │
+│  │   Engine    │ │   Router    │ │ Management  │  │
+│  │             │ │             │ │             │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│  Smart Contract Layer (Solidity on Moonbeam EVM)  │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │  Discovery  │ │    XCM      │ │ Cross-Chain │  │
+│  │     Hub     │ │ Message Hub │ │   Escrow    │  │
+│  │  Contract   │ │  Contract   │ │  Contract   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│              Substrate Runtime (Moonbeam)         │
+└───────────────────────────────────────────────────┘
 ```
 
 **Acala Multi-Service Parachain (ink! + Native DeFi)**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   Acala InkTix Services                     │
-├─────────────────────────────────────────────────────────────┤
-│  Frontend Layer (React + Polkadot.js)                       │
-├─────────────────────────────────────────────────────────────┤
-│  API Layer (Rust Warp Framework)                            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Sports    │ │  Cultural   │ │    DeFi     │            │
-│  │   Events    │ │   Events    │ │ Integration │            │
-│  │  Service    │ │   Service   │ │   Service   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Smart Contract Layer (ink! - Rust)                         │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Sports    │ │   Culture   │ │    DeFi     │            │
-│  │ Marketplace │ │ Marketplace │ │  Payment    │            │
-│  │  (ink!)     │ │   (ink!)    │ │ Processor   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Native Acala Integration (Rust)                            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Acala     │ │   Liquid    │ │   Acala     │            │
-│  │    DEX      │ │   Staking   │ │   Lending   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Substrate Runtime (Acala with Custom Pallets)              │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│               Acala InkTix Services               │
+├───────────────────────────────────────────────────┤
+│         Frontend Layer (React + Polkadot.js)      │
+├───────────────────────────────────────────────────┤
+│           API Layer (Rust Warp Framework)         │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Sports    │ │  Cultural   │ │    DeFi     │  │
+│  │   Events    │ │   Events    │ │ Integration │  │
+│  │  Service    │ │   Service   │ │   Service   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│         Smart Contract Layer (ink! - Rust)        │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Sports    │ │   Culture   │ │    DeFi     │  │
+│  │ Marketplace │ │ Marketplace │ │  Payment    │  │
+│  │  (ink!)     │ │   (ink!)    │ │ Processor   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│            Native Acala Integration (Rust)        │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Acala     │ │   Liquid    │ │   Acala     │  │
+│  │    DEX      │ │   Staking   │ │   Lending   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│   Substrate Runtime (Acala with Custom Pallets)   │
+└───────────────────────────────────────────────────┘
 ```
 
 **ConcertChain (Astar WASM + Rust Services)**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                  ConcertChain Architecture                  │
-├─────────────────────────────────────────────────────────────┤
-│  Frontend Layer (React + Polkadot.js)                       │
-├─────────────────────────────────────────────────────────────┤
-│  API Layer (Rust Axum Framework)                            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Music     │ │   Artist    │ │   Fan Token │            │
-│  │   Metadata  │ │ Management  │ │   Service   │            │
-│  │  Service    │ │   Service   │ │             │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Smart Contract Layer (AssemblyScript WASM)                 │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Concert   │ │   VIP       │ │  Merchandise│            │
-│  │ Marketplace │ │ Experience  │ │   Bundle    │            │
-│  │  Contract   │ │  Contract   │ │  Contract   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  XCM Integration Layer (Rust)                               │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │    XCM      │ │   WASM      │ │  Cross-Chain│            │
-│  │  Handler    │ │  Interface  │ │    Events   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Substrate Runtime (Astar)                                  │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│              ConcertChain Architecture            │
+├───────────────────────────────────────────────────┤
+│        Frontend Layer (React + Polkadot.js)       │
+├───────────────────────────────────────────────────┤
+│           API Layer (Rust Axum Framework)         │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Music     │ │   Artist    │ │   Fan Token │  │
+│  │   Metadata  │ │ Management  │ │   Service   │  │
+│  │  Service    │ │   Service   │ │             │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│    Smart Contract Layer (AssemblyScript WASM)     │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Concert   │ │   VIP       │ │  Merchandise│  │
+│  │ Marketplace │ │ Experience  │ │   Bundle    │  │
+│  │  Contract   │ │  Contract   │ │  Contract   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│            XCM Integration Layer (Rust)           │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │    XCM      │ │   WASM      │ │  Cross-Chain│  │
+│  │  Handler    │ │  Interface  │ │    Events   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│              Substrate Runtime (Astar)            │
+└───────────────────────────────────────────────────┘
 ```
 
 **CultureChain (Acala Native + Full Rust Stack)**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 CultureChain Architecture                   │
-├─────────────────────────────────────────────────────────────┤
-│  Frontend Layer (React + Polkadot.js)                       │
-├─────────────────────────────────────────────────────────────┤
-│  API Layer (Rust Warp Framework)                            │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │  Cultural   │ │ Institution │ │   Grant     │            │
-│  │   Events    │ │ Partnership │ │ Management  │            │
-│  │  Service    │ │   Service   │ │   Service   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Smart Contract Layer (ink! - Pure Rust)                    │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Culture   │ │ Subscription│ │   Patron    │            │
-│  │ Marketplace │ │   Season    │ │   Program   │            │
-│  │  Contract   │ │  Contract   │ │  Contract   │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Runtime Integration Layer (Rust)                           │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │
-│  │   Custom    │ │    XCM      │ │  Cross-Chain│            │
-│  │   Pallets   │ │ Integration │ │  Governance │            │
-│  └─────────────┘ └─────────────┘ └─────────────┘            │
-├─────────────────────────────────────────────────────────────┤
-│  Substrate Runtime (Acala with Custom Pallets)              │
-└─────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┐
+│             CultureChain Architecture             │
+├───────────────────────────────────────────────────┤
+│        Frontend Layer (React + Polkadot.js)       │
+├───────────────────────────────────────────────────┤
+│           API Layer (Rust Warp Framework)         │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │  Cultural   │ │ Institution │ │   Grant     │  │
+│  │   Events    │ │ Partnership │ │ Management  │  │
+│  │  Service    │ │   Service   │ │   Service   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│       Smart Contract Layer (ink! - Pure Rust)     │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Culture   │ │ Subscription│ │   Patron    │  │
+│  │ Marketplace │ │   Season    │ │   Program   │  │
+│  │  Contract   │ │  Contract   │ │  Contract   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│          Runtime Integration Layer (Rust)         │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
+│  │   Custom    │ │    XCM      │ │  Cross-Chain│  │
+│  │   Pallets   │ │ Integration │ │  Governance │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘  │
+├───────────────────────────────────────────────────┤
+│    Substrate Runtime (Acala with Custom Pallets)  │
+└───────────────────────────────────────────────────┘
 ```
 
 #### 2.2.4 Data Flow Architecture
 
 **Cross-Chain Search Flow**
 ```
-User Search Request
-        ↓
-Discovery Engine (Moonbeam)
-        ↓
-XCM Message Builder
-        ↓
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│ SportChain  │  │ConcertChain │  │CultureChain │
-│   Search    │  │   Search    │  │   Search    │
-└─────────────┘  └─────────────┘  └─────────────┘
-        ↓                ↓                ↓
-Local Event Database Search & Filter
-        ↓                ↓                ↓
-XCM Response Messages with Results
-        ↓                ↓                ↓
-        ┌────────────────┼────────────────┐
-        ↓                ↓                ↓
-Discovery Engine Result Aggregation
-        ↓
-Result Ranking & Personalization
-        ↓
-Formatted Response to User
+                 User Search Request
+                         ↓
+             Discovery Engine (Moonbeam)
+                         ↓
+                XCM Message Builder
+                         ↓
+┌─────────────┐   ┌─────────────┐   ┌─────────────┐
+│ SportChain  │   │ConcertChain │   │CultureChain │
+│   Search    │   │   Search    │   │   Search    │
+└─────────────┘   └─────────────┘   └─────────────┘
+         ↓              ↓                  ↓
+         Local Event Database Search & Filter
+         ↓              ↓                  ↓
+          XCM Response Messages with Results
+         ↓              ↓                  ↓
+        ┌───────────────┼──────────────────┐
+        ↓               ↓                  ↓
+        Discovery Engine Result Aggregation
+                        ↓
+          Result Ranking & Personalization
+                        ↓
+             Formatted Response to User
 ```
 
 **Cross-Chain Purchase Flow**
