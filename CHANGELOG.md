@@ -7,6 +7,60 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [v0.6.0] - 2025-08-07
+
+### Feature
+
+- Implement core event management smart contract with ink! 5.1.1
+
+### Summary
+
+Set up foundational ink! smart contract for InkTix cross-chain ticket marketplace with complete event management system.
+
+### New Features
+
+* Event creation with venue, date, capacity, and pricing details
+* Event retrieval by ID with comprehensive metadata
+* Event search functionality by name with active status filtering
+* Event ownership and analytics tracking
+* Blockchain event emission for external monitoring
+
+### Technical Implementation
+
+* ink! 5.1.1 smart contract framework setup
+* Custom Event struct with full ticket marketplace metadata
+* Mapping-based storage for efficient event lookups
+* Comprehensive error handling with custom Error enum
+* Owner-based access control system
+
+### Contract Capabilities
+
+* Create events: `create_event(name, venue, date, capacity, base_price)`
+* Retrieve events: `get_event(event_id)` 
+* Search events: `search_events_by_name(query)`
+* Analytics: `get_total_events()`, `get_owner()`
+* Events: `EventCreated` emission on successful creation
+
+### Testing & Quality
+
+* 3 comprehensive unit tests covering all functionality
+* 100% test coverage for implemented features
+* All tests passing successfully
+* Proper trait implementations (Debug, PartialEq, Encode, Decode)
+
+### Build Output
+
+* Successful compilation with ink! 5.1.1
+* Generated contract artifacts: .contract, .wasm, .json
+* Ready for testnet deployment
+
+### Dependencies
+* ink! = "5.1.1" (smart contract framework)
+* scale = "3" (serialization codec)
+* scale-info = "2" (type information)
+
+---
+
 ## [v0.5.0] - 2025-08-05
 
 ### Updated
