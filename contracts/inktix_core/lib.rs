@@ -1,59 +1,112 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+/// InkTix Core - Foundation Ticket Marketplace Contract
+/// 
+/// This serves as the base template for specialized marketplace contracts.
+/// Features:
+/// - Event creation and management
+/// - Payable ticket purchasing  
+/// - User inventory tracking
+/// - Secure ticket transfers
+/// - Capacity management
+/// 
+/// Specialization Guide:
+/// - Copy this contract for each specialized broker
+/// - Extend Event struct with domain-specific fields
+/// - Add specialized purchasing logic
+/// - Integrate with chain-specific features (DeFi, tokens, etc.)
+
 #[ink::contract]
-mod simple_event_manager {
+mod inktix_core {
     use ink::storage::Mapping;
     use ink::prelude::{vec::Vec, string::String};
 
+    // ============================================================================
+    // STORAGE & STATE
+    // ============================================================================
+    
+    /// Core marketplace storage
+    /// 
+    /// Designed for easy extension in specialized contracts:
+    /// - Add venue-specific mappings for sports
+    /// - Add artist/band info for concerts  
+    /// - Add institution data for culture
+
     #[ink(storage)]
-    pub struct SimpleEventManager {
-        // Events storage
+    pub struct InkTixCore {
+        // Event management
         events: Mapping<u32, Event>,
         next_event_id: u32,
         
-        // Tickets storage
+        // Ticket management
         tickets: Mapping<u64, Ticket>,
         user_tickets: Mapping<AccountId, Vec<u64>>,
         next_ticket_id: u64,
         
         // Contract management
         owner: AccountId,
+        // TODO: Add broker_type field for specialized contracts
+        // TODO: Add chain_id for cross-chain identification
     }
 
+    // ============================================================================
+    // CORE DATA TYPES
+    // ============================================================================
+    
+    /// Base Event structure
+    /// 
+    /// Extend in specialized contracts:
+    /// - Sports: Add teams, season, league info
+    /// - Concerts: Add artist, genre, merchandise
+    /// - Culture: Add institution, educational content
+
     #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
-    #[cfg_attr(
-        feature = "std",
-        derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-    )]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
     pub struct Event {
-        id: u32,
-        name: String,
-        venue: String,
-        date: u64,
-        capacity: u32,
-        sold_tickets: u32,
-        base_price: Balance,
-        active: bool,
+        // Core fields (keep in all specializations)
+        pub id: u32,
+        pub name: String,
+        pub venue: String,
+        pub date: u64,
+        pub capacity: u32,
+        pub sold_tickets: u32,
+        pub base_price: Balance,
+        pub active: bool,
+        
+        // TODO: Add metadata field for specialized data
+        // pub metadata: EventMetadata, // Enum for different types
     }
 
+    /// Base Ticket structure  
+    /// 
+    /// Extend for specialized features:
+    /// - Sports: Add season pass info, team loyalty points
+    /// - Concerts: Add VIP access, merchandise bundles
+    /// - Culture: Add educational content access
+
     #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
-    #[cfg_attr(
-        feature = "std",
-        derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout)
-    )]
+    #[cfg_attr(feature = "std", derive(scale_info::TypeInfo, ink::storage::traits::StorageLayout))]
     pub struct Ticket {
-        id: u64,
-        event_id: u32,
-        owner: AccountId,
-        purchase_price: Balance,
-        purchase_date: u64,
-        seat_number: u32,
-        transferable: bool,
+        // Core fields (keep in all specializations)
+        pub id: u64,
+        pub event_id: u32,
+        pub owner: AccountId,
+        pub purchase_price: Balance,
+        pub purchase_date: u64,
+        pub seat_number: u32,
+        pub transferable: bool,
+        
+        // TODO: Add specialized fields
+        // pub special_access: Vec<AccessType>, // VIP, backstage, etc.
+        // pub loyalty_points: u32,            // For sports/fan loyalty
     }
+
+    /// Core error types - extend per specialization
 
     #[derive(Debug, PartialEq, Eq, scale::Encode, scale::Decode)]
     #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
     pub enum Error {
+        // Core errors (keep in all contracts)
         EventNotFound,
         Unauthorized,
         EventNotActive,
@@ -65,9 +118,25 @@ mod simple_event_manager {
         NotTicketOwner,
         TicketNotTransferable,
         TicketIdOverflow,
+        
+        // TODO: Add specialized errors
+        // SeasonPassRequired,    // Sports
+        // ArtistTokenRequired,   // Concerts  
+        // InstitutionNotVerified, // Culture
     }
 
-    impl SimpleEventManager {
+    // ============================================================================
+    // CORE MARKETPLACE IMPLEMENTATION
+    // ============================================================================
+    
+    impl InkTixCore {
+        /// Initialize the marketplace
+        /// 
+        /// For specialized contracts:
+        /// - Add broker_type parameter
+        /// - Add chain-specific initialization
+        /// - Set up specialized storage
+    
         #[ink(constructor)]
         pub fn new() -> Self {
             Self {
@@ -80,7 +149,22 @@ mod simple_event_manager {
             }
         }
 
+        // ------------------------------------------------------------------------
+        // EVENT MANAGEMENT
+        // 
+        // Template for specialized event creation:
+        // - Sports: Add team validation, season management
+        // - Concerts: Add artist verification, venue partnerships
+        // - Culture: Add institution approval, educational content
+        // ------------------------------------------------------------------------
+
         /// Create a new event
+        /// 
+        /// Specialization points:
+        /// - Add domain-specific validation
+        /// - Integrate with chain-specific features
+        /// - Add specialized metadata
+    
         #[ink(message)]
         pub fn create_event(
             &mut self,
@@ -92,9 +176,15 @@ mod simple_event_manager {
         ) -> Result<u32, Error> {
             let event_id = self.next_event_id;
             
+            // Safe arithmetic for production
             self.next_event_id = self.next_event_id
                 .checked_add(1)
                 .ok_or(Error::EventIdOverflow)?;
+
+            // TODO: Add specialized validation here
+            // - Sports: Validate teams, venues, leagues
+            // - Concerts: Verify artist, check venue capacity
+            // - Culture: Confirm institution approval
 
             let event = Event {
                 id: event_id,
@@ -109,6 +199,7 @@ mod simple_event_manager {
 
             self.events.insert(event_id, &event);
             
+            // Emit blockchain event
             self.env().emit_event(EventCreated {
                 event_id,
                 name,
@@ -118,7 +209,22 @@ mod simple_event_manager {
             Ok(event_id)
         }
 
-        /// Purchase a ticket for an event (payable)
+        // ------------------------------------------------------------------------
+        // TICKET PURCHASING
+        // 
+        // Template for specialized purchasing:
+        // - Sports: Season passes, team loyalty, fantasy integration
+        // - Concerts: Fan tokens, VIP packages, merchandise bundles  
+        // - Culture: Member discounts, educational access, patron benefits
+        // ------------------------------------------------------------------------
+
+        /// Purchase a ticket with payment validation
+        /// 
+        /// Specialization points:
+        /// - Add domain-specific pricing (dynamic, loyalty discounts)
+        /// - Integrate DeFi features (staking rewards, multi-currency)
+        /// - Add specialized ticket features
+    
         #[ink(message, payable)]
         pub fn purchase_ticket(&mut self, event_id: u32) -> Result<u64, Error> {
             let buyer = self.env().caller();
@@ -134,6 +240,11 @@ mod simple_event_manager {
             if event.sold_tickets >= event.capacity {
                 return Err(Error::EventSoldOut);
             }
+            
+            // TODO: Add specialized pricing logic
+            // - Sports: Dynamic pricing based on team performance
+            // - Concerts: Fan token discounts, VIP pricing
+            // - Culture: Member/patron discounts, student rates
             
             if payment < event.base_price {
                 return Err(Error::InsufficientPayment);
@@ -173,6 +284,11 @@ mod simple_event_manager {
                 .ok_or(Error::InsufficientCapacity)?;
             self.events.insert(event_id, &event);
             
+            // TODO: Add specialized post-purchase logic
+            // - Sports: Award loyalty points, update season pass
+            // - Concerts: Grant fan token rewards, add to fan club
+            // - Culture: Add educational content access
+            
             // Emit events
             self.env().emit_event(TicketPurchased {
                 ticket_id,
@@ -189,7 +305,22 @@ mod simple_event_manager {
             Ok(ticket_id)
         }
 
-        /// Transfer a ticket to another account
+        // ------------------------------------------------------------------------
+        // TICKET TRANSFERS
+        // 
+        // Template for specialized transfers:
+        // - Add resale marketplace integration
+        // - Implement transfer restrictions (non-transferable tickets)
+        // - Add revenue sharing for artists/venues
+        // ------------------------------------------------------------------------
+
+        /// Transfer ticket ownership
+        /// 
+        /// Specialization points:
+        /// - Add resale marketplace features
+        /// - Implement transfer fees/royalties
+        /// - Add specialized transfer restrictions
+    
         #[ink(message)]
         pub fn transfer_ticket(&mut self, ticket_id: u64, to: AccountId) -> Result<(), Error> {
             let caller = self.env().caller();
@@ -205,13 +336,18 @@ mod simple_event_manager {
                 return Err(Error::TicketNotTransferable);
             }
             
+            // TODO: Add specialized transfer logic
+            // - Revenue sharing with artists/venues
+            // - Transfer fees for platform
+            // - Loyalty point transfers
+            
             let old_owner = ticket.owner;
             
             // Update ticket owner
             ticket.owner = to;
             self.tickets.insert(ticket_id, &ticket);
             
-            // Remove from old owner's list
+            // Update user ticket lists
             let mut old_owner_tickets = self.user_tickets.get(old_owner).unwrap_or_default();
             old_owner_tickets.retain(|&x| x != ticket_id);
             if old_owner_tickets.is_empty() {
@@ -220,7 +356,6 @@ mod simple_event_manager {
                 self.user_tickets.insert(old_owner, &old_owner_tickets);
             }
             
-            // Add to new owner's list
             let mut new_owner_tickets = self.user_tickets.get(to).unwrap_or_default();
             new_owner_tickets.push(ticket_id);
             self.user_tickets.insert(to, &new_owner_tickets);
@@ -233,6 +368,15 @@ mod simple_event_manager {
             
             Ok(())
         }
+
+        // ------------------------------------------------------------------------
+        // QUERY METHODS
+        // 
+        // Template for specialized queries:
+        // - Add domain-specific search filters
+        // - Integrate with cross-chain discovery
+        // - Add analytics and reporting
+        // ------------------------------------------------------------------------
 
         /// Get event details
         #[ink(message)]
@@ -247,6 +391,12 @@ mod simple_event_manager {
         }
 
         /// Search events by name
+        /// 
+        /// Specialization points:
+        /// - Add domain-specific search filters
+        /// - Integrate with cross-chain discovery
+        /// - Add advanced search features
+    
         #[ink(message)]
         pub fn search_events_by_name(&self, query: String) -> Vec<u32> {
             let mut results = Vec::new();
@@ -257,6 +407,10 @@ mod simple_event_manager {
                     }
                 }
             }
+            // TODO: Add specialized search logic
+            // - Sports: Filter by team, league, sport type
+            // - Concerts: Filter by artist, genre, venue type
+            // - Culture: Filter by institution, event type, date
             results
         }
 
@@ -297,15 +451,32 @@ mod simple_event_manager {
                 true
             }
         }
+
+        // ------------------------------------------------------------------------
+        // HELPER METHODS
+        // 
+        // Private methods for internal logic - extend per specialization
+        // ------------------------------------------------------------------------
+
+        // TODO: Add helper methods for specialized contracts
+        // - validate_sports_event_data()
+        // - calculate_dynamic_pricing() 
+        // - integrate_with_defi()
+        // - process_cross_chain_message()
     }
 
-    impl Default for SimpleEventManager {
+    impl Default for InkTixCore {
         fn default() -> Self {
             Self::new()
         }
     }
 
-    /// Events emitted by the contract
+    // ============================================================================
+    // BLOCKCHAIN EVENTS
+    // 
+    // Core events - extend per specialization
+    // ============================================================================
+
     #[ink(event)]
     pub struct EventCreated {
         #[ink(topic)]
@@ -343,6 +514,17 @@ mod simple_event_manager {
         event_id: u32,
     }
 
+    // TODO: Add specialized events per contract type
+    // - Sports: SeasonPassPurchased, LoyaltyPointsEarned
+    // - Concerts: FanTokenReward, VIPAccessGranted
+    // - Culture: PatronshipActivated, EducationalContentUnlocked
+
+    // ============================================================================
+    // COMPREHENSIVE TEST SUITE
+    // 
+    // Foundation tests - copy and extend for specialized contracts
+    // ============================================================================
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -352,15 +534,19 @@ mod simple_event_manager {
             ink::env::test::default_accounts::<ink::env::DefaultEnvironment>()
         }
 
+        // ------------------------------------------------------------------------
+        // CORE FUNCTIONALITY TESTS
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn new_works() {
-            let contract = SimpleEventManager::new();
+            let contract = InkTixCore::new();
             assert_eq!(contract.get_total_events(), 0);
         }
 
         #[ink::test]
         fn create_event_works() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
             let result = contract.create_event(
                 "Lakers vs Warriors".to_string(),
@@ -380,11 +566,14 @@ mod simple_event_manager {
             assert!(event.active);
         }
 
+        // ------------------------------------------------------------------------
+        // TICKET PURCHASING TESTS
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn purchase_ticket_insufficient_payment() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
-            // Create an event with price 1 DOT
             contract.create_event(
                 "Test Event".to_string(),
                 "Test Venue".to_string(),
@@ -393,33 +582,38 @@ mod simple_event_manager {
                 1_000_000_000_000, // 0.001 DOT
             ).unwrap();
             
-            // Try to purchase without sufficient payment (no payment transferred)
             let result = contract.purchase_ticket(1);
             assert_eq!(result, Err(Error::InsufficientPayment));
         }
 
         #[ink::test]
         fn purchase_ticket_event_not_found() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
-            // Try to purchase ticket for non-existent event
             let result = contract.purchase_ticket(999);
             assert_eq!(result, Err(Error::EventNotFound));
         }
 
+        // ------------------------------------------------------------------------
+        // USER MANAGEMENT TESTS  
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn get_user_tickets_works() {
             let accounts = get_accounts();
-            let contract = SimpleEventManager::new();
+            let contract = InkTixCore::new();
             
-            // Should return empty vector for user with no tickets
             let tickets = contract.get_user_tickets(accounts.alice);
             assert_eq!(tickets.len(), 0);
         }
 
+        // ------------------------------------------------------------------------
+        // SEARCH AND DISCOVERY TESTS
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn search_events_works() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
             contract.create_event(
                 "Lakers vs Warriors".to_string(),
@@ -447,9 +641,13 @@ mod simple_event_manager {
             assert!(warriors_results.contains(&2));
         }
 
+        // ------------------------------------------------------------------------
+        // CAPACITY MANAGEMENT TESTS
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn get_available_tickets_works() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
             contract.create_event(
                 "Test Event".to_string(),
@@ -464,38 +662,9 @@ mod simple_event_manager {
         }
 
         #[ink::test]
-        fn event_not_found_error() {
-            let contract = SimpleEventManager::new();
-            
-            // Try to get non-existent event
-            assert_eq!(contract.get_event(999), None);
-            assert_eq!(contract.get_available_tickets(999), 0);
-            assert!(contract.is_event_sold_out(999)); // Non-existent events are "sold out"
-        }
-
-        #[ink::test]
-        fn ticket_not_found_error() {
-            let contract = SimpleEventManager::new();
-            
-            // Try to get non-existent ticket
-            assert_eq!(contract.get_ticket(999), None);
-        }
-
-        #[ink::test]
-        fn transfer_ticket_validation() {
-            let accounts = get_accounts();
-            let mut contract = SimpleEventManager::new();
-            
-            // Try to transfer non-existent ticket
-            let result = contract.transfer_ticket(999, accounts.bob);
-            assert_eq!(result, Err(Error::TicketNotFound));
-        }
-
-        #[ink::test]
         fn event_capacity_management() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
-            // Create small capacity event
             contract.create_event(
                 "Small Event".to_string(),
                 "Small Venue".to_string(),
@@ -504,7 +673,6 @@ mod simple_event_manager {
                 1_000_000_000_000,
             ).unwrap();
             
-            // Check initial state
             assert_eq!(contract.get_available_tickets(1), 2);
             assert!(!contract.is_event_sold_out(1));
             
@@ -513,11 +681,43 @@ mod simple_event_manager {
             assert_eq!(event.capacity, 2);
         }
 
+        // ------------------------------------------------------------------------
+        // ERROR HANDLING TESTS
+        // ------------------------------------------------------------------------
+
+        #[ink::test]
+        fn event_not_found_error() {
+            let contract = InkTixCore::new();
+            
+            assert_eq!(contract.get_event(999), None);
+            assert_eq!(contract.get_available_tickets(999), 0);
+            assert!(contract.is_event_sold_out(999));
+        }
+
+        #[ink::test]
+        fn ticket_not_found_error() {
+            let contract = InkTixCore::new();
+            
+            assert_eq!(contract.get_ticket(999), None);
+        }
+
+        #[ink::test]
+        fn transfer_ticket_validation() {
+            let accounts = get_accounts();
+            let mut contract = InkTixCore::new();
+            
+            let result = contract.transfer_ticket(999, accounts.bob);
+            assert_eq!(result, Err(Error::TicketNotFound));
+        }
+
+        // ------------------------------------------------------------------------
+        // MULTIPLE EVENTS TESTS
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn create_multiple_events() {
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
-            // Create multiple events
             let event1 = contract.create_event(
                 "Event 1".to_string(),
                 "Venue 1".to_string(),
@@ -538,7 +738,6 @@ mod simple_event_manager {
             assert_eq!(event2, 2);
             assert_eq!(contract.get_total_events(), 2);
             
-            // Verify each event
             let e1 = contract.get_event(1).unwrap();
             let e2 = contract.get_event(2).unwrap();
             
@@ -548,16 +747,24 @@ mod simple_event_manager {
             assert_eq!(e2.capacity, 200);
         }
 
+        // ------------------------------------------------------------------------
+        // COMPREHENSIVE ERROR HANDLING
+        // ------------------------------------------------------------------------
+
         #[ink::test]
         fn error_handling_comprehensive() {
             let accounts = get_accounts();
-            let mut contract = SimpleEventManager::new();
+            let mut contract = InkTixCore::new();
             
-            // Test various error conditions
             assert_eq!(contract.purchase_ticket(999), Err(Error::EventNotFound));
             assert_eq!(contract.transfer_ticket(999, accounts.bob), Err(Error::TicketNotFound));
             assert_eq!(contract.get_ticket(999), None);
             assert_eq!(contract.get_event(999), None);
         }
+
+        // TODO: Add specialized tests for each contract type
+        // - Sports: Team validation, season pass tests, loyalty points
+        // - Concerts: Artist verification, fan token integration  
+        // - Culture: Institution approval, educational content access
     }
 }
