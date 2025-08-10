@@ -1,7 +1,7 @@
 [package]
 name = "sports_broker"
-version = "0.1.0"
-authors = ["InkTix Team <team@inktix.io>"]
+version = "0.2.0" # Sports Broker
+authors = ["Ryc Brownrigg <ryc@Brownrigg.mt>"]
 edition = "2021"
 publish = false
 
