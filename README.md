@@ -8,17 +8,17 @@
 
 ---
 
-##  Overview
+## Overview
 
 **InkTix** is a cross-chain ticket marketplace that connects event brokers across multiple Polkadot parachains. Built with Rust and ink!, the system enables seamless ticket discovery, fraud-resistant NFT ticket trading, and cross-chain ownership using XCM.
 
 ---
 
-##  Documentation
+## Documentation
 
--  [Product Specification](./docs/product_specification.md)
--  [System Architecture](./docs/system_architecture.md)
--  [Changelog](./CHANGELOG.md)
+- [Product Specification](./docs/product_specification.md)
+- [System Architecture](./docs/system_architecture.md)
+- [Changelog](./CHANGELOG.md)
 
 ---
 
@@ -36,3 +36,19 @@ InkTix/
 ├── scripts/                  # Build and deploy scripts
 ├── examples/                 # Example clients or usage
 └── .gitignore
+```
+
+## Current Development Status 2025-08-13
+
+### WORKING CONTRACTS
+
+- **concert_broker v0.3.0**: Basic template, builds successfully
+- **sports_broker v0.2.0**: Basic template, builds successfully
+- **inktix_core v0.1.0**: Foundation template
+
+### BUILD COMMANDS
+
+```bash
+cd contracts/concert_broker && cargo contract build
+cd contracts/sports_broker && cargo contract build
+```

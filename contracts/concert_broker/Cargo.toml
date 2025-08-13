@@ -1,6 +1,6 @@
 [package]
-name = "sports_broker"
-version = "0.2.0"
+name = "concert_broker"
+version = "0.3.0"
 authors = ["[your_name] <[your_email]>"]
 edition = "2021"
 

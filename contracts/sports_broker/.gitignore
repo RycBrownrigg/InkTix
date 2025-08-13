@@ -4,15 +4,19 @@
 /debug/
 /release/
 *.rs.bk
-**/*.rs.bk
-Cargo.lock
+
+# Contract-specific ignores (covers all contracts)
+contracts/*/target/
+contracts/*/Cargo.lock
+contracts/*/*.contract
+contracts/*/*.wasm
+contracts/*/*.json
 
 # macOS-specific ignores
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon
-Thumbs.db
 
 # Documentation and IDE-related ignores
 *.swp
@@ -20,12 +24,6 @@ Thumbs.db
 *~
 .vscode/
 .idea/
-
-# ink! smart contract specific ignores
-/contracts/inktix_core/artifacts/
-/contracts/inktix_core/target/
-/contracts/sports_broker/artifacts/
-/contracts/sports_broker/target/
 
 # General build artifacts
 *.o
@@ -36,3 +34,7 @@ Thumbs.db
 # Test and cache files
 *.log
 *.cache
+
+# Temporary files
+**/.*~
+**/*~

@@ -1,4 +1,5 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
+
 ## Changelog
 
 All notable changes to **InkTix: Cross-Chain Ticket Marketplace Network** will be documented in this file.
@@ -8,15 +9,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ### Planned
+
 - Concert Broker for music events and festivals
-- Culture Broker for museums and cultural events  
+- Culture Broker for museums and cultural events
 - Cross-chain messaging (XCM) integration
 - Frontend web application
 - Testnet deployment
 
-## [0.2.0] - 2024-08-10 - "Sports Broker MVP"
+## [0.2.0] - 2025-08-10 - "Sports Broker MVP"
 
 ### Added
+
 - **Sports Broker Contract**: Complete specialized marketplace for sports and athletic events
 - **Team Management**: Register teams with sport type, league, and venue information
 - **Venue Management**: Register arenas, stadiums, and sports facilities
@@ -33,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **VIP Features**: Premium seating, parking passes, concession credits
 
 ### Technical Improvements
+
 - Extended InkTix Core foundation with 200+ sports-specific features
 - 15 comprehensive unit tests (100% pass rate)
 - Production-safe arithmetic with overflow protection
@@ -41,6 +45,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Comprehensive error handling with 25+ error types
 
 ### Infrastructure
+
 - Multi-currency conversion system ready for Acala DEX integration
 - Pricing multiplier engine for dynamic market-based pricing
 - Team performance tracking for analytics and pricing
@@ -50,6 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [0.1.0] - 2025-08-08 - "Foundation Template"
 
 ### Added
+
 - **InkTix Core Contract**: Foundation ticket marketplace template
 - **Basic Event Management**: Create, activate, and manage events
 - **Ticket System**: Purchase, transfer, and track ticket ownership
@@ -59,14 +65,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Safety Features**: Overflow protection and comprehensive error handling
 
 ### Technical Foundation
+
 - ink! smart contract framework (v5.1.1)
-- SCALE codec for efficient data serialization  
+- SCALE codec for efficient data serialization
 - Mapping-based storage for gas-efficient operations
 - Event emission for blockchain indexing
 - Secure ticket transfers with ownership validation
 - 13 foundational unit tests
 
 ### Architecture
+
 - Modular design for easy specialization
 - Extensible data structures for broker-specific features
 - Template pattern for creating specialized marketplaces
@@ -76,7 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## Version Numbering
 
 - **Major (X.0.0)**: Breaking changes, major feature releases
-- **Minor (0.X.0)**: New features, broker additions, significant enhancements  
+- **Minor (0.X.0)**: New features, broker additions, significant enhancements
 - **Patch (0.0.X)**: Bug fixes, small improvements, documentation updates
 
 ## Release Tags

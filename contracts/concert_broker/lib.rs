@@ -1,10 +1,10 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
 #[ink::contract]
-mod sports_broker {
+mod concert_broker {
     /// The Concert Broker contract storage.
     #[ink(storage)]
-    pub struct SportsBroker {
+    pub struct ConcertBroker {
         /// The contract owner
         owner: AccountId,
         /// Next artist ID
@@ -34,7 +34,7 @@ mod sports_broker {
     /// Type alias for the contract's result type.
     pub type Result<T> = core::result::Result<T, Error>;
 
-    impl SportsBroker {
+    impl ConcertBroker {
         /// Creates a new Concert Broker contract.
         #[ink(constructor)]
         pub fn new() -> Self {
@@ -128,7 +128,7 @@ mod sports_broker {
     }
 
     /// Add Default implementation as suggested by clippy
-    impl Default for SportsBroker {
+    impl Default for ConcertBroker {
         fn default() -> Self {
             Self::new()
         }
@@ -141,68 +141,68 @@ mod sports_broker {
 
         #[ink::test]
         fn new_works() {
-            let sports_broker = SportsBroker::new();
-            assert_eq!(sports_broker.total_artists(), 0);
-            assert_eq!(sports_broker.total_events(), 0);
+            let concert_broker = ConcertBroker::new();
+            assert_eq!(concert_broker.total_artists(), 0);
+            assert_eq!(concert_broker.total_events(), 0);
         }
 
         #[ink::test]
         fn register_artist_works() {
-            let mut sports_broker = SportsBroker::new();
-            let result = sports_broker.register_artist("Taylor Swift".to_string());
+            let mut concert_broker = ConcertBroker::new();
+            let result = concert_broker.register_artist("Taylor Swift".to_string());
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), 1);
-            assert_eq!(sports_broker.total_artists(), 1);
+            assert_eq!(concert_broker.total_artists(), 1);
         }
 
         #[ink::test]
         fn create_event_works() {
-            let mut sports_broker = SportsBroker::new();
+            let mut concert_broker = ConcertBroker::new();
             
             // Register artist first
-            let artist_id = sports_broker.register_artist("Drake".to_string()).unwrap();
+            let artist_id = concert_broker.register_artist("Drake".to_string()).unwrap();
             
             // Create event
-            let result = sports_broker.create_event("Drake Concert".to_string(), artist_id);
+            let result = concert_broker.create_event("Drake Concert".to_string(), artist_id);
             assert!(result.is_ok());
             assert_eq!(result.unwrap(), 1);
-            assert_eq!(sports_broker.total_events(), 1);
+            assert_eq!(concert_broker.total_events(), 1);
         }
 
         #[ink::test]
         fn create_event_artist_not_found() {
-            let mut sports_broker = SportsBroker::new();
+            let mut concert_broker = ConcertBroker::new();
             
             // Try to create event without artist
-            let result = sports_broker.create_event("No Artist Concert".to_string(), 999);
+            let result = concert_broker.create_event("No Artist Concert".to_string(), 999);
             assert_eq!(result, Err(Error::ArtistNotFound));
         }
 
         #[ink::test]
         fn multiple_artists_and_events() {
-            let mut sports_broker = SportsBroker::new();
+            let mut concert_broker = ConcertBroker::new();
             
             // Register multiple artists
-            let artist1 = sports_broker.register_artist("Taylor Swift".to_string()).unwrap();
-            let artist2 = sports_broker.register_artist("Drake".to_string()).unwrap();
+            let artist1 = concert_broker.register_artist("Taylor Swift".to_string()).unwrap();
+            let artist2 = concert_broker.register_artist("Drake".to_string()).unwrap();
             
             assert_eq!(artist1, 1);
             assert_eq!(artist2, 2);
-            assert_eq!(sports_broker.total_artists(), 2);
+            assert_eq!(concert_broker.total_artists(), 2);
             
             // Create events for both artists
-            let event1 = sports_broker.create_event("Eras Tour".to_string(), artist1).unwrap();
-            let event2 = sports_broker.create_event("Drake Concert".to_string(), artist2).unwrap();
+            let event1 = concert_broker.create_event("Eras Tour".to_string(), artist1).unwrap();
+            let event2 = concert_broker.create_event("Drake Concert".to_string(), artist2).unwrap();
             
             assert_eq!(event1, 1);
             assert_eq!(event2, 2);
-            assert_eq!(sports_broker.total_events(), 2);
+            assert_eq!(concert_broker.total_events(), 2);
             
             // Verify we can retrieve the data
-            assert_eq!(sports_broker.get_artist(artist1), Some("Taylor Swift".to_string()));
-            assert_eq!(sports_broker.get_artist(artist2), Some("Drake".to_string()));
-            assert_eq!(sports_broker.get_event(event1), Some("Eras Tour".to_string()));
-            assert_eq!(sports_broker.get_event(event2), Some("Drake Concert".to_string()));
+            assert_eq!(concert_broker.get_artist(artist1), Some("Taylor Swift".to_string()));
+            assert_eq!(concert_broker.get_artist(artist2), Some("Drake".to_string()));
+            assert_eq!(concert_broker.get_event(event1), Some("Eras Tour".to_string()));
+            assert_eq!(concert_broker.get_event(event2), Some("Drake Concert".to_string()));
         }
     }
 }
