@@ -2,31 +2,70 @@
 
 #[ink::contract]
 mod sports_broker {
-    /// The Concert Broker contract storage.
+    use ink::prelude::string::String;
+
+    /// The Sports Broker contract storage.
     #[ink(storage)]
     pub struct SportsBroker {
         /// The contract owner
         owner: AccountId,
-        /// Next artist ID
-        next_artist_id: u32,
-        /// Next event ID  
-        next_event_id: u32,
-        /// Simple artist storage (name by ID)
-        artists: ink::storage::Mapping<u32, Option<ink::prelude::string::String>>,
-        /// Simple event storage (name by ID)
-        events: ink::storage::Mapping<u32, Option<ink::prelude::string::String>>,
+        
+        // Team management
+        teams: ink::storage::Mapping<u32, Team>,
+        next_team_id: u32,
+        
+        // Venue management  
+        venues: ink::storage::Mapping<u32, Venue>,
+        next_venue_id: u32,
     }
 
-    /// Concert broker errors
+    /// Team information
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct Team {
+        pub id: u32,
+        pub name: String,
+        pub city: String,
+        pub sport_type: SportType,
+        pub verified: bool,
+    }
+
+    /// Venue information
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct Venue {
+        pub id: u32,
+        pub name: String,
+        pub city: String,
+        pub capacity: u32,
+    }
+
+    /// Sport types
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum SportType {
+        Basketball,
+        Football,     // American Football
+        Soccer,       // Football/Soccer
+        Baseball,
+        Hockey,
+        Tennis,
+        Other(String),
+    }
+
+    /// Sports broker errors
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     pub enum Error {
         /// Caller is not the owner
         NotOwner,
-        /// Artist not found
-        ArtistNotFound,
-        /// Event not found
-        EventNotFound,
+        /// Team not found
+        TeamNotFound,
+        /// Venue not found
+        VenueNotFound,
         /// ID overflow
         IdOverflow,
     }
@@ -35,75 +74,16 @@ mod sports_broker {
     pub type Result<T> = core::result::Result<T, Error>;
 
     impl SportsBroker {
-        /// Creates a new Concert Broker contract.
+        /// Creates a new Sports Broker contract.
         #[ink(constructor)]
         pub fn new() -> Self {
             Self {
                 owner: Self::env().caller(),
-                next_artist_id: 1,
-                next_event_id: 1,
-                artists: ink::storage::Mapping::new(),
-                events: ink::storage::Mapping::new(),
+                teams: ink::storage::Mapping::new(),
+                next_team_id: 1,
+                venues: ink::storage::Mapping::new(),
+                next_venue_id: 1,
             }
-        }
-
-        /// Register a new artist
-        #[ink(message)]
-        pub fn register_artist(&mut self, name: ink::prelude::string::String) -> Result<u32> {
-            let caller = self.env().caller();
-            if caller != self.owner {
-                return Err(Error::NotOwner);
-            }
-
-            let artist_id = self.next_artist_id;
-            self.artists.insert(artist_id, &Some(name));
-            
-            // Safe arithmetic - use checked_add to prevent overflow
-            self.next_artist_id = self.next_artist_id
-                .checked_add(1)
-                .ok_or(Error::IdOverflow)?;
-            
-            Ok(artist_id)
-        }
-
-        /// Create a new event
-        #[ink(message)]
-        pub fn create_event(
-            &mut self, 
-            name: ink::prelude::string::String,
-            artist_id: u32
-        ) -> Result<u32> {
-            let caller = self.env().caller();
-            if caller != self.owner {
-                return Err(Error::NotOwner);
-            }
-
-            // Check if artist exists
-            if self.artists.get(artist_id).is_none() {
-                return Err(Error::ArtistNotFound);
-            }
-
-            let event_id = self.next_event_id;
-            self.events.insert(event_id, &Some(name));
-            
-            // Safe arithmetic - use checked_add to prevent overflow
-            self.next_event_id = self.next_event_id
-                .checked_add(1)
-                .ok_or(Error::IdOverflow)?;
-            
-            Ok(event_id)
-        }
-
-        /// Get artist name
-        #[ink(message)]
-        pub fn get_artist(&self, artist_id: u32) -> Option<ink::prelude::string::String> {
-            self.artists.get(artist_id).unwrap_or(None)
-        }
-
-        /// Get event name
-        #[ink(message)]
-        pub fn get_event(&self, event_id: u32) -> Option<ink::prelude::string::String> {
-            self.events.get(event_id).unwrap_or(None)
         }
 
         /// Get the owner of the contract
@@ -112,29 +92,27 @@ mod sports_broker {
             self.owner
         }
 
-        /// Get total artists registered
+        /// Get total teams registered
         #[ink(message)]
-        pub fn total_artists(&self) -> u32 {
-            // Safe arithmetic - use saturating_sub to prevent underflow
-            self.next_artist_id.saturating_sub(1)
+        pub fn total_teams(&self) -> u32 {
+            self.next_team_id.saturating_sub(1)
         }
 
-        /// Get total events created
+        /// Get total venues registered
         #[ink(message)]
-        pub fn total_events(&self) -> u32 {
-            // Safe arithmetic - use saturating_sub to prevent underflow
-            self.next_event_id.saturating_sub(1)
+        pub fn total_venues(&self) -> u32 {
+            self.next_venue_id.saturating_sub(1)
         }
     }
 
-    /// Add Default implementation as suggested by clippy
+    /// Add Default implementation
     impl Default for SportsBroker {
         fn default() -> Self {
             Self::new()
         }
     }
 
-    /// Unit tests
+    /// Unit tests for Step 1 - Basic Storage & Data Types
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -142,67 +120,64 @@ mod sports_broker {
         #[ink::test]
         fn new_works() {
             let sports_broker = SportsBroker::new();
-            assert_eq!(sports_broker.total_artists(), 0);
-            assert_eq!(sports_broker.total_events(), 0);
+            assert_eq!(sports_broker.total_teams(), 0);
+            assert_eq!(sports_broker.total_venues(), 0);
         }
 
         #[ink::test]
-        fn register_artist_works() {
-            let mut sports_broker = SportsBroker::new();
-            let result = sports_broker.register_artist("Taylor Swift".to_string());
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), 1);
-            assert_eq!(sports_broker.total_artists(), 1);
+        fn storage_initialization_works() {
+            let sports_broker = SportsBroker::new();
+            assert_eq!(sports_broker.next_team_id, 1);
+            assert_eq!(sports_broker.next_venue_id, 1);
         }
 
         #[ink::test]
-        fn create_event_works() {
-            let mut sports_broker = SportsBroker::new();
-            
-            // Register artist first
-            let artist_id = sports_broker.register_artist("Drake".to_string()).unwrap();
-            
-            // Create event
-            let result = sports_broker.create_event("Drake Concert".to_string(), artist_id);
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), 1);
-            assert_eq!(sports_broker.total_events(), 1);
+        fn owner_is_set_correctly() {
+            let sports_broker = SportsBroker::new();
+            let expected_owner = ink::env::test::default_accounts::<ink::env::DefaultEnvironment>().alice;
+            assert_eq!(sports_broker.get_owner(), expected_owner);
         }
 
         #[ink::test]
-        fn create_event_artist_not_found() {
-            let mut sports_broker = SportsBroker::new();
+        fn sport_type_variants_work() {
+            // Test that SportType enum variants can be created and compared
+            let basketball = SportType::Basketball;
+            let football = SportType::Football;
+            let custom = SportType::Other("Cricket".to_string());
             
-            // Try to create event without artist
-            let result = sports_broker.create_event("No Artist Concert".to_string(), 999);
-            assert_eq!(result, Err(Error::ArtistNotFound));
+            assert_eq!(basketball, SportType::Basketball);
+            assert_ne!(basketball, football);
+            assert_eq!(custom, SportType::Other("Cricket".to_string()));
         }
 
         #[ink::test]
-        fn multiple_artists_and_events() {
-            let mut sports_broker = SportsBroker::new();
+        fn team_struct_creation_works() {
+            let team = Team {
+                id: 1,
+                name: "Test Team".to_string(),
+                city: "Test City".to_string(),
+                sport_type: SportType::Basketball,
+                verified: true,
+            };
             
-            // Register multiple artists
-            let artist1 = sports_broker.register_artist("Taylor Swift".to_string()).unwrap();
-            let artist2 = sports_broker.register_artist("Drake".to_string()).unwrap();
+            assert_eq!(team.id, 1);
+            assert_eq!(team.name, "Test Team");
+            assert_eq!(team.sport_type, SportType::Basketball);
+            assert!(team.verified);
+        }
+
+        #[ink::test]
+        fn venue_struct_creation_works() {
+            let venue = Venue {
+                id: 1,
+                name: "Test Arena".to_string(),
+                city: "Test City".to_string(),
+                capacity: 20000,
+            };
             
-            assert_eq!(artist1, 1);
-            assert_eq!(artist2, 2);
-            assert_eq!(sports_broker.total_artists(), 2);
-            
-            // Create events for both artists
-            let event1 = sports_broker.create_event("Eras Tour".to_string(), artist1).unwrap();
-            let event2 = sports_broker.create_event("Drake Concert".to_string(), artist2).unwrap();
-            
-            assert_eq!(event1, 1);
-            assert_eq!(event2, 2);
-            assert_eq!(sports_broker.total_events(), 2);
-            
-            // Verify we can retrieve the data
-            assert_eq!(sports_broker.get_artist(artist1), Some("Taylor Swift".to_string()));
-            assert_eq!(sports_broker.get_artist(artist2), Some("Drake".to_string()));
-            assert_eq!(sports_broker.get_event(event1), Some("Eras Tour".to_string()));
-            assert_eq!(sports_broker.get_event(event2), Some("Drake Concert".to_string()));
+            assert_eq!(venue.id, 1);
+            assert_eq!(venue.name, "Test Arena");
+            assert_eq!(venue.capacity, 20000);
         }
     }
 }
