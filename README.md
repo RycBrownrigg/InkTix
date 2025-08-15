@@ -1,5 +1,9 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
 
+<p align="center">
+  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="350">
+</p>
+
 ![version](https://img.shields.io/badge/version-v0.1.0-blue)
 ![status](https://img.shields.io/badge/status-alpha-orange)
 ![license](https://img.shields.io/badge/license-MIT-green)

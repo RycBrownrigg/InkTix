@@ -1,7 +1,8 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
-## System Architecture
 
----
+<p align="center">
+  <img src="./InkTix_logo.png" alt="InkTix Logo" width="350">
+</p>
 
 ## 2. System Architecture
 

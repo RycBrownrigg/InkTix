@@ -1,5 +1,9 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
 
+<p align="center">
+  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="350">
+</p>
+
 ## Changelog
 
 All notable changes to **InkTix: Cross-Chain Ticket Marketplace Network** will be documented in this file.
