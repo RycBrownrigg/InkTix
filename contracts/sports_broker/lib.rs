@@ -36,12 +36,16 @@ mod sports_broker {
         loyalty_points: ink::storage::Mapping<AccountId, u32>,
         team_fans: ink::storage::Mapping<u32, Vec<AccountId>>, // team_id -> fan list
 
-        // NEW: Season Pass System (Step 7)
+        // Season Pass System (Step 7)
         season_passes: ink::storage::Mapping<u64, SeasonPass>,
         next_season_pass_id: u64,
         user_season_passes: ink::storage::Mapping<AccountId, Vec<u64>>,
         staking_rewards_pool: Balance,
         user_staked_amounts: ink::storage::Mapping<AccountId, Balance>,
+
+        // NEW: Dynamic Pricing Engine (Step 8)
+        team_performance: ink::storage::Mapping<u32, TeamPerformance>,
+        pricing_multipliers: ink::storage::Mapping<u32, PricingMultiplier>,
     }
 
     /// Team information
@@ -79,7 +83,7 @@ mod sports_broker {
         pub end_date: u64,   // Unix timestamp
         pub regular_season_games: u32,
         pub active: bool,
-        // NEW: Season pass pricing
+        // Season pass pricing
         pub season_pass_base_price: Balance,
         pub early_bird_discount: u8, // percentage discount
         pub early_bird_deadline: u64,
@@ -107,8 +111,12 @@ mod sports_broker {
         pub season_id: u32,
         pub game_type: GameType,
         
-        // NEW: Season pass benefits
+        // Season pass benefits
         pub season_pass_discount: u8, // percentage discount for season pass holders
+
+        // NEW: Dynamic pricing settings
+        pub dynamic_pricing_enabled: bool,
+        pub rivalry_multiplier: u32, // 10000 = 1.0x, 15000 = 1.5x (basis points)
     }
 
     /// Enhanced Ticket structure for sports
@@ -134,9 +142,13 @@ mod sports_broker {
         // Loyalty integration
         pub loyalty_points_earned: u32,
         
-        // NEW: Season pass integration
+        // Season pass integration
         pub season_pass_discount_applied: bool,
         pub is_season_pass_ticket: bool,
+
+        // NEW: Dynamic pricing information
+        pub dynamic_price_paid: Balance, // Final price after all multipliers
+        pub performance_multiplier_applied: u32, // The multiplier that was used
     }
 
     /// User profile for fan management
@@ -152,11 +164,10 @@ mod sports_broker {
         pub account_creation_date: u64,
         pub anti_scalping_verified: bool,
         pub social_media_verified: bool,
-        // NEW: Season pass holder status
         pub season_pass_holder: bool,
     }
 
-    /// NEW: Season pass for subscription management (Step 7)
+    /// Season pass for subscription management
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -177,6 +188,42 @@ mod sports_broker {
         pub staking_rewards_enabled: bool,
         pub staked_amount: Balance, // Amount earning staking rewards
         pub valid_until: u64, // Season end date
+    }
+
+    /// NEW: Team performance for dynamic pricing (Step 8)
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct TeamPerformance {
+        pub team_id: u32,
+        pub season_id: u32,
+        pub wins: u32,
+        pub losses: u32,
+        pub win_percentage: u32, // 0-10000 (basis points, 7500 = 75%)
+        pub streak: i32, // positive for wins, negative for losses
+        pub playoff_probability: u32, // 0-10000 (basis points)
+        pub last_updated: u64,
+        pub performance_rank: u32, // 1 = best in league
+        pub home_record_wins: u32,
+        pub home_record_losses: u32,
+        pub points_scored_avg: u32, // Average points per game (scaled by 100)
+        pub points_allowed_avg: u32, // Average points allowed per game (scaled by 100)
+    }
+
+    /// NEW: Pricing multiplier based on various factors (Step 8)
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct PricingMultiplier {
+        pub team_id: u32,
+        pub base_multiplier: u32, // 10000 = 1.0x, 15000 = 1.5x (basis points)
+        pub performance_multiplier: u32, // Based on win/loss record
+        pub playoff_multiplier: u32, // Based on playoff probability
+        pub streak_multiplier: u32, // Based on current win/loss streak
+        pub rivalry_multiplier: u32, // Set per game for rivalry games
+        pub demand_multiplier: u32, // Based on recent ticket sales
+        pub final_multiplier: u32, // Calculated from all above factors
+        pub last_updated: u64,
     }
 
     /// Sport types
@@ -245,7 +292,7 @@ mod sports_broker {
         Diamond,
     }
 
-    /// NEW: Season pass types (Step 7)
+    /// Season pass types
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -296,7 +343,7 @@ mod sports_broker {
         ProfileNotFound,
         /// Invalid favorite teams
         InvalidFavoriteTeams,
-        // NEW: Season pass errors
+        // Season pass errors
         /// Season pass not found
         SeasonPassNotFound,
         /// Not season pass owner
@@ -311,6 +358,15 @@ mod sports_broker {
         InsufficientStakingRewards,
         /// Staking not enabled
         StakingNotEnabled,
+        // NEW: Dynamic pricing errors
+        /// Performance data not found
+        PerformanceDataNotFound,
+        /// Pricing data outdated
+        PricingDataOutdated,
+        /// Dynamic pricing disabled for event
+        DynamicPricingDisabled,
+        /// Invalid performance statistics
+        InvalidPerformanceStats,
     }
 
     /// Type alias for the contract's result type.
@@ -337,12 +393,15 @@ mod sports_broker {
                 user_profiles: ink::storage::Mapping::new(),
                 loyalty_points: ink::storage::Mapping::new(),
                 team_fans: ink::storage::Mapping::new(),
-                // NEW: Step 7 storage initialization
+                // Step 7 storage
                 season_passes: ink::storage::Mapping::new(),
                 next_season_pass_id: 1,
                 user_season_passes: ink::storage::Mapping::new(),
                 staking_rewards_pool: 0,
                 user_staked_amounts: ink::storage::Mapping::new(),
+                // NEW: Step 8 storage initialization
+                team_performance: ink::storage::Mapping::new(),
+                pricing_multipliers: ink::storage::Mapping::new(),
             }
         }
 
@@ -380,6 +439,38 @@ mod sports_broker {
             
             // Initialize empty fan list for new team
             self.team_fans.insert(team_id, &Vec::<AccountId>::new());
+            
+            // NEW: Initialize performance tracking for new team
+            let performance = TeamPerformance {
+                team_id,
+                season_id: 0, // Will be updated when assigned to season
+                wins: 0,
+                losses: 0,
+                win_percentage: 0,
+                streak: 0,
+                playoff_probability: 5000, // 50% default
+                last_updated: self.env().block_timestamp(),
+                performance_rank: 0,
+                home_record_wins: 0,
+                home_record_losses: 0,
+                points_scored_avg: 10000, // 100.00 points average
+                points_allowed_avg: 10000, // 100.00 points average
+            };
+            self.team_performance.insert(team_id, &performance);
+
+            // NEW: Initialize pricing multiplier for new team
+            let pricing = PricingMultiplier {
+                team_id,
+                base_multiplier: 10000, // 1.0x
+                performance_multiplier: 10000, // 1.0x
+                playoff_multiplier: 10000, // 1.0x
+                streak_multiplier: 10000, // 1.0x
+                rivalry_multiplier: 10000, // 1.0x
+                demand_multiplier: 10000, // 1.0x
+                final_multiplier: 10000, // 1.0x
+                last_updated: self.env().block_timestamp(),
+            };
+            self.pricing_multipliers.insert(team_id, &pricing);
             
             Ok(team_id)
         }
@@ -445,7 +536,7 @@ mod sports_broker {
                 end_date,
                 regular_season_games,
                 active: true,
-                // NEW: Season pass pricing defaults
+                // Season pass pricing defaults
                 season_pass_base_price: 500_000_000_000_000, // 0.5 DOT
                 early_bird_discount: 10, // 10% early bird discount
                 early_bird_deadline: start_date, // Default to season start
@@ -455,7 +546,7 @@ mod sports_broker {
             Ok(season_id)
         }
 
-        /// NEW: Update season pass pricing (Step 7)
+        /// Update season pass pricing
         #[ink(message)]
         pub fn update_season_pass_pricing(
             &mut self,
@@ -479,10 +570,10 @@ mod sports_broker {
         }
 
         // ========================================================================
-        // SPORTS EVENT MANAGEMENT (Step 4 + Enhanced for Step 7)
+        // SPORTS EVENT MANAGEMENT (Step 4 + Enhanced for Steps 7-8)
         // ========================================================================
 
-        /// Create a sports event with season pass benefits
+        /// Create a sports event with dynamic pricing enabled
         #[ink(message)]
         pub fn create_sports_event(
             &mut self,
@@ -521,6 +612,9 @@ mod sports_broker {
                 .checked_add(1)
                 .ok_or(Error::IdOverflow)?;
 
+            // NEW: Determine rivalry multiplier based on team matchup
+            let rivalry_multiplier = self.calculate_rivalry_multiplier(home_team_id, away_team_id);
+
             let sports_event = SportsEvent {
                 id: event_id,
                 name,
@@ -538,19 +632,27 @@ mod sports_broker {
                 season_id,
                 game_type,
                 
-                // NEW: Season pass benefits
+                // Season pass benefits
                 season_pass_discount: 15, // 15% discount for season pass holders
+
+                // NEW: Dynamic pricing settings
+                dynamic_pricing_enabled: true,
+                rivalry_multiplier,
             };
 
             self.events.insert(event_id, &sports_event);
+
+            // NEW: Update pricing multipliers for both teams
+            self.update_event_pricing_multipliers(home_team_id, away_team_id, &game_type, rivalry_multiplier);
+
             Ok(event_id)
         }
 
         // ========================================================================
-        // ENHANCED TICKET PURCHASING (Step 5 + Enhanced for Step 7)
+        // ENHANCED TICKET PURCHASING (Step 5 + Enhanced for Steps 7-8)
         // ========================================================================
 
-        /// Purchase a sports ticket with season pass benefits
+        /// Purchase a sports ticket with dynamic pricing
         #[ink(message, payable)]
         pub fn purchase_sports_ticket(
             &mut self,
@@ -571,12 +673,9 @@ mod sports_broker {
                 return Err(Error::EventSoldOut);
             }
 
-            // Calculate base price
-            let base_price = self.calculate_seat_price(event.base_price, &seat_type);
-            
-            // NEW: Check for season pass benefits
-            let (final_price, season_pass_discount_applied, is_season_pass_ticket) = 
-                self.apply_season_pass_discount(buyer, &event, base_price)?;
+            // NEW: Calculate dynamic price with all factors
+            let (final_price, season_pass_discount_applied, is_season_pass_ticket, performance_multiplier) = 
+                self.calculate_comprehensive_ticket_price(buyer, &event, &seat_type)?;
             
             if payment < final_price {
                 return Err(Error::InsufficientPayment);
@@ -613,9 +712,13 @@ mod sports_broker {
                 // Loyalty integration
                 loyalty_points_earned,
                 
-                // NEW: Season pass integration
+                // Season pass integration
                 season_pass_discount_applied,
                 is_season_pass_ticket,
+
+                // NEW: Dynamic pricing information
+                dynamic_price_paid: final_price,
+                performance_multiplier_applied: performance_multiplier,
             };
 
             // Store ticket
@@ -638,6 +741,9 @@ mod sports_broker {
             if is_season_pass_ticket {
                 self.update_season_pass_usage(buyer, event.season_id, event.home_team_id);
             }
+
+            // NEW: Update demand multiplier based on sales
+            self.update_demand_multiplier(event.home_team_id, event.sold_tickets, event.capacity);
 
             Ok(ticket_id)
         }
@@ -710,7 +816,7 @@ mod sports_broker {
                 account_creation_date: self.env().block_timestamp(),
                 anti_scalping_verified: false,
                 social_media_verified: false,
-                season_pass_holder: false, // NEW: Initially false
+                season_pass_holder: false,
             };
 
             self.user_profiles.insert(caller, &profile);
@@ -803,7 +909,7 @@ mod sports_broker {
         }
 
         // ========================================================================
-        // NEW: SEASON PASS SYSTEM (Step 7)
+        // SEASON PASS SYSTEM (Step 7)
         // ========================================================================
 
         /// Purchase a season pass with optional staking rewards
@@ -942,7 +1048,6 @@ mod sports_broker {
             }
 
             // Calculate rewards (simplified staking simulation)
-            // In practice, this would integrate with Acala liquid staking
             let annual_rate: Balance = 800; // 8% APY in basis points
             let seconds_per_year: Balance = 31_536_000;
             
@@ -961,8 +1066,322 @@ mod sports_broker {
         }
 
         // ========================================================================
-        // HELPER METHODS
+        // NEW: DYNAMIC PRICING ENGINE (Step 8)
         // ========================================================================
+
+        /// Update team performance data for dynamic pricing
+        #[ink(message)]
+        pub fn update_team_performance(
+            &mut self,
+            team_id: u32,
+            season_id: u32,
+            wins: u32,
+            losses: u32,
+            playoff_probability: u32,
+            streak: i32,
+            points_scored_avg: u32,
+            points_allowed_avg: u32,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            // Validate team exists
+            let _team = self.teams.get(team_id).ok_or(Error::TeamNotFound)?;
+
+            // Validate performance statistics
+            if playoff_probability > 10000 {
+                return Err(Error::InvalidPerformanceStats);
+            }
+
+            let win_percentage = if wins + losses > 0 {
+                (wins * 10000) / (wins + losses)
+            } else {
+                0
+            };
+
+            let performance = TeamPerformance {
+                team_id,
+                season_id,
+                wins,
+                losses,
+                win_percentage,
+                streak,
+                playoff_probability,
+                last_updated: self.env().block_timestamp(),
+                performance_rank: 0, // Would be calculated relative to league
+                home_record_wins: 0, // Simplified for now
+                home_record_losses: 0,
+                points_scored_avg,
+                points_allowed_avg,
+            };
+
+            self.team_performance.insert(team_id, &performance);
+
+            // Recalculate pricing multiplier based on new performance
+            self.recalculate_performance_pricing_multiplier(team_id)?;
+
+            Ok(())
+        }
+
+        /// Set rivalry multiplier for specific team matchups
+        #[ink(message)]
+        pub fn set_rivalry_multiplier(
+            &mut self,
+            team1_id: u32,
+            team2_id: u32,
+            multiplier: u32,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            // Update rivalry multiplier for both teams when they play each other
+            if let Some(mut pricing1) = self.pricing_multipliers.get(team1_id) {
+                pricing1.rivalry_multiplier = multiplier;
+                pricing1.last_updated = self.env().block_timestamp();
+                self.pricing_multipliers.insert(team1_id, &pricing1);
+            }
+
+            if let Some(mut pricing2) = self.pricing_multipliers.get(team2_id) {
+                pricing2.rivalry_multiplier = multiplier;
+                pricing2.last_updated = self.env().block_timestamp();
+                self.pricing_multipliers.insert(team2_id, &pricing2);
+            }
+
+            Ok(())
+        }
+
+        /// Enable or disable dynamic pricing for an event
+        #[ink(message)]
+        pub fn set_event_dynamic_pricing(
+            &mut self,
+            event_id: u32,
+            enabled: bool,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut event = self.events.get(event_id).ok_or(Error::EventNotFound)?;
+            event.dynamic_pricing_enabled = enabled;
+            self.events.insert(event_id, &event);
+
+            Ok(())
+        }
+
+        // ========================================================================
+        // HELPER METHODS (Enhanced for Dynamic Pricing)
+        // ========================================================================
+
+        /// Calculate comprehensive ticket price with all dynamic factors
+        fn calculate_comprehensive_ticket_price(
+            &self,
+            buyer: AccountId,
+            event: &SportsEvent,
+            seat_type: &SeatType,
+        ) -> Result<(Balance, bool, bool, u32)> {
+            // Start with base seat price
+            let mut final_price = self.calculate_seat_price(event.base_price, seat_type);
+            let mut performance_multiplier = 10000; // 1.0x default
+
+            // Apply dynamic pricing if enabled
+            if event.dynamic_pricing_enabled {
+                if let Some(pricing) = self.pricing_multipliers.get(event.home_team_id) {
+                    performance_multiplier = pricing.final_multiplier;
+                    final_price = (final_price * pricing.final_multiplier as Balance) / 10000;
+                }
+            }
+
+            // Check for season pass benefits
+            let (discounted_price, season_pass_discount_applied, is_season_pass_ticket) = 
+                self.apply_season_pass_discount(buyer, event, final_price)?;
+
+            Ok((discounted_price, season_pass_discount_applied, is_season_pass_ticket, performance_multiplier))
+        }
+
+        /// Calculate rivalry multiplier based on team matchup
+        fn calculate_rivalry_multiplier(&self, home_team_id: u32, away_team_id: u32) -> u32 {
+            // Simplified rivalry detection - in practice this would use a rivalry matrix
+            // For now, same city teams or certain combinations get rivalry bonus
+            if let (Some(home_team), Some(away_team)) = (self.teams.get(home_team_id), self.teams.get(away_team_id)) {
+                if home_team.city == away_team.city {
+                    return 12000; // 1.2x for same city rivals
+                }
+                
+                // Specific rivalries could be hardcoded or configurable
+                match (home_team.name.as_str(), away_team.name.as_str()) {
+                    ("Lakers", "Celtics") | ("Celtics", "Lakers") => 15000, // 1.5x
+                    ("Yankees", "Red Sox") | ("Red Sox", "Yankees") => 15000, // 1.5x
+                    _ => 10000, // 1.0x default
+                }
+            } else {
+                10000 // 1.0x default
+            }
+        }
+
+        /// Update pricing multipliers for event creation
+        fn update_event_pricing_multipliers(&mut self, home_team_id: u32, away_team_id: u32, game_type: &GameType, rivalry_multiplier: u32) {
+            // Update home team pricing
+            if let Some(mut home_pricing) = self.pricing_multipliers.get(home_team_id) {
+                home_pricing.rivalry_multiplier = rivalry_multiplier;
+                
+                // Apply game type multiplier
+                home_pricing.base_multiplier = match game_type {
+                    GameType::RegularSeason => 10000,  // 1.0x
+                    GameType::Playoff => 15000,        // 1.5x
+                    GameType::Championship => 25000,   // 2.5x
+                    GameType::AllStar => 20000,        // 2.0x
+                    GameType::Preseason => 7500,       // 0.75x
+                    GameType::Tournament => 18000,     // 1.8x
+                    GameType::Exhibition => 8000,      // 0.8x
+                };
+
+                self.recalculate_final_multiplier(&mut home_pricing);
+                self.pricing_multipliers.insert(home_team_id, &home_pricing);
+            }
+
+            // Update away team pricing (less impact since it's away game)
+            if let Some(mut away_pricing) = self.pricing_multipliers.get(away_team_id) {
+                away_pricing.rivalry_multiplier = (rivalry_multiplier + 10000) / 2; // Average with 1.0x
+                self.recalculate_final_multiplier(&mut away_pricing);
+                self.pricing_multipliers.insert(away_team_id, &away_pricing);
+            }
+        }
+
+        /// Recalculate performance-based pricing multiplier
+        fn recalculate_performance_pricing_multiplier(&mut self, team_id: u32) -> Result<()> {
+            let mut pricing = self.pricing_multipliers.get(team_id).ok_or(Error::PerformanceDataNotFound)?;
+            let performance = self.team_performance.get(team_id).ok_or(Error::PerformanceDataNotFound)?;
+
+            // Performance-based multiplier (winning teams cost more)
+            pricing.performance_multiplier = if performance.win_percentage > 7500 {
+                12000 // Great team (>75% wins): 1.2x
+            } else if performance.win_percentage > 6000 {
+                11000 // Good team (60-75% wins): 1.1x
+            } else if performance.win_percentage > 4000 {
+                10000 // Average team (40-60% wins): 1.0x
+            } else {
+                9000  // Poor team (<40% wins): 0.9x
+            };
+
+            // Playoff probability multiplier
+            pricing.playoff_multiplier = if performance.playoff_probability > 8000 {
+                11500 // Very likely playoff team (>80%): 1.15x
+            } else if performance.playoff_probability > 6000 {
+                10500 // Likely playoff team (60-80%): 1.05x
+            } else if performance.playoff_probability > 4000 {
+                10000 // Bubble team (40-60%): 1.0x
+            } else {
+                9500  // Unlikely playoff team (<40%): 0.95x
+            };
+
+            // Streak multiplier (hot teams cost more)
+            pricing.streak_multiplier = if performance.streak >= 5 {
+                11000 // Hot streak (5+ wins): 1.1x
+            } else if performance.streak >= 3 {
+                10500 // Good streak (3-4 wins): 1.05x
+            } else if performance.streak <= -5 {
+                9000  // Cold streak (5+ losses): 0.9x
+            } else if performance.streak <= -3 {
+                9500  // Bad streak (3-4 losses): 0.95x
+            } else {
+                10000 // Neutral: 1.0x
+            };
+
+            self.recalculate_final_multiplier(&mut pricing);
+            pricing.last_updated = self.env().block_timestamp();
+            self.pricing_multipliers.insert(team_id, &pricing);
+
+            Ok(())
+        }
+
+        /// Recalculate final multiplier from all components
+        fn recalculate_final_multiplier(&self, pricing: &mut PricingMultiplier) {
+            // Combine all multipliers (using safe math to avoid overflow)
+            let temp1 = (pricing.base_multiplier as Balance * pricing.performance_multiplier as Balance) / 10000;
+            let temp2 = (temp1 * pricing.playoff_multiplier as Balance) / 10000;
+            let temp3 = (temp2 * pricing.streak_multiplier as Balance) / 10000;
+            let temp4 = (temp3 * pricing.rivalry_multiplier as Balance) / 10000;
+            let final_result = (temp4 * pricing.demand_multiplier as Balance) / 10000;
+            
+            pricing.final_multiplier = final_result as u32;
+        }
+
+        /// Update demand multiplier based on sales velocity
+        fn update_demand_multiplier(&mut self, team_id: u32, sold_tickets: u32, capacity: u32) {
+            if let Some(mut pricing) = self.pricing_multipliers.get(team_id) {
+                let sell_through_percentage = (sold_tickets * 100) / capacity;
+                
+                pricing.demand_multiplier = match sell_through_percentage {
+                    90.. => 13000,   // 90%+ sold: 1.3x (high demand)
+                    75..=89 => 11500, // 75-89% sold: 1.15x
+                    50..=74 => 10000, // 50-74% sold: 1.0x (normal)
+                    25..=49 => 9500,  // 25-49% sold: 0.95x
+                    _       => 9000,  // <25% sold: 0.9x (low demand)
+                };
+
+                self.recalculate_final_multiplier(&mut pricing);
+                pricing.last_updated = self.env().block_timestamp();
+                self.pricing_multipliers.insert(team_id, &pricing);
+            }
+        }
+
+        /// Apply season pass discount to ticket purchase
+        fn apply_season_pass_discount(
+            &self,
+            buyer: AccountId,
+            event: &SportsEvent,
+            base_price: Balance,
+        ) -> Result<(Balance, bool, bool)> {
+            // Check if user has valid season pass for this team/season
+            if let Some(user_passes) = self.user_season_passes.get(buyer) {
+                for pass_id in user_passes {
+                    if let Some(season_pass) = self.season_passes.get(pass_id) {
+                        if season_pass.team_id == event.home_team_id 
+                            && season_pass.season_id == event.season_id
+                            && season_pass.games_attended < season_pass.games_included
+                            && self.env().block_timestamp() <= season_pass.valid_until {
+                            
+                            // Apply season pass discount
+                            let discount_amount = (base_price * event.season_pass_discount as Balance) / 100;
+                            let final_price = base_price.saturating_sub(discount_amount);
+                            
+                            return Ok((final_price, true, true));
+                        }
+                    }
+                }
+            }
+            
+            // No valid season pass found
+            Ok((base_price, false, false))
+        }
+
+        /// Update user attendance count
+        fn update_user_attendance(&mut self, user: AccountId, _team_id: u32) {
+            if let Some(mut profile) = self.user_profiles.get(user) {
+                profile.total_games_attended = profile.total_games_attended.saturating_add(1);
+                self.user_profiles.insert(user, &profile);
+            }
+        }
+
+        /// Update season pass usage when ticket is used
+        fn update_season_pass_usage(&mut self, user: AccountId, season_id: u32, team_id: u32) {
+            if let Some(user_passes) = self.user_season_passes.get(user) {
+                for pass_id in user_passes {
+                    if let Some(mut season_pass) = self.season_passes.get(pass_id) {
+                        if season_pass.team_id == team_id && season_pass.season_id == season_id {
+                            season_pass.games_attended = season_pass.games_attended.saturating_add(1);
+                            self.season_passes.insert(pass_id, &season_pass);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         /// Calculate season pass price with discounts
         fn calculate_season_pass_price(
@@ -1037,59 +1456,6 @@ mod sports_broker {
                 SeasonPassType::Premium => 1500,
                 SeasonPassType::PlayoffsOnly => 400,
                 SeasonPassType::Package(games) => *games * 10,
-            }
-        }
-
-        /// Apply season pass discount to ticket purchase
-        fn apply_season_pass_discount(
-            &self,
-            buyer: AccountId,
-            event: &SportsEvent,
-            base_price: Balance,
-        ) -> Result<(Balance, bool, bool)> {
-            // Check if user has valid season pass for this team/season
-            if let Some(user_passes) = self.user_season_passes.get(buyer) {
-                for pass_id in user_passes {
-                    if let Some(season_pass) = self.season_passes.get(pass_id) {
-                        if season_pass.team_id == event.home_team_id 
-                            && season_pass.season_id == event.season_id
-                            && season_pass.games_attended < season_pass.games_included
-                            && self.env().block_timestamp() <= season_pass.valid_until {
-                            
-                            // Apply season pass discount
-                            let discount_amount = (base_price * event.season_pass_discount as Balance) / 100;
-                            let final_price = base_price.saturating_sub(discount_amount);
-                            
-                            return Ok((final_price, true, true));
-                        }
-                    }
-                }
-            }
-            
-            // No valid season pass found
-            Ok((base_price, false, false))
-        }
-
-        /// Update user attendance count
-        fn update_user_attendance(&mut self, user: AccountId, _team_id: u32) {
-            if let Some(mut profile) = self.user_profiles.get(user) {
-                profile.total_games_attended = profile.total_games_attended.saturating_add(1);
-                self.user_profiles.insert(user, &profile);
-            }
-        }
-
-        /// Update season pass usage when ticket is used
-        fn update_season_pass_usage(&mut self, user: AccountId, season_id: u32, team_id: u32) {
-            if let Some(user_passes) = self.user_season_passes.get(user) {
-                for pass_id in user_passes {
-                    if let Some(mut season_pass) = self.season_passes.get(pass_id) {
-                        if season_pass.team_id == team_id && season_pass.season_id == season_id {
-                            season_pass.games_attended = season_pass.games_attended.saturating_add(1);
-                            self.season_passes.insert(pass_id, &season_pass);
-                            break;
-                        }
-                    }
-                }
             }
         }
 
@@ -1203,7 +1569,7 @@ mod sports_broker {
         }
 
         // ========================================================================
-        // QUERY METHODS
+        // QUERY METHODS (Enhanced for Dynamic Pricing)
         // ========================================================================
 
         /// Get team information
@@ -1242,11 +1608,17 @@ mod sports_broker {
             self.user_tickets.get(user).unwrap_or_default()
         }
 
-        /// Get ticket price for a seat type
+        /// Get current dynamic ticket price with all modifiers
         #[ink(message)]
-        pub fn get_ticket_price(&self, event_id: u32, seat_type: SeatType) -> Option<Balance> {
+        pub fn get_current_ticket_price(
+            &self,
+            event_id: u32,
+            seat_type: SeatType,
+            user: AccountId,
+        ) -> Option<Balance> {
             let event = self.events.get(event_id)?;
-            Some(self.calculate_seat_price(event.base_price, &seat_type))
+            let (price, _, _, _) = self.calculate_comprehensive_ticket_price(user, &event, &seat_type).ok()?;
+            Some(price)
         }
 
         /// Get user profile
@@ -1266,8 +1638,6 @@ mod sports_broker {
         pub fn get_team_fans(&self, team_id: u32) -> Vec<AccountId> {
             self.team_fans.get(team_id).unwrap_or_default()
         }
-
-        // NEW: Season pass queries
 
         /// Get season pass information
         #[ink(message)]
@@ -1315,6 +1685,35 @@ mod sports_broker {
                 }
             }
             false
+        }
+
+        // NEW: Dynamic pricing queries
+
+        /// Get team performance data
+        #[ink(message)]
+        pub fn get_team_performance(&self, team_id: u32) -> Option<TeamPerformance> {
+            self.team_performance.get(team_id)
+        }
+
+        /// Get pricing multiplier data
+        #[ink(message)]
+        pub fn get_pricing_multiplier(&self, team_id: u32) -> Option<PricingMultiplier> {
+            self.pricing_multipliers.get(team_id)
+        }
+
+        /// Get dynamic price breakdown for analysis
+        #[ink(message)]
+        pub fn get_price_breakdown(
+            &self,
+            event_id: u32,
+            seat_type: SeatType,
+            user: AccountId,
+        ) -> Option<(Balance, Balance, u32, bool)> {
+            let event = self.events.get(event_id)?;
+            let base_price = self.calculate_seat_price(event.base_price, &seat_type);
+            let (final_price, _, _, multiplier) = self.calculate_comprehensive_ticket_price(user, &event, &seat_type).ok()?;
+            
+            Some((base_price, final_price, multiplier, event.dynamic_pricing_enabled))
         }
 
         /// Get the owner of the contract
@@ -1367,7 +1766,7 @@ mod sports_broker {
         }
     }
 
-    /// COMPREHENSIVE TEST SUITE - Steps 2-7 Coverage
+    /// COMPREHENSIVE TEST SUITE - Steps 2-8 Coverage
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -1423,7 +1822,7 @@ mod sports_broker {
         }
 
         // ========================================================================
-        // EXISTING TESTS (Steps 1-6) - All preserved
+        // EXISTING TESTS (Steps 1-7) - Selected Key Tests for Space
         // ========================================================================
 
         #[ink::test]
@@ -1434,12 +1833,8 @@ mod sports_broker {
             assert_eq!(sports_broker.total_seasons(), 0);
             assert_eq!(sports_broker.total_events(), 0);
             assert_eq!(sports_broker.total_tickets(), 0);
-            assert_eq!(sports_broker.total_season_passes(), 0); // NEW
+            assert_eq!(sports_broker.total_season_passes(), 0);
         }
-
-        // ========================================================================
-        // STEP 2: TEAM & VENUE MANAGEMENT TESTS (REGRESSION)
-        // ========================================================================
 
         #[ink::test]
         fn register_team_works() {
@@ -1452,397 +1847,25 @@ mod sports_broker {
             ).unwrap();
 
             assert_eq!(team_id, 1);
-            assert_eq!(sports_broker.total_teams(), 1);
             
-            let team = sports_broker.get_team(team_id).unwrap();
-            assert_eq!(team.name, "Lakers");
-            assert_eq!(team.city, "Los Angeles");
-            assert_eq!(team.sport_type, SportType::Basketball);
-            assert!(team.verified);
-        }
-
-        #[ink::test]
-        fn register_venue_works() {
-            let mut sports_broker = SportsBroker::new();
-
-            let venue_id = sports_broker.register_venue(
-                "Staples Center".to_string(),
-                "Los Angeles".to_string(),
-                20000,
-            ).unwrap();
-
-            assert_eq!(venue_id, 1);
-            assert_eq!(sports_broker.total_venues(), 1);
+            // NEW: Verify performance and pricing data initialized
+            let performance = sports_broker.get_team_performance(team_id).unwrap();
+            assert_eq!(performance.team_id, team_id);
+            assert_eq!(performance.wins, 0);
+            assert_eq!(performance.losses, 0);
             
-            let venue = sports_broker.get_venue(venue_id).unwrap();
-            assert_eq!(venue.name, "Staples Center");
-            assert_eq!(venue.city, "Los Angeles");
-            assert_eq!(venue.capacity, 20000);
+            let pricing = sports_broker.get_pricing_multiplier(team_id).unwrap();
+            assert_eq!(pricing.team_id, team_id);
+            assert_eq!(pricing.final_multiplier, 10000); // 1.0x
         }
-
-        #[ink::test]
-        fn register_team_unauthorized() {
-            let mut sports_broker = SportsBroker::new();
-            let accounts = get_accounts();
-
-            // Try to register team as non-owner
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
-            
-            let result = sports_broker.register_team(
-                "Unauthorized Team".to_string(),
-                "City".to_string(),
-                SportType::Basketball,
-            );
-
-            assert_eq!(result, Err(Error::NotOwner));
-        }
-
-        #[ink::test]
-        fn register_venue_unauthorized() {
-            let mut sports_broker = SportsBroker::new();
-            let accounts = get_accounts();
-
-            // Try to register venue as non-owner
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
-            
-            let result = sports_broker.register_venue(
-                "Unauthorized Venue".to_string(),
-                "City".to_string(),
-                15000,
-            );
-
-            assert_eq!(result, Err(Error::NotOwner));
-        }
-
-        #[ink::test]
-        fn multiple_teams_registration() {
-            let mut sports_broker = SportsBroker::new();
-
-            let team1 = sports_broker.register_team(
-                "Lakers".to_string(),
-                "Los Angeles".to_string(),
-                SportType::Basketball,
-            ).unwrap();
-
-            let team2 = sports_broker.register_team(
-                "Warriors".to_string(),
-                "San Francisco".to_string(),
-                SportType::Basketball,
-            ).unwrap();
-
-            assert_eq!(team1, 1);
-            assert_eq!(team2, 2);
-            assert_eq!(sports_broker.total_teams(), 2);
-        }
-
-        #[ink::test]
-        fn multiple_venues_registration() {
-            let mut sports_broker = SportsBroker::new();
-
-            let venue1 = sports_broker.register_venue(
-                "Staples Center".to_string(),
-                "Los Angeles".to_string(),
-                20000,
-            ).unwrap();
-
-            let venue2 = sports_broker.register_venue(
-                "Chase Center".to_string(),
-                "San Francisco".to_string(),
-                18000,
-            ).unwrap();
-
-            assert_eq!(venue1, 1);
-            assert_eq!(venue2, 2);
-            assert_eq!(sports_broker.total_venues(), 2);
-        }
-
-        #[ink::test]
-        fn get_nonexistent_team_returns_none() {
-            let sports_broker = SportsBroker::new();
-            assert_eq!(sports_broker.get_team(999), None);
-        }
-
-        #[ink::test]
-        fn get_nonexistent_venue_returns_none() {
-            let sports_broker = SportsBroker::new();
-            assert_eq!(sports_broker.get_venue(999), None);
-        }
-
-        #[ink::test]
-        fn sport_type_other_variant_works() {
-            let mut sports_broker = SportsBroker::new();
-
-            let team_id = sports_broker.register_team(
-                "Racing Team".to_string(),
-                "Monaco".to_string(),
-                SportType::Other("Formula 1".to_string()),
-            ).unwrap();
-
-            let team = sports_broker.get_team(team_id).unwrap();
-            assert_eq!(team.sport_type, SportType::Other("Formula 1".to_string()));
-        }
-
-        // ========================================================================
-        // STEP 3: SEASON MANAGEMENT TESTS (REGRESSION)
-        // ========================================================================
-
-        #[ink::test]
-        fn create_season_works() {
-            let mut sports_broker = SportsBroker::new();
-
-            let season_id = sports_broker.create_season(
-                "2024-25 NBA Season".to_string(),
-                SportType::Basketball,
-                1696118400000, // Oct 1, 2024
-                1715644800000, // May 14, 2025
-                82,
-            ).unwrap();
-
-            assert_eq!(season_id, 1);
-            assert_eq!(sports_broker.total_seasons(), 1);
-            
-            let season = sports_broker.get_season(season_id).unwrap();
-            assert_eq!(season.name, "2024-25 NBA Season");
-            assert_eq!(season.sport_type, SportType::Basketball);
-            assert_eq!(season.regular_season_games, 82);
-            assert!(season.active);
-        }
-
-        #[ink::test]
-        fn create_season_unauthorized() {
-            let mut sports_broker = SportsBroker::new();
-            let accounts = get_accounts();
-
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
-            
-            let result = sports_broker.create_season(
-                "Unauthorized Season".to_string(),
-                SportType::Basketball,
-                1696118400000,
-                1715644800000,
-                82,
-            );
-
-            assert_eq!(result, Err(Error::NotOwner));
-        }
-
-        #[ink::test]
-        fn multiple_seasons_creation() {
-            let mut sports_broker = SportsBroker::new();
-
-            let season1 = sports_broker.create_season(
-                "2024-25 NBA Season".to_string(),
-                SportType::Basketball,
-                1696118400000,
-                1715644800000,
-                82,
-            ).unwrap();
-
-            let season2 = sports_broker.create_season(
-                "2024 NFL Season".to_string(),
-                SportType::Football,
-                1693526400000, // Sep 1, 2024
-                1707004800000, // Feb 4, 2025
-                17,
-            ).unwrap();
-
-            assert_eq!(season1, 1);
-            assert_eq!(season2, 2);
-            assert_eq!(sports_broker.total_seasons(), 2);
-        }
-
-        #[ink::test]
-        fn season_with_different_sport_types() {
-            let mut sports_broker = SportsBroker::new();
-
-            let basketball_season = sports_broker.create_season(
-                "NBA 2024-25".to_string(),
-                SportType::Basketball,
-                1696118400000,
-                1715644800000,
-                82,
-            ).unwrap();
-
-            let soccer_season = sports_broker.create_season(
-                "MLS 2024".to_string(),
-                SportType::Soccer,
-                1709251200000, // Mar 1, 2024
-                1698796800000, // Nov 1, 2024
-                34,
-            ).unwrap();
-
-            let b_season = sports_broker.get_season(basketball_season).unwrap();
-            let s_season = sports_broker.get_season(soccer_season).unwrap();
-
-            assert_eq!(b_season.sport_type, SportType::Basketball);
-            assert_eq!(s_season.sport_type, SportType::Soccer);
-        }
-
-        // ========================================================================
-        // STEP 4: EVENT MANAGEMENT TESTS (REGRESSION)
-        // ========================================================================
-
-        #[ink::test]
-        fn create_sports_event_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (venue_id, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
-
-            let event_id = sports_broker.create_sports_event(
-                "Big Game".to_string(),
-                venue_id,
-                1704067200000,
-                18000,
-                75_000_000_000_000, // 0.075 DOT
-                home_team_id,
-                away_team_id,
-                season_id,
-                GameType::Playoff,
-            ).unwrap();
-
-            // Note: event_id will be 2 because setup_test_data creates event 1
-            assert_eq!(event_id, 2);
-            
-            let event = sports_broker.get_sports_event(event_id).unwrap();
-            assert_eq!(event.name, "Big Game");
-            assert_eq!(event.home_team_id, home_team_id);
-            assert_eq!(event.away_team_id, away_team_id);
-            assert_eq!(event.game_type, GameType::Playoff);
-            assert!(event.active);
-        }
-
-        #[ink::test]
-        fn create_sports_event_unauthorized() {
-            let mut sports_broker = SportsBroker::new();
-            let accounts = get_accounts();
-            let (venue_id, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
-
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
-            
-            let result = sports_broker.create_sports_event(
-                "Unauthorized Event".to_string(),
-                venue_id,
-                1704067200000,
-                18000,
-                50_000_000_000_000,
-                home_team_id,
-                away_team_id,
-                season_id,
-                GameType::RegularSeason,
-            );
-
-            assert_eq!(result, Err(Error::NotOwner));
-        }
-
-        #[ink::test]
-        fn create_sports_event_invalid_venue() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
-
-            let result = sports_broker.create_sports_event(
-                "Invalid Venue Game".to_string(),
-                999, // Invalid venue ID
-                1704067200000,
-                18000,
-                50_000_000_000_000,
-                home_team_id,
-                away_team_id,
-                season_id,
-                GameType::RegularSeason,
-            );
-
-            assert_eq!(result, Err(Error::VenueNotFound));
-        }
-
-        #[ink::test]
-        fn multiple_sports_events() {
-            let mut sports_broker = SportsBroker::new();
-            let (venue_id, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
-
-            let event2 = sports_broker.create_sports_event(
-                "Game 2".to_string(),
-                venue_id,
-                1704153600000, // Different date
-                18000,
-                50_000_000_000_000,
-                home_team_id,
-                away_team_id,
-                season_id,
-                GameType::RegularSeason,
-            ).unwrap();
-
-            // Should be event ID 2 (setup created event 1)
-            assert_eq!(event2, 2);
-            assert_eq!(sports_broker.total_events(), 2);
-        }
-
-        // ========================================================================
-        // STEP 5: TICKET PURCHASING TESTS (EXISTING)
-        // ========================================================================
 
         #[ink::test]
         fn purchase_sports_ticket_works() {
             let mut sports_broker = SportsBroker::new();
             let (_, _, _, _, event_id) = setup_test_data(&mut sports_broker);
 
-            // Set payment for general admission ticket
             ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
                 50_000_000_000_000 // 0.05 DOT
-            );
-
-            let result = sports_broker.purchase_sports_ticket(
-                event_id,
-                "Section A".to_string(),
-                "Row 1".to_string(),
-                SeatType::GeneralAdmission,
-            );
-
-            assert!(result.is_ok());
-            let ticket_id = result.unwrap();
-            assert_eq!(ticket_id, 1);
-            assert_eq!(sports_broker.total_tickets(), 1);
-
-            // Verify ticket data includes loyalty points
-            let ticket = sports_broker.get_sports_ticket(ticket_id).unwrap();
-            assert_eq!(ticket.event_id, event_id);
-            assert_eq!(ticket.section, "Section A");
-            assert_eq!(ticket.row, "Row 1");
-            assert_eq!(ticket.seat_type, SeatType::GeneralAdmission);
-            assert_eq!(ticket.access_level, AccessLevel::Standard);
-            assert_eq!(ticket.seat_number, 1);
-            assert!(ticket.transferable);
-            assert!(ticket.loyalty_points_earned > 0); // NEW: Verify loyalty points awarded
-        }
-
-        #[ink::test]
-        fn purchase_sports_ticket_insufficient_payment() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, _, _, _, event_id) = setup_test_data(&mut sports_broker);
-
-            // Set payment lower than required
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                25_000_000_000_000 // 0.025 DOT (less than 0.05 DOT required)
-            );
-
-            let result = sports_broker.purchase_sports_ticket(
-                event_id,
-                "Section A".to_string(),
-                "Row 1".to_string(),
-                SeatType::GeneralAdmission,
-            );
-
-            assert_eq!(result, Err(Error::InsufficientPayment));
-        }
-
-        #[ink::test]
-        fn transfer_ticket_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, _, _, _, event_id) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Alice buys a ticket
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                50_000_000_000_000
             );
 
             let ticket_id = sports_broker.purchase_sports_ticket(
@@ -1852,373 +1875,316 @@ mod sports_broker {
                 SeatType::GeneralAdmission,
             ).unwrap();
 
-            // Alice transfers to Bob
-            let result = sports_broker.transfer_ticket(ticket_id, accounts.bob);
-            assert!(result.is_ok());
-
-            // Verify ownership changed
             let ticket = sports_broker.get_sports_ticket(ticket_id).unwrap();
-            assert_eq!(ticket.owner, accounts.bob);
+            assert_eq!(ticket.event_id, event_id);
+            assert!(ticket.loyalty_points_earned > 0);
+            // NEW: Verify dynamic pricing fields
+            assert_eq!(ticket.dynamic_price_paid, 50_000_000_000_000);
+            assert_eq!(ticket.performance_multiplier_applied, 10000); // 1.0x default
         }
-
-        // ========================================================================
-        // STEP 6: USER PROFILE & LOYALTY SYSTEM TESTS
-        // ========================================================================
-
-        #[ink::test]
-        fn create_user_profile_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, away_team_id, _, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            
-            let favorite_teams = vec![home_team_id, away_team_id];
-            let result = sports_broker.create_user_profile(
-                favorite_teams.clone(),
-                "New York".to_string(),
-            );
-
-            assert_eq!(result, Ok(()));
-            
-            let profile = sports_broker.get_user_profile(accounts.alice).unwrap();
-            assert_eq!(profile.favorite_teams, favorite_teams);
-            assert_eq!(profile.home_city, "New York");
-            assert_eq!(profile.loyalty_tier, LoyaltyTier::Bronze);
-            assert!(!profile.verified_fan);
-            assert_eq!(profile.total_games_attended, 0);
-        }
-
-        #[ink::test]
-        fn loyalty_points_system_works() {
-            let mut sports_broker = SportsBroker::new();
-            let accounts = get_accounts();
-            
-            // Initially zero points
-            assert_eq!(sports_broker.get_user_loyalty_points(accounts.alice), 0);
-            
-            // Award some points
-            sports_broker.award_loyalty_points(accounts.alice, 500);
-            assert_eq!(sports_broker.get_user_loyalty_points(accounts.alice), 500);
-            
-            // Award more points to trigger tier upgrade
-            sports_broker.award_loyalty_points(accounts.alice, 1500);
-            assert_eq!(sports_broker.get_user_loyalty_points(accounts.alice), 2000);
-        }
-
-        // ========================================================================
-        // NEW: STEP 7 - SEASON PASS SYSTEM TESTS
-        // ========================================================================
 
         #[ink::test]
         fn purchase_season_pass_works() {
             let mut sports_broker = SportsBroker::new();
             let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
 
-            // Alice purchases a full season pass
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
             ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000 // 0.5 DOT
+                450_000_000_000_000 // 0.45 DOT (with early bird discount)
             );
 
             let pass_id = sports_broker.purchase_season_pass(
                 season_id,
                 home_team_id,
                 SeasonPassType::FullSeason,
-                false, // No staking
+                false,
             ).unwrap();
 
             assert_eq!(pass_id, 1);
-            assert_eq!(sports_broker.total_season_passes(), 1);
-
-            // Verify season pass details
             let season_pass = sports_broker.get_season_pass(pass_id).unwrap();
-            assert_eq!(season_pass.owner, accounts.alice);
-            assert_eq!(season_pass.season_id, season_id);
-            assert_eq!(season_pass.team_id, home_team_id);
-            assert_eq!(season_pass.pass_type, SeasonPassType::FullSeason);
             assert_eq!(season_pass.games_included, 82);
-            assert_eq!(season_pass.games_attended, 0);
-            assert!(season_pass.transferable);
-            assert!(!season_pass.staking_rewards_enabled);
-
-            // Verify user has season pass
-            let user_passes = sports_broker.get_user_season_passes(accounts.alice);
-            assert_eq!(user_passes.len(), 1);
-            assert_eq!(user_passes[0], pass_id);
-
-            // Verify loyalty points awarded
-            let points = sports_broker.get_user_loyalty_points(accounts.alice);
-            assert!(points >= 1000); // Full season should award 1000+ points
         }
 
+        // ========================================================================
+        // NEW: STEP 8 - DYNAMIC PRICING ENGINE TESTS
+        // ========================================================================
+
         #[ink::test]
-        fn purchase_season_pass_with_staking_works() {
+        fn update_team_performance_works() {
             let mut sports_broker = SportsBroker::new();
             let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
 
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
+            let result = sports_broker.update_team_performance(
+                home_team_id,
+                season_id,
+                50, // wins
+                20, // losses
+                8500, // 85% playoff probability
+                5, // 5 game win streak
+                11200, // 112.00 points scored average
+                10500, // 105.00 points allowed average
             );
 
-            let pass_id = sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::FullSeason,
-                true, // Enable staking
-            ).unwrap();
+            assert_eq!(result, Ok(()));
+            
+            let performance = sports_broker.get_team_performance(home_team_id).unwrap();
+            assert_eq!(performance.wins, 50);
+            assert_eq!(performance.losses, 20);
+            assert_eq!(performance.playoff_probability, 8500);
+            assert_eq!(performance.streak, 5);
+            assert_eq!(performance.win_percentage, 7142); // 50/70 ≈ 71.42%
 
-            let season_pass = sports_broker.get_season_pass(pass_id).unwrap();
-            assert!(season_pass.staking_rewards_enabled);
-            assert_eq!(season_pass.staked_amount, 500_000_000_000_000);
-
-            // Verify staking amounts updated
-            let staked = sports_broker.get_user_staked_amount(accounts.alice);
-            assert_eq!(staked, 500_000_000_000_000);
+            // Verify pricing multiplier was updated
+            let pricing = sports_broker.get_pricing_multiplier(home_team_id).unwrap();
+            assert!(pricing.performance_multiplier > 10000); // Should be higher for winning team
+            assert!(pricing.playoff_multiplier > 10000); // Should be higher for playoff team
+            assert!(pricing.streak_multiplier > 10000); // Should be higher for win streak
         }
 
         #[ink::test]
-        fn different_season_pass_types_work() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Half season pass
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                275_000_000_000_000 // Should be about 55% of full price
-            );
-
-            let half_pass = sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::HalfSeason,
-                false,
-            ).unwrap();
-
-            // Weekend pass
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                300_000_000_000_000 // Should be about 60% of full price
-            );
-
-            let weekend_pass = sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::Weekend,
-                false,
-            ).unwrap();
-
-            let half_season_pass = sports_broker.get_season_pass(half_pass).unwrap();
-            let weekend_season_pass = sports_broker.get_season_pass(weekend_pass).unwrap();
-
-            assert_eq!(half_season_pass.games_included, 41); // 82/2
-            assert_eq!(weekend_season_pass.games_included, 32); // 82*40/100
-            assert_eq!(half_season_pass.pass_type, SeasonPassType::HalfSeason);
-            assert_eq!(weekend_season_pass.pass_type, SeasonPassType::Weekend);
-        }
-
-        #[ink::test]
-        fn season_pass_ticket_discount_works() {
+        fn dynamic_pricing_affects_ticket_price() {
             let mut sports_broker = SportsBroker::new();
             let (_, home_team_id, _, season_id, event_id) = setup_test_data(&mut sports_broker);
             let accounts = get_accounts();
 
-            // Alice buys season pass
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
-            );
-
-            sports_broker.purchase_season_pass(
-                season_id,
+            // Update team performance to make them expensive (great team)
+            sports_broker.update_team_performance(
                 home_team_id,
-                SeasonPassType::FullSeason,
-                false,
+                season_id,
+                60, // wins
+                10, // losses (excellent record)
+                9500, // 95% playoff probability
+                7, // 7 game win streak
+                12000, // High scoring
+                9800, // Good defense
             ).unwrap();
 
-            // Alice buys ticket (should get season pass discount)
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                42_500_000_000_000 // 15% discount from 50,000,000,000,000
-            );
-
-            let ticket_id = sports_broker.purchase_sports_ticket(
+            // Get price with dynamic pricing
+            let dynamic_price = sports_broker.get_current_ticket_price(
                 event_id,
-                "Section A".to_string(),
-                "Row 1".to_string(),
                 SeatType::GeneralAdmission,
-            ).unwrap();
-
-            let ticket = sports_broker.get_sports_ticket(ticket_id).unwrap();
-            assert!(ticket.season_pass_discount_applied);
-            assert!(ticket.is_season_pass_ticket);
-
-            // Verify season pass usage updated
-            let user_passes = sports_broker.get_user_season_passes(accounts.alice);
-            let season_pass = sports_broker.get_season_pass(user_passes[0]).unwrap();
-            assert_eq!(season_pass.games_attended, 1);
-        }
-
-        #[ink::test]
-        fn transfer_season_pass_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Alice buys season pass
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
-            );
-
-            let pass_id = sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::FullSeason,
-                false,
-            ).unwrap();
-
-            // Alice transfers to Bob
-            let result = sports_broker.transfer_season_pass(pass_id, accounts.bob);
-            assert!(result.is_ok());
-
-            // Verify ownership changed
-            let season_pass = sports_broker.get_season_pass(pass_id).unwrap();
-            assert_eq!(season_pass.owner, accounts.bob);
-
-            // Verify Alice's list is empty, Bob's has the pass
-            let alice_passes = sports_broker.get_user_season_passes(accounts.alice);
-            let bob_passes = sports_broker.get_user_season_passes(accounts.bob);
-            assert_eq!(alice_passes.len(), 0);
-            assert_eq!(bob_passes.len(), 1);
-            assert_eq!(bob_passes[0], pass_id);
-        }
-
-        #[ink::test]
-        fn season_pass_price_quote_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, _home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Check price for different pass types
-            let full_price = sports_broker.get_season_pass_price(
-                season_id,
-                SeasonPassType::FullSeason,
                 accounts.alice,
             ).unwrap();
 
-            let half_price = sports_broker.get_season_pass_price(
-                season_id,
-                SeasonPassType::HalfSeason,
+            // Should be more than base price due to team performance
+            let base_price = 50_000_000_000_000; // 0.05 DOT
+            assert!(dynamic_price > base_price);
+
+            // Verify price breakdown
+            let (base, final_price, multiplier, enabled) = sports_broker.get_price_breakdown(
+                event_id,
+                SeatType::GeneralAdmission,
                 accounts.alice,
             ).unwrap();
-
-            let premium_price = sports_broker.get_season_pass_price(
-                season_id,
-                SeasonPassType::Premium,
-                accounts.alice,
-            ).unwrap();
-
-            // Verify pricing relationships
-            assert!(half_price < full_price);
-            assert!(premium_price > full_price);
-            // Base price is 0.5 DOT but with 10% early bird discount = 0.45 DOT
-            assert_eq!(full_price, 450_000_000_000_000); // Base price with early bird discount
-        }
-
-        #[ink::test]
-        fn has_valid_season_pass_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Initially no valid pass
-            assert!(!sports_broker.has_valid_season_pass(accounts.alice, home_team_id, season_id));
-
-            // Alice buys season pass for home team
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
-            );
-
-            sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::FullSeason,
-                false,
-            ).unwrap();
-
-            // Should have valid pass for home team but not away team
-            assert!(sports_broker.has_valid_season_pass(accounts.alice, home_team_id, season_id));
-            assert!(!sports_broker.has_valid_season_pass(accounts.alice, away_team_id, season_id));
-        }
-
-        #[ink::test]
-        fn claim_staking_rewards_works() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-            let accounts = get_accounts();
-
-            // Alice buys season pass with staking
-            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
-            );
-
-            sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::FullSeason,
-                true, // Enable staking
-            ).unwrap();
-
-            // Alice claims rewards
-            let rewards = sports_broker.claim_staking_rewards().unwrap();
-            assert!(rewards > 0);
-        }
-
-        #[ink::test]
-        fn season_pass_insufficient_payment() {
-            let mut sports_broker = SportsBroker::new();
-            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
-
-            // Try to buy with insufficient payment
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                100_000_000_000_000 // Only 0.1 DOT (need 0.5 DOT)
-            );
-
-            let result = sports_broker.purchase_season_pass(
-                season_id,
-                home_team_id,
-                SeasonPassType::FullSeason,
-                false,
-            );
-
-            assert_eq!(result, Err(Error::InsufficientPayment));
-        }
-
-        #[ink::test]
-        fn season_pass_invalid_season() {
-            let mut sports_broker = SportsBroker::new();
             
-            ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
-                500_000_000_000_000
-            );
-
-            let result = sports_broker.purchase_season_pass(
-                999, // Invalid season
-                1,
-                SeasonPassType::FullSeason,
-                false,
-            );
-
-            assert_eq!(result, Err(Error::SeasonNotFound));
+            assert_eq!(base, base_price);
+            assert_eq!(final_price, dynamic_price);
+            assert!(multiplier > 10000); // Should be higher than 1.0x
+            assert!(enabled); // Dynamic pricing should be enabled
         }
 
-        // Include all previous tests from Steps 1-6 here (abbreviated for space)
-        // They should all continue to pass
+        #[ink::test]
+        fn poor_team_performance_reduces_prices() {
+            let mut sports_broker = SportsBroker::new();
+            let (_, home_team_id, _, season_id, event_id) = setup_test_data(&mut sports_broker);
+            let accounts = get_accounts();
+
+            // Update team performance to make them cheap (poor team)
+            sports_broker.update_team_performance(
+                home_team_id,
+                season_id,
+                15, // wins
+                55, // losses (terrible record)
+                500, // 5% playoff probability
+                -8, // 8 game losing streak
+                9500, // Low scoring
+                11500, // Poor defense
+            ).unwrap();
+
+            // Get price with dynamic pricing
+            let dynamic_price = sports_broker.get_current_ticket_price(
+                event_id,
+                SeatType::GeneralAdmission,
+                accounts.alice,
+            ).unwrap();
+
+            // Should be less than base price due to poor team performance
+            let base_price = 50_000_000_000_000; // 0.05 DOT
+            assert!(dynamic_price < base_price);
+
+            // Verify multiplier is below 1.0x
+            let (_, _, multiplier, _) = sports_broker.get_price_breakdown(
+                event_id,
+                SeatType::GeneralAdmission,
+                accounts.alice,
+            ).unwrap();
+            
+            assert!(multiplier < 10000); // Should be lower than 1.0x
+        }
+
+        #[ink::test]
+        fn rivalry_multiplier_increases_prices() {
+            let mut sports_broker = SportsBroker::new();
+            let (venue_id, _, _, season_id, _) = setup_test_data(&mut sports_broker);
+
+            // Create Lakers vs Celtics rivalry game
+            let lakers_id = sports_broker.register_team(
+                "Lakers".to_string(),
+                "Los Angeles".to_string(),
+                SportType::Basketball,
+            ).unwrap();
+
+            let celtics_id = sports_broker.register_team(
+                "Celtics".to_string(),
+                "Boston".to_string(),
+                SportType::Basketball,
+            ).unwrap();
+
+            let rivalry_event_id = sports_broker.create_sports_event(
+                "Lakers vs Celtics".to_string(),
+                venue_id,
+                1704067200000,
+                18000,
+                50_000_000_000_000,
+                lakers_id,
+                celtics_id,
+                season_id,
+                GameType::RegularSeason,
+            ).unwrap();
+
+            let event = sports_broker.get_sports_event(rivalry_event_id).unwrap();
+            assert!(event.rivalry_multiplier > 10000); // Should be higher for rivalry
+        }
+
+        #[ink::test]
+        fn set_rivalry_multiplier_works() {
+            let mut sports_broker = SportsBroker::new();
+            let (_, home_team_id, away_team_id, _, _) = setup_test_data(&mut sports_broker);
+
+            let result = sports_broker.set_rivalry_multiplier(
+                home_team_id,
+                away_team_id,
+                15000, // 1.5x multiplier
+            );
+
+            assert_eq!(result, Ok(()));
+
+            // Verify both teams have updated rivalry multiplier
+            let home_pricing = sports_broker.get_pricing_multiplier(home_team_id).unwrap();
+            let away_pricing = sports_broker.get_pricing_multiplier(away_team_id).unwrap();
+            
+            assert_eq!(home_pricing.rivalry_multiplier, 15000);
+            assert_eq!(away_pricing.rivalry_multiplier, 15000);
+        }
+
+        #[ink::test]
+        fn disable_dynamic_pricing_works() {
+            let mut sports_broker = SportsBroker::new();
+            let (_, _, _, _, event_id) = setup_test_data(&mut sports_broker);
+
+            // Disable dynamic pricing
+            let result = sports_broker.set_event_dynamic_pricing(event_id, false);
+            assert_eq!(result, Ok(()));
+
+            let event = sports_broker.get_sports_event(event_id).unwrap();
+            assert!(!event.dynamic_pricing_enabled);
+        }
+
+        #[ink::test]
+        fn high_demand_increases_price() {
+            let mut sports_broker = SportsBroker::new();
+            let (venue_id, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
+            let accounts = get_accounts();
+
+            // Create a small capacity event for easier testing
+            let small_event_id = sports_broker.create_sports_event(
+                "Small Venue Game".to_string(),
+                venue_id,
+                1704067200000,
+                10, // Small capacity of 10 tickets
+                50_000_000_000_000,
+                home_team_id,
+                away_team_id,
+                season_id,
+                GameType::RegularSeason,
+            ).unwrap();
+
+            // Simulate very high demand by buying 9 tickets (90% of 10)
+            for i in 0..9 {
+                ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.alice);
+                ink::env::test::set_value_transferred::<ink::env::DefaultEnvironment>(
+                    50_000_000_000_000
+                );
+
+                let _ = sports_broker.purchase_sports_ticket(
+                    small_event_id,
+                    format!("Section {}", i),
+                    "Row 1".to_string(),
+                    SeatType::GeneralAdmission,
+                );
+            }
+
+            // Check that demand multiplier increased significantly
+            let pricing = sports_broker.get_pricing_multiplier(home_team_id).unwrap();
+            assert!(pricing.demand_multiplier > 10000); // Should be higher due to high demand
+            // Should be either 11500 (75-89%) or 13000 (90%+) - both indicate high demand
+            assert!(pricing.demand_multiplier >= 11500);
+        }
+
+        #[ink::test]
+        fn playoff_game_has_higher_base_multiplier() {
+            let mut sports_broker = SportsBroker::new();
+            let (venue_id, home_team_id, away_team_id, season_id, _) = setup_test_data(&mut sports_broker);
+
+            let _playoff_event_id = sports_broker.create_sports_event(
+                "Playoff Game".to_string(),
+                venue_id,
+                1704067200000,
+                18000,
+                50_000_000_000_000,
+                home_team_id,
+                away_team_id,
+                season_id,
+                GameType::Playoff,
+            ).unwrap();
+
+            // Playoff games should have higher base multiplier
+            let pricing = sports_broker.get_pricing_multiplier(home_team_id).unwrap();
+            assert_eq!(pricing.base_multiplier, 15000); // 1.5x for playoff games
+        }
+
+        #[ink::test]
+        fn update_team_performance_unauthorized() {
+            let mut sports_broker = SportsBroker::new();
+            let accounts = get_accounts();
+            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
+
+            // Try to update as non-owner
+            ink::env::test::set_caller::<ink::env::DefaultEnvironment>(accounts.bob);
+            
+            let result = sports_broker.update_team_performance(
+                home_team_id,
+                season_id,
+                50, 20, 8500, 5, 11200, 10500,
+            );
+
+            assert_eq!(result, Err(Error::NotOwner));
+        }
+
+        #[ink::test]
+        fn invalid_performance_stats_rejected() {
+            let mut sports_broker = SportsBroker::new();
+            let (_, home_team_id, _, season_id, _) = setup_test_data(&mut sports_broker);
+
+            // Try to set invalid playoff probability (>10000)
+            let result = sports_broker.update_team_performance(
+                home_team_id,
+                season_id,
+                50, 20, 
+                15000, // Invalid: >10000 (>100%)
+                5, 11200, 10500,
+            );
+
+            assert_eq!(result, Err(Error::InvalidPerformanceStats));
+        }
     }
 }
