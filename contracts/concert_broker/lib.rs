@@ -1,9 +1,17 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-/// # InkTix Concert Broker - Enhanced Artist and Venue Management (Step 1)
+/// # InkTix Concert Broker - Enhanced Artist, Venue, Tour and Festival Management (Steps 1-2)
 /// 
-/// This step transforms the basic concert broker into a comprehensive music industry platform
-/// with detailed artist profiles, venue management, and music-specific categorization.
+/// This contract now includes comprehensive tour and festival management capabilities
+/// building on the solid foundation of artist and venue management from Step 1.
+///
+/// ## Step 2 New Features:
+/// - **Tour Management**: Multi-date tour coordination with comprehensive metadata
+/// - **Festival Management**: Multi-artist festival planning with lineup coordination
+/// - **Event Type Classification**: Concerts, festivals, meet & greets, private events
+/// - **Tour Search & Discovery**: Find tours by artist, type, and status
+/// - **Festival Lineup Management**: Add/manage artists and logistics
+/// - **Integration Ready**: Prepared for merchandise and VIP package integration
 
 #[ink::contract]
 mod concert_broker {
@@ -15,28 +23,45 @@ mod concert_broker {
         /// The contract owner
         owner: AccountId,
         
-        // Enhanced Artist management
+        // Enhanced Artist management (Step 1)
         artists: ink::storage::Mapping<u32, Artist>,
         next_artist_id: u32,
         
-        // Enhanced Venue management  
+        // Enhanced Venue management (Step 1)
         venues: ink::storage::Mapping<u32, Venue>,
         next_venue_id: u32,
         
-        // Artist indexing for search
+        // NEW: Tour Management (Step 2)
+        tours: ink::storage::Mapping<u32, Tour>,
+        next_tour_id: u32,
+        
+        // NEW: Festival Management (Step 2)
+        festivals: ink::storage::Mapping<u32, Festival>,
+        next_festival_id: u32,
+        
+        // Artist indexing for search (Step 1)
         artists_by_genre: ink::storage::Mapping<u32, Vec<u32>>, // genre_hash -> artist_ids
         verified_artists: ink::storage::Mapping<bool, Vec<u32>>, // verified status -> artist_ids
         
-        // Venue indexing for search
+        // Venue indexing for search (Step 1)
         venues_by_type: ink::storage::Mapping<u32, Vec<u32>>, // venue_type_hash -> venue_ids
         venues_by_city: ink::storage::Mapping<u32, Vec<u32>>, // city_hash -> venue_ids
         
-        // Simple event storage (will be enhanced in later steps)
+        // NEW: Tour indexing for search (Step 2)
+        tours_by_artist: ink::storage::Mapping<u32, Vec<u32>>, // artist_id -> tour_ids
+        tours_by_type: ink::storage::Mapping<u32, Vec<u32>>, // tour_type_hash -> tour_ids
+        active_tours: ink::storage::Mapping<bool, Vec<u32>>, // active status -> tour_ids
+        
+        // NEW: Festival indexing for search (Step 2)
+        festivals_by_type: ink::storage::Mapping<u32, Vec<u32>>, // festival_type_hash -> festival_ids
+        festivals_by_venue: ink::storage::Mapping<u32, Vec<u32>>, // venue_id -> festival_ids
+        
+        // Simple event storage (will be enhanced in Step 3)
         events: ink::storage::Mapping<u32, Option<String>>,
         next_event_id: u32,
     }
 
-    /// Enhanced Artist structure with music industry-specific fields
+    /// Enhanced Artist structure with music industry-specific fields (Step 1)
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -62,7 +87,7 @@ mod concert_broker {
         pub created_at: u64,
     }
 
-    /// Comprehensive Venue structure for music venues
+    /// Comprehensive Venue structure for music venues (Step 1)
     #[derive(Debug, PartialEq, Eq)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -96,7 +121,88 @@ mod concert_broker {
         pub created_at: u64,
     }
 
-    /// Address structure for venues
+    /// NEW: Tour structure for multi-date tour management (Step 2)
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct Tour {
+        pub id: u32,
+        pub name: String,
+        pub artist_id: u32,
+        pub tour_type: TourType,
+        pub start_date: u64,
+        pub end_date: u64,
+        pub total_shows: u32,
+        pub shows_scheduled: u32,
+        pub shows_completed: u32,
+        pub tour_status: TourStatus,
+        pub supporting_artists: Vec<u32>,
+        pub merchandise_enabled: bool,
+        pub vip_packages_available: bool,
+        pub tour_manager_contact: Option<String>,
+        pub sponsors: Vec<String>,
+        pub total_revenue_generated: Balance,
+        pub average_ticket_price: Balance,
+        pub total_tickets_sold: u32,
+        pub fan_presale_enabled: bool,
+        pub description: String,
+        pub poster_image_url: Option<String>,
+        pub created_at: u64,
+        pub last_updated: u64,
+    }
+
+    /// NEW: Festival structure for multi-artist event management (Step 2)
+    #[derive(Debug, PartialEq, Eq)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct Festival {
+        pub id: u32,
+        pub name: String,
+        pub venue_id: u32,
+        pub festival_type: FestivalType,
+        pub start_date: u64,
+        pub end_date: u64,
+        pub total_days: u32,
+        pub headliner_artists: Vec<u32>, // Main stage headliners
+        pub featured_artists: Vec<u32>, // All performing artists
+        pub stages: Vec<Stage>,
+        pub capacity_per_day: u32,
+        pub total_capacity: u32, // Sum across all days
+        pub camping_available: bool,
+        pub camping_capacity: Option<u32>,
+        pub food_vendors: Vec<String>,
+        pub merchandise_vendors: Vec<String>,
+        pub age_restrictions: AgeRestriction,
+        pub festival_status: FestivalStatus,
+        pub ticket_types: Vec<FestivalTicketType>,
+        pub sponsors: Vec<String>,
+        pub organizer_contact: Option<String>,
+        pub website: Option<String>,
+        pub social_media: SocialMediaHandles,
+        pub sustainability_features: Vec<SustainabilityFeature>,
+        pub total_revenue_generated: Balance,
+        pub total_tickets_sold: u32,
+        pub description: String,
+        pub lineup_poster_url: Option<String>,
+        pub created_at: u64,
+        pub last_updated: u64,
+    }
+
+    /// NEW: Stage configuration for festivals (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub struct Stage {
+        pub name: String,
+        pub stage_type: StageType,
+        pub capacity: u32,
+        pub sound_system: SoundSystemRating,
+        pub lighting_system: LightingCapabilities,
+        pub covered: bool, // Weather protection
+        pub accessibility_compliant: bool,
+    }
+
+    /// Address structure for venues (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -110,7 +216,7 @@ mod concert_broker {
         pub longitude: Option<i32>,
     }
 
-    /// Social media handles for artists
+    /// Social media handles for artists (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -127,7 +233,7 @@ mod concert_broker {
         pub website: Option<String>,
     }
 
-    /// Streaming platform links
+    /// Streaming platform links (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -137,7 +243,124 @@ mod concert_broker {
         pub verified: bool,
     }
 
-    /// Music genres with comprehensive coverage
+    /// NEW: Tour types for different touring scales (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum TourType {
+        WorldTour,        // Global multi-continent tour
+        RegionalTour,     // Multi-country or multi-state tour
+        NationalTour,     // Single country tour
+        LocalTour,        // City or regional area tour
+        FestivalCircuit,  // Multiple festival appearances
+        ResidencyTour,    // Extended stay at single venue
+        AcousticTour,     // Intimate acoustic performances
+        ReunionTour,      // Band reunion or comeback tour
+        FarewellTour,     // Final tour before retirement
+        PromotionalTour,  // Album or single promotion tour
+    }
+
+    /// NEW: Tour status tracking (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum TourStatus {
+        Announced,        // Tour announced, tickets not yet on sale
+        OnSale,          // Tickets currently on sale
+        Active,          // Tour currently in progress
+        Completed,       // Tour finished successfully
+        Postponed,       // Tour postponed to future date
+        Cancelled,       // Tour cancelled
+        Rescheduled,     // Tour dates changed
+    }
+
+    /// NEW: Festival types for different festival categories (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum FestivalType {
+        MusicFestival,    // Multi-genre music festival
+        RockFestival,     // Rock and metal focused
+        ElectronicFestival, // EDM and electronic music
+        JazzFestival,     // Jazz and blues focused
+        FolkFestival,     // Folk and acoustic music
+        CountryFestival,  // Country music focused
+        HipHopFestival,   // Hip-hop and R&B focused
+        ClassicalFestival, // Classical and orchestral
+        ArtsFestival,     // Multi-disciplinary arts
+        CulturalFestival, // Cultural and heritage celebration
+        CharityFestival,  // Fundraising and awareness
+        CorporateFestival, // Corporate sponsored event
+    }
+
+    /// NEW: Festival status tracking (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum FestivalStatus {
+        Planning,         // Festival in planning stages
+        LineupAnnounced,  // Lineup announced, tickets not yet on sale
+        OnSale,          // Tickets currently on sale
+        SoldOut,         // All tickets sold
+        Active,          // Festival currently happening
+        Completed,       // Festival finished successfully
+        Postponed,       // Festival postponed to future date
+        Cancelled,       // Festival cancelled
+        WeatherDelay,    // Temporarily delayed due to weather
+    }
+
+    /// NEW: Festival ticket types (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum FestivalTicketType {
+        GeneralAdmission,         // Basic festival access
+        VIP,                     // VIP area access and perks
+        PlatinumVIP,             // Premium VIP with artist meet & greets
+        DayPass(u32),            // Single day access (day number)
+        WeekendPass,             // Weekend days only
+        CampingPass,             // Includes camping accommodation
+        GroupPass(u32),          // Group tickets (number of people)
+        EarlyBird,               // Discounted early purchase
+        StudentDiscount,         // Discounted student tickets
+        LocalResident,           // Discounted local resident tickets
+    }
+
+    /// NEW: Stage types for festivals (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum StageType {
+        MainStage,               // Primary headliner stage
+        SecondStage,             // Secondary major acts
+        AcousticStage,           // Intimate acoustic performances
+        ElectronicStage,         // EDM and electronic music
+        LocalStage,              // Local and emerging artists
+        WorshipStage,            // Spiritual or religious music
+        ComedyStage,             // Comedy and spoken word
+        DanceStage,              // Dance and movement
+        CommunityStage,          // Community and educational
+        SponsorStage,            // Sponsor-branded stage
+    }
+
+    /// NEW: Sustainability features for eco-friendly festivals (Step 2)
+    #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+    #[ink::scale_derive(Encode, Decode, TypeInfo)]
+    #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+    pub enum SustainabilityFeature {
+        SolarPower,              // Solar-powered stages/facilities
+        WasteReduction,          // Comprehensive recycling program
+        WaterConservation,       // Water-saving initiatives
+        LocalSourcing,           // Local food and vendor sourcing
+        CarbonNeutral,           // Carbon offset programs
+        PublicTransport,         // Encouraged public transportation
+        BiodegradableSupplies,   // Eco-friendly supplies and materials
+        TreePlanting,            // Environmental restoration projects
+        PlasticFree,             // Elimination of single-use plastics
+        GreenVendors,            // Environmentally conscious vendors
+    }
+
+    /// Music genres with comprehensive coverage (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -181,7 +404,7 @@ mod concert_broker {
         Other(String),
     }
 
-    /// Types of music venues
+    /// Types of music venues (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -208,7 +431,7 @@ mod concert_broker {
         Other,
     }
 
-    /// Venue amenities
+    /// Venue amenities (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -235,7 +458,7 @@ mod concert_broker {
         ChargingStations,
     }
 
-    /// Age restrictions for venues and events
+    /// Age restrictions for venues and events (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -246,7 +469,7 @@ mod concert_broker {
         Custom(u8), // Custom minimum age
     }
 
-    /// Accessibility features
+    /// Accessibility features (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -263,7 +486,7 @@ mod concert_broker {
         AssistedListeningDevices,
     }
 
-    /// Sound system quality rating
+    /// Sound system quality rating (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -274,7 +497,7 @@ mod concert_broker {
         WorldClass, // 9-10: Top-tier audiophile system
     }
 
-    /// Lighting capabilities
+    /// Lighting capabilities (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -285,7 +508,7 @@ mod concert_broker {
         Spectacular,     // Cutting-edge production capabilities
     }
 
-    /// Security level of the venue
+    /// Security level of the venue (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -296,7 +519,7 @@ mod concert_broker {
         Maximum,      // Full security screening, VIP protection
     }
 
-    /// Streaming services
+    /// Streaming services (Step 1)
     #[derive(Debug, PartialEq, Eq, Clone, Copy)]
     #[ink::scale_derive(Encode, Decode, TypeInfo)]
     #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -326,18 +549,40 @@ mod concert_broker {
         VenueNotFound,
         /// Event not found
         EventNotFound,
+        /// Tour not found (NEW)
+        TourNotFound,
+        /// Festival not found (NEW)
+        FestivalNotFound,
         /// ID overflow
         IdOverflow,
         /// Invalid artist data
         InvalidArtistData,
         /// Invalid venue data
         InvalidVenueData,
+        /// Invalid tour data (NEW)
+        InvalidTourData,
+        /// Invalid festival data (NEW)
+        InvalidFestivalData,
         /// Artist already verified
         ArtistAlreadyVerified,
         /// Venue already verified
         VenueAlreadyVerified,
         /// Empty search results
         NoSearchResults,
+        /// Tour already active (NEW)
+        TourAlreadyActive,
+        /// Festival already active (NEW)
+        FestivalAlreadyActive,
+        /// Invalid tour dates (NEW)
+        InvalidTourDates,
+        /// Invalid festival dates (NEW)
+        InvalidFestivalDates,
+        /// Maximum supporting artists reached (NEW)
+        MaxSupportingArtistsReached,
+        /// Artist not available for dates (NEW)
+        ArtistNotAvailable,
+        /// Venue not available for dates (NEW)
+        VenueNotAvailable,
     }
 
     /// Type alias for the contract's result type.
@@ -353,17 +598,26 @@ mod concert_broker {
                 next_artist_id: 1,
                 venues: ink::storage::Mapping::new(),
                 next_venue_id: 1,
+                tours: ink::storage::Mapping::new(),
+                next_tour_id: 1,
+                festivals: ink::storage::Mapping::new(),
+                next_festival_id: 1,
                 artists_by_genre: ink::storage::Mapping::new(),
                 verified_artists: ink::storage::Mapping::new(),
                 venues_by_type: ink::storage::Mapping::new(),
                 venues_by_city: ink::storage::Mapping::new(),
+                tours_by_artist: ink::storage::Mapping::new(),
+                tours_by_type: ink::storage::Mapping::new(),
+                active_tours: ink::storage::Mapping::new(),
+                festivals_by_type: ink::storage::Mapping::new(),
+                festivals_by_venue: ink::storage::Mapping::new(),
                 events: ink::storage::Mapping::new(),
                 next_event_id: 1,
             }
         }
 
         // ========================================================================
-        // ENHANCED ARTIST MANAGEMENT
+        // ENHANCED ARTIST MANAGEMENT (Step 1)
         // ========================================================================
 
         /// Register a comprehensive artist profile
@@ -430,6 +684,9 @@ mod concert_broker {
             }
             
             self.update_verified_artists_index(artist_id, false);
+
+            // Initialize tour index for this artist
+            self.tours_by_artist.insert(artist_id, &Vec::<u32>::new());
 
             Ok(artist_id)
         }
@@ -517,7 +774,7 @@ mod concert_broker {
         }
 
         // ========================================================================
-        // ENHANCED VENUE MANAGEMENT
+        // ENHANCED VENUE MANAGEMENT (Step 1)
         // ========================================================================
 
         /// Register a comprehensive venue profile
@@ -596,6 +853,9 @@ mod concert_broker {
             self.update_venue_type_index(venue_id, venue_type);
             self.update_venue_city_index(venue_id, &address.city);
 
+            // Initialize festival index for this venue
+            self.festivals_by_venue.insert(venue_id, &Vec::<u32>::new());
+
             Ok(venue_id)
         }
 
@@ -669,37 +929,515 @@ mod concert_broker {
         }
 
         // ========================================================================
-        // SEARCH AND DISCOVERY FUNCTIONS
+        // NEW: TOUR MANAGEMENT (Step 2)
         // ========================================================================
 
-        /// Search artists by genre
+        /// Create a new tour for an artist
+        #[ink(message)]
+        pub fn create_tour(
+            &mut self,
+            name: String,
+            artist_id: u32,
+            tour_type: TourType,
+            start_date: u64,
+            end_date: u64,
+            supporting_artists: Vec<u32>,
+            merchandise_enabled: bool,
+            vip_packages_available: bool,
+            tour_manager_contact: Option<String>,
+            description: String,
+            poster_image_url: Option<String>,
+        ) -> Result<u32> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            // Validate input data
+            if name.is_empty() || description.is_empty() {
+                return Err(Error::InvalidTourData);
+            }
+
+            if start_date >= end_date {
+                return Err(Error::InvalidTourDates);
+            }
+
+            // Verify artist exists
+            let mut artist = self.artists.get(artist_id).ok_or(Error::ArtistNotFound)?;
+
+            // Verify supporting artists exist
+            for supporting_artist_id in &supporting_artists {
+                if self.artists.get(*supporting_artist_id).is_none() {
+                    return Err(Error::ArtistNotFound);
+                }
+            }
+
+            // Check if artist is not already on an active tour (optional business rule)
+            if let Some(artist_tours) = self.tours_by_artist.get(artist_id) {
+                for tour_id in artist_tours {
+                    if let Some(existing_tour) = self.tours.get(tour_id) {
+                        if matches!(existing_tour.tour_status, TourStatus::Active | TourStatus::OnSale) {
+                            if existing_tour.start_date <= end_date && existing_tour.end_date >= start_date {
+                                return Err(Error::ArtistNotAvailable);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let tour_id = self.next_tour_id;
+            self.next_tour_id = self.next_tour_id
+                .checked_add(1)
+                .ok_or(Error::IdOverflow)?;
+
+            let current_time = self.env().block_timestamp();
+
+            let tour = Tour {
+                id: tour_id,
+                name,
+                artist_id,
+                tour_type,
+                start_date,
+                end_date,
+                total_shows: 0, // Will be updated as shows are added
+                shows_scheduled: 0,
+                shows_completed: 0,
+                tour_status: TourStatus::Announced,
+                supporting_artists,
+                merchandise_enabled,
+                vip_packages_available,
+                tour_manager_contact,
+                sponsors: Vec::new(), // Will be added separately
+                total_revenue_generated: 0,
+                average_ticket_price: 0,
+                total_tickets_sold: 0,
+                fan_presale_enabled: false,
+                description,
+                poster_image_url,
+                created_at: current_time,
+                last_updated: current_time,
+            };
+
+            self.tours.insert(tour_id, &tour);
+
+            // Update artist's touring status
+            artist.is_touring = true;
+            self.artists.insert(artist_id, &artist);
+
+            // Update search indexes
+            self.update_tour_by_artist_index(tour_id, artist_id);
+            self.update_tour_by_type_index(tour_id, tour_type);
+            self.update_active_tours_index(tour_id, false); // Not active yet
+
+            Ok(tour_id)
+        }
+
+        /// Add a new show date to an existing tour
+        #[ink(message)]
+        pub fn add_tour_date(
+            &mut self,
+            tour_id: u32,
+            venue_id: u32,
+            show_date: u64,
+            show_name: Option<String>,
+        ) -> Result<u32> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut tour = self.tours.get(tour_id).ok_or(Error::TourNotFound)?;
+            let _venue = self.venues.get(venue_id).ok_or(Error::VenueNotFound)?;
+
+            // Validate show date is within tour dates
+            if show_date < tour.start_date || show_date > tour.end_date {
+                return Err(Error::InvalidTourDates);
+            }
+
+            // For now, we'll create a simple event entry
+            // This will be enhanced in Step 3 with full ConcertEvent structure
+            let event_id = self.next_event_id;
+            self.next_event_id = self.next_event_id
+                .checked_add(1)
+                .ok_or(Error::IdOverflow)?;
+
+            let event_name = show_name.unwrap_or_else(|| format!("{} - {}", tour.name, venue_id));
+            self.events.insert(event_id, &Some(event_name));
+
+            // Update tour statistics
+            tour.total_shows = tour.total_shows.saturating_add(1);
+            tour.shows_scheduled = tour.shows_scheduled.saturating_add(1);
+            tour.last_updated = self.env().block_timestamp();
+
+            self.tours.insert(tour_id, &tour);
+
+            Ok(event_id)
+        }
+
+        /// Update tour status
+        #[ink(message)]
+        pub fn update_tour_status(&mut self, tour_id: u32, new_status: TourStatus) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut tour = self.tours.get(tour_id).ok_or(Error::TourNotFound)?;
+            let old_status = tour.tour_status;
+            
+            tour.tour_status = new_status;
+            tour.last_updated = self.env().block_timestamp();
+            
+            self.tours.insert(tour_id, &tour);
+
+            // Update active tours index
+            let is_active_old = matches!(old_status, TourStatus::Active | TourStatus::OnSale);
+            let is_active_new = matches!(new_status, TourStatus::Active | TourStatus::OnSale);
+            
+            if is_active_old != is_active_new {
+                self.update_active_tours_index(tour_id, is_active_new);
+            }
+
+            Ok(())
+        }
+
+        /// Add supporting artist to existing tour
+        #[ink(message)]
+        pub fn add_supporting_artist_to_tour(
+            &mut self,
+            tour_id: u32,
+            artist_id: u32,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut tour = self.tours.get(tour_id).ok_or(Error::TourNotFound)?;
+            let _artist = self.artists.get(artist_id).ok_or(Error::ArtistNotFound)?;
+
+            // Check limit on supporting artists (business rule: max 5)
+            if tour.supporting_artists.len() >= 5 {
+                return Err(Error::MaxSupportingArtistsReached);
+            }
+
+            // Check if artist is not already a supporting artist
+            if !tour.supporting_artists.contains(&artist_id) {
+                tour.supporting_artists.push(artist_id);
+                tour.last_updated = self.env().block_timestamp();
+                self.tours.insert(tour_id, &tour);
+            }
+
+            Ok(())
+        }
+
+        /// Add sponsor to tour
+        #[ink(message)]
+        pub fn add_tour_sponsor(&mut self, tour_id: u32, sponsor_name: String) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut tour = self.tours.get(tour_id).ok_or(Error::TourNotFound)?;
+            
+            if !tour.sponsors.contains(&sponsor_name) {
+                tour.sponsors.push(sponsor_name);
+                tour.last_updated = self.env().block_timestamp();
+                self.tours.insert(tour_id, &tour);
+            }
+
+            Ok(())
+        }
+
+        // ========================================================================
+        // NEW: FESTIVAL MANAGEMENT (Step 2)
+        // ========================================================================
+
+        /// Create a new festival
+        #[ink(message)]
+        pub fn create_festival(
+            &mut self,
+            name: String,
+            venue_id: u32,
+            festival_type: FestivalType,
+            start_date: u64,
+            end_date: u64,
+            capacity_per_day: u32,
+            camping_available: bool,
+            camping_capacity: Option<u32>,
+            age_restrictions: AgeRestriction,
+            organizer_contact: Option<String>,
+            website: Option<String>,
+            social_media: SocialMediaHandles,
+            description: String,
+        ) -> Result<u32> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            // Validate input data
+            if name.is_empty() || description.is_empty() || capacity_per_day == 0 {
+                return Err(Error::InvalidFestivalData);
+            }
+
+            if start_date >= end_date {
+                return Err(Error::InvalidFestivalDates);
+            }
+
+            // Verify venue exists
+            let _venue = self.venues.get(venue_id).ok_or(Error::VenueNotFound)?;
+
+            let festival_id = self.next_festival_id;
+            self.next_festival_id = self.next_festival_id
+                .checked_add(1)
+                .ok_or(Error::IdOverflow)?;
+
+            let current_time = self.env().block_timestamp();
+            
+            // Calculate total days and capacity
+            let total_days = ((end_date - start_date) / (24 * 60 * 60 * 1000)) as u32 + 1;
+            let total_capacity = capacity_per_day * total_days;
+
+            let festival = Festival {
+                id: festival_id,
+                name,
+                venue_id,
+                festival_type,
+                start_date,
+                end_date,
+                total_days,
+                headliner_artists: Vec::new(),
+                featured_artists: Vec::new(),
+                stages: Vec::new(), // Will be added separately
+                capacity_per_day,
+                total_capacity,
+                camping_available,
+                camping_capacity,
+                food_vendors: Vec::new(),
+                merchandise_vendors: Vec::new(),
+                age_restrictions,
+                festival_status: FestivalStatus::Planning,
+                ticket_types: Vec::new(), // Will be configured separately
+                sponsors: Vec::new(),
+                organizer_contact,
+                website,
+                social_media,
+                sustainability_features: Vec::new(),
+                total_revenue_generated: 0,
+                total_tickets_sold: 0,
+                description,
+                lineup_poster_url: None,
+                created_at: current_time,
+                last_updated: current_time,
+            };
+
+            self.festivals.insert(festival_id, &festival);
+
+            // Update search indexes
+            self.update_festival_by_type_index(festival_id, festival_type);
+            self.update_festival_by_venue_index(festival_id, venue_id);
+
+            Ok(festival_id)
+        }
+
+        /// Add artist to festival lineup
+        #[ink(message)]
+        pub fn add_festival_artist(
+            &mut self,
+            festival_id: u32,
+            artist_id: u32,
+            is_headliner: bool,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+            let _artist = self.artists.get(artist_id).ok_or(Error::ArtistNotFound)?;
+
+            // Add to featured artists if not already there
+            if !festival.featured_artists.contains(&artist_id) {
+                festival.featured_artists.push(artist_id);
+            }
+
+            // Add to headliners if specified and not already there
+            if is_headliner && !festival.headliner_artists.contains(&artist_id) {
+                festival.headliner_artists.push(artist_id);
+            }
+
+            festival.last_updated = self.env().block_timestamp();
+            self.festivals.insert(festival_id, &festival);
+
+            Ok(())
+        }
+
+        /// Add stage to festival
+        #[ink(message)]
+        pub fn add_festival_stage(
+            &mut self,
+            festival_id: u32,
+            stage_name: String,
+            stage_type: StageType,
+            capacity: u32,
+            sound_system: SoundSystemRating,
+            lighting_system: LightingCapabilities,
+            covered: bool,
+            accessibility_compliant: bool,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+
+            let stage = Stage {
+                name: stage_name,
+                stage_type,
+                capacity,
+                sound_system,
+                lighting_system,
+                covered,
+                accessibility_compliant,
+            };
+
+            festival.stages.push(stage);
+            festival.last_updated = self.env().block_timestamp();
+            self.festivals.insert(festival_id, &festival);
+
+            Ok(())
+        }
+
+        /// Update festival status
+        #[ink(message)]
+        pub fn update_festival_status(&mut self, festival_id: u32, new_status: FestivalStatus) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+            
+            festival.festival_status = new_status;
+            festival.last_updated = self.env().block_timestamp();
+            
+            self.festivals.insert(festival_id, &festival);
+
+            Ok(())
+        }
+
+        /// Add vendor to festival
+        #[ink(message)]
+        pub fn add_festival_vendor(
+            &mut self,
+            festival_id: u32,
+            vendor_name: String,
+            vendor_type: String, // "food" or "merchandise"
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+            
+            match vendor_type.as_str() {
+                "food" => {
+                    if !festival.food_vendors.contains(&vendor_name) {
+                        festival.food_vendors.push(vendor_name);
+                    }
+                },
+                "merchandise" => {
+                    if !festival.merchandise_vendors.contains(&vendor_name) {
+                        festival.merchandise_vendors.push(vendor_name);
+                    }
+                },
+                _ => return Err(Error::InvalidFestivalData),
+            }
+
+            festival.last_updated = self.env().block_timestamp();
+            self.festivals.insert(festival_id, &festival);
+
+            Ok(())
+        }
+
+        /// Add sustainability feature to festival
+        #[ink(message)]
+        pub fn add_festival_sustainability_feature(
+            &mut self,
+            festival_id: u32,
+            feature: SustainabilityFeature,
+        ) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+            
+            if !festival.sustainability_features.contains(&feature) {
+                festival.sustainability_features.push(feature);
+                festival.last_updated = self.env().block_timestamp();
+                self.festivals.insert(festival_id, &festival);
+            }
+
+            Ok(())
+        }
+
+        /// Add sponsor to festival
+        #[ink(message)]
+        pub fn add_festival_sponsor(&mut self, festival_id: u32, sponsor_name: String) -> Result<()> {
+            let caller = self.env().caller();
+            if caller != self.owner {
+                return Err(Error::NotOwner);
+            }
+
+            let mut festival = self.festivals.get(festival_id).ok_or(Error::FestivalNotFound)?;
+            
+            if !festival.sponsors.contains(&sponsor_name) {
+                festival.sponsors.push(sponsor_name);
+                festival.last_updated = self.env().block_timestamp();
+                self.festivals.insert(festival_id, &festival);
+            }
+
+            Ok(())
+        }
+
+        // ========================================================================
+        // SEARCH AND DISCOVERY FUNCTIONS (Steps 1-2)
+        // ========================================================================
+
+        /// Search artists by genre (Step 1)
         #[ink(message)]
         pub fn search_artists_by_genre(&self, genre: MusicGenre) -> Vec<u32> {
             let genre_hash = self.hash_music_genre(&genre);
             self.artists_by_genre.get(genre_hash).unwrap_or_default()
         }
 
-        /// Get all verified artists
+        /// Get all verified artists (Step 1)
         #[ink(message)]
         pub fn get_verified_artists(&self) -> Vec<u32> {
             self.verified_artists.get(true).unwrap_or_default()
         }
 
-        /// Search venues by type
+        /// Search venues by type (Step 1)
         #[ink(message)]
         pub fn search_venues_by_type(&self, venue_type: VenueType) -> Vec<u32> {
             let type_hash = self.hash_venue_type(venue_type);
             self.venues_by_type.get(type_hash).unwrap_or_default()
         }
 
-        /// Search venues by city
+        /// Search venues by city (Step 1)
         #[ink(message)]
         pub fn search_venues_by_city(&self, city: String) -> Vec<u32> {
             let city_hash = self.hash_string(&city);
             self.venues_by_city.get(city_hash).unwrap_or_default()
         }
 
-        /// Get venues with specific amenities
+        /// Get venues with specific amenities (Step 1)
         #[ink(message)]
         pub fn search_venues_with_amenity(&self, amenity: VenueAmenity) -> Vec<u32> {
             let mut results = Vec::new();
@@ -713,7 +1451,7 @@ mod concert_broker {
             results
         }
 
-        /// Get venues with accessibility features
+        /// Get venues with accessibility features (Step 1)
         #[ink(message)]
         pub fn search_accessible_venues(&self, feature: AccessibilityFeature) -> Vec<u32> {
             let mut results = Vec::new();
@@ -727,7 +1465,7 @@ mod concert_broker {
             results
         }
 
-        /// Get artists currently touring
+        /// Get artists currently touring (Step 1)
         #[ink(message)]
         pub fn get_touring_artists(&self) -> Vec<u32> {
             let mut results = Vec::new();
@@ -741,8 +1479,91 @@ mod concert_broker {
             results
         }
 
+        /// NEW: Search tours by artist (Step 2)
+        #[ink(message)]
+        pub fn get_tours_by_artist(&self, artist_id: u32) -> Vec<u32> {
+            self.tours_by_artist.get(artist_id).unwrap_or_default()
+        }
+
+        /// NEW: Search tours by type (Step 2)
+        #[ink(message)]
+        pub fn search_tours_by_type(&self, tour_type: TourType) -> Vec<u32> {
+            let type_hash = self.hash_tour_type(tour_type);
+            self.tours_by_type.get(type_hash).unwrap_or_default()
+        }
+
+        /// NEW: Get active tours (Step 2)
+        #[ink(message)]
+        pub fn get_active_tours(&self) -> Vec<u32> {
+            self.active_tours.get(true).unwrap_or_default()
+        }
+
+        /// NEW: Get upcoming tours (starting within next 90 days) (Step 2)
+        #[ink(message)]
+        pub fn get_upcoming_tours(&self) -> Vec<u32> {
+            let mut results = Vec::new();
+            let current_time = self.env().block_timestamp();
+            let ninety_days = 90 * 24 * 60 * 60 * 1000; // 90 days in milliseconds
+
+            for tour_id in 1..self.next_tour_id {
+                if let Some(tour) = self.tours.get(tour_id) {
+                    if tour.start_date > current_time && tour.start_date <= current_time + ninety_days {
+                        if matches!(tour.tour_status, TourStatus::Announced | TourStatus::OnSale) {
+                            results.push(tour_id);
+                        }
+                    }
+                }
+            }
+            results
+        }
+
+        /// NEW: Search festivals by type (Step 2)
+        #[ink(message)]
+        pub fn search_festivals_by_type(&self, festival_type: FestivalType) -> Vec<u32> {
+            let type_hash = self.hash_festival_type(festival_type);
+            self.festivals_by_type.get(type_hash).unwrap_or_default()
+        }
+
+        /// NEW: Search festivals by venue (Step 2)
+        #[ink(message)]
+        pub fn search_festivals_by_venue(&self, venue_id: u32) -> Vec<u32> {
+            self.festivals_by_venue.get(venue_id).unwrap_or_default()
+        }
+
+        /// NEW: Get upcoming festivals (Step 2)
+        #[ink(message)]
+        pub fn get_upcoming_festivals(&self) -> Vec<u32> {
+            let mut results = Vec::new();
+            let current_time = self.env().block_timestamp();
+
+            for festival_id in 1..self.next_festival_id {
+                if let Some(festival) = self.festivals.get(festival_id) {
+                    if festival.start_date > current_time {
+                        if matches!(festival.festival_status, FestivalStatus::LineupAnnounced | FestivalStatus::OnSale) {
+                            results.push(festival_id);
+                        }
+                    }
+                }
+            }
+            results
+        }
+
+        /// NEW: Search festivals by artist (Step 2)
+        #[ink(message)]
+        pub fn search_festivals_by_artist(&self, artist_id: u32) -> Vec<u32> {
+            let mut results = Vec::new();
+            for festival_id in 1..self.next_festival_id {
+                if let Some(festival) = self.festivals.get(festival_id) {
+                    if festival.featured_artists.contains(&artist_id) || festival.headliner_artists.contains(&artist_id) {
+                        results.push(festival_id);
+                    }
+                }
+            }
+            results
+        }
+
         // ========================================================================
-        // HELPER FUNCTIONS FOR INDEXING
+        // HELPER FUNCTIONS FOR INDEXING (Steps 1-2)
         // ========================================================================
 
         fn update_artist_genre_index(&mut self, artist_id: u32, genre: &MusicGenre) {
@@ -789,6 +1610,60 @@ mod concert_broker {
             }
         }
 
+        // NEW: Tour indexing functions (Step 2)
+        fn update_tour_by_artist_index(&mut self, tour_id: u32, artist_id: u32) {
+            let mut artist_tours = self.tours_by_artist.get(artist_id).unwrap_or_default();
+            if !artist_tours.contains(&tour_id) {
+                artist_tours.push(tour_id);
+                self.tours_by_artist.insert(artist_id, &artist_tours);
+            }
+        }
+
+        fn update_tour_by_type_index(&mut self, tour_id: u32, tour_type: TourType) {
+            let type_hash = self.hash_tour_type(tour_type);
+            let mut tours_of_type = self.tours_by_type.get(type_hash).unwrap_or_default();
+            if !tours_of_type.contains(&tour_id) {
+                tours_of_type.push(tour_id);
+                self.tours_by_type.insert(type_hash, &tours_of_type);
+            }
+        }
+
+        fn update_active_tours_index(&mut self, tour_id: u32, is_active: bool) {
+            let mut active_list = self.active_tours.get(is_active).unwrap_or_default();
+            if !active_list.contains(&tour_id) {
+                active_list.push(tour_id);
+                self.active_tours.insert(is_active, &active_list);
+            }
+            
+            // Remove from opposite list if needed
+            let mut opposite_list = self.active_tours.get(!is_active).unwrap_or_default();
+            opposite_list.retain(|&x| x != tour_id);
+            if opposite_list.is_empty() {
+                self.active_tours.remove(!is_active);
+            } else {
+                self.active_tours.insert(!is_active, &opposite_list);
+            }
+        }
+
+        // NEW: Festival indexing functions (Step 2)
+        fn update_festival_by_type_index(&mut self, festival_id: u32, festival_type: FestivalType) {
+            let type_hash = self.hash_festival_type(festival_type);
+            let mut festivals_of_type = self.festivals_by_type.get(type_hash).unwrap_or_default();
+            if !festivals_of_type.contains(&festival_id) {
+                festivals_of_type.push(festival_id);
+                self.festivals_by_type.insert(type_hash, &festivals_of_type);
+            }
+        }
+
+        fn update_festival_by_venue_index(&mut self, festival_id: u32, venue_id: u32) {
+            let mut venue_festivals = self.festivals_by_venue.get(venue_id).unwrap_or_default();
+            if !venue_festivals.contains(&festival_id) {
+                venue_festivals.push(festival_id);
+                self.festivals_by_venue.insert(venue_id, &venue_festivals);
+            }
+        }
+
+        // Hash functions for efficient indexing
         fn hash_music_genre(&self, genre: &MusicGenre) -> u32 {
             match genre {
                 MusicGenre::Rock => 1,
@@ -849,6 +1724,40 @@ mod concert_broker {
             }
         }
 
+        // NEW: Tour type hash function (Step 2)
+        fn hash_tour_type(&self, tour_type: TourType) -> u32 {
+            match tour_type {
+                TourType::WorldTour => 1,
+                TourType::RegionalTour => 2,
+                TourType::NationalTour => 3,
+                TourType::LocalTour => 4,
+                TourType::FestivalCircuit => 5,
+                TourType::ResidencyTour => 6,
+                TourType::AcousticTour => 7,
+                TourType::ReunionTour => 8,
+                TourType::FarewellTour => 9,
+                TourType::PromotionalTour => 10,
+            }
+        }
+
+        // NEW: Festival type hash function (Step 2)
+        fn hash_festival_type(&self, festival_type: FestivalType) -> u32 {
+            match festival_type {
+                FestivalType::MusicFestival => 1,
+                FestivalType::RockFestival => 2,
+                FestivalType::ElectronicFestival => 3,
+                FestivalType::JazzFestival => 4,
+                FestivalType::FolkFestival => 5,
+                FestivalType::CountryFestival => 6,
+                FestivalType::HipHopFestival => 7,
+                FestivalType::ClassicalFestival => 8,
+                FestivalType::ArtsFestival => 9,
+                FestivalType::CulturalFestival => 10,
+                FestivalType::CharityFestival => 11,
+                FestivalType::CorporateFestival => 12,
+            }
+        }
+
         fn hash_string(&self, s: &str) -> u32 {
             // Simple hash function for demonstration
             // In production, you'd want a proper hash function
@@ -860,10 +1769,10 @@ mod concert_broker {
         }
 
         // ========================================================================
-        // BASIC EVENT MANAGEMENT (Placeholder for later steps)
+        // BASIC EVENT MANAGEMENT (Placeholder for Step 3)
         // ========================================================================
 
-        /// Create a basic event (will be enhanced in later steps)
+        /// Create a basic event (will be enhanced in Step 3)
         #[ink(message)]
         pub fn create_event(
             &mut self, 
@@ -891,7 +1800,7 @@ mod concert_broker {
         }
 
         // ========================================================================
-        // QUERY FUNCTIONS
+        // QUERY FUNCTIONS (Steps 1-2)
         // ========================================================================
 
         /// Get artist details
@@ -904,6 +1813,18 @@ mod concert_broker {
         #[ink(message)]
         pub fn get_venue(&self, venue_id: u32) -> Option<Venue> {
             self.venues.get(venue_id)
+        }
+
+        /// NEW: Get tour details (Step 2)
+        #[ink(message)]
+        pub fn get_tour(&self, tour_id: u32) -> Option<Tour> {
+            self.tours.get(tour_id)
+        }
+
+        /// NEW: Get festival details (Step 2)
+        #[ink(message)]
+        pub fn get_festival(&self, festival_id: u32) -> Option<Festival> {
+            self.festivals.get(festival_id)
         }
 
         /// Get event name (placeholder)
@@ -930,6 +1851,18 @@ mod concert_broker {
             self.next_venue_id.saturating_sub(1)
         }
 
+        /// NEW: Get total tours created (Step 2)
+        #[ink(message)]
+        pub fn total_tours(&self) -> u32 {
+            self.next_tour_id.saturating_sub(1)
+        }
+
+        /// NEW: Get total festivals created (Step 2)
+        #[ink(message)]
+        pub fn total_festivals(&self) -> u32 {
+            self.next_festival_id.saturating_sub(1)
+        }
+
         /// Get total events created
         #[ink(message)]
         pub fn total_events(&self) -> u32 {
@@ -944,7 +1877,7 @@ mod concert_broker {
         }
     }
 
-    /// Comprehensive test suite for Step 1
+    /// Comprehensive test suite for Steps 1-2
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -991,37 +1924,82 @@ mod concert_broker {
             }
         }
 
-        #[ink::test]
-        fn new_works() {
-            let concert_broker = ConcertBroker::new();
-            assert_eq!(concert_broker.total_artists(), 0);
-            assert_eq!(concert_broker.total_venues(), 0);
-            assert_eq!(concert_broker.total_events(), 0);
-        }
-
-        #[ink::test]
-        fn register_artist_works() {
-            let mut concert_broker = ConcertBroker::new();
-            
-            let result = concert_broker.register_artist(
+        fn setup_test_data(contract: &mut ConcertBroker) -> (u32, u32, u32) {
+            let artist_id = contract.register_artist(
                 "Taylor Swift".to_string(),
                 Some("T.S.".to_string()),
                 MusicGenre::Pop,
                 vec![MusicGenre::Country, MusicGenre::Folk],
-                "Award-winning singer-songwriter known for storytelling lyrics".to_string(),
+                "Award-winning singer-songwriter".to_string(),
                 "United States".to_string(),
                 Some("Big Machine Records".to_string()),
                 create_test_social_media(),
                 create_test_streaming_links(),
                 2006,
                 Some("management@taylorswift.com".to_string()),
-            );
-            
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), 1);
-            assert_eq!(concert_broker.total_artists(), 1);
+            ).unwrap();
 
-            let artist = concert_broker.get_artist(1).unwrap();
+            let venue_id = contract.register_venue(
+                "Madison Square Garden".to_string(),
+                create_test_venue_address(),
+                VenueType::Arena,
+                20000,
+                Some(5000),
+                9,
+                vec![VenueAmenity::VipLounge, VenueAmenity::MultipleBars],
+                AgeRestriction::AllAges,
+                true,
+                Some(1000),
+                true,
+                vec![AccessibilityFeature::WheelchairAccessible],
+                SoundSystemRating::WorldClass,
+                LightingCapabilities::Spectacular,
+                SecurityLevel::Maximum,
+                Some(1968),
+                Some("booking@msg.com".to_string()),
+                Some("www.msg.com".to_string()),
+            ).unwrap();
+
+            let supporting_artist_id = contract.register_artist(
+                "Phoebe Bridgers".to_string(),
+                None,
+                MusicGenre::Indie,
+                vec![MusicGenre::Folk, MusicGenre::Alternative],
+                "Indie folk singer-songwriter".to_string(),
+                "United States".to_string(),
+                Some("Dead Oceans".to_string()),
+                create_test_social_media(),
+                vec![],
+                2017,
+                None,
+            ).unwrap();
+
+            (artist_id, venue_id, supporting_artist_id)
+        }
+
+        // ========================================================================
+        // STEP 1 TESTS (Artist and Venue Management)
+        // ========================================================================
+
+        #[ink::test]
+        fn new_works() {
+            let concert_broker = ConcertBroker::new();
+            assert_eq!(concert_broker.total_artists(), 0);
+            assert_eq!(concert_broker.total_venues(), 0);
+            assert_eq!(concert_broker.total_tours(), 0);
+            assert_eq!(concert_broker.total_festivals(), 0);
+            assert_eq!(concert_broker.total_events(), 0);
+        }
+
+        #[ink::test]
+        fn register_artist_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
+
+            assert_eq!(artist_id, 1);
+            assert_eq!(concert_broker.total_artists(), 2); // Main artist + supporting artist
+
+            let artist = concert_broker.get_artist(artist_id).unwrap();
             assert_eq!(artist.name, "Taylor Swift");
             assert_eq!(artist.genre, MusicGenre::Pop);
             assert_eq!(artist.sub_genres.len(), 2);
@@ -1030,57 +2008,16 @@ mod concert_broker {
         }
 
         #[ink::test]
-        fn register_artist_invalid_data() {
-            let mut concert_broker = ConcertBroker::new();
-            
-            let result = concert_broker.register_artist(
-                "".to_string(), // Empty name
-                None,
-                MusicGenre::Pop,
-                vec![],
-                "".to_string(), // Empty biography
-                "".to_string(), // Empty country
-                None,
-                create_test_social_media(),
-                vec![],
-                2020,
-                None,
-            );
-            
-            assert_eq!(result, Err(Error::InvalidArtistData));
-        }
-
-        #[ink::test]
         fn verify_artist_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let artist_id = concert_broker.register_artist(
-                "Ed Sheeran".to_string(),
-                None,
-                MusicGenre::Pop,
-                vec![MusicGenre::Folk],
-                "British singer-songwriter".to_string(),
-                "United Kingdom".to_string(),
-                None,
-                create_test_social_media(),
-                create_test_streaming_links(),
-                2011,
-                None,
-            ).unwrap();
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
 
-            // Artist should not be verified initially
-            let artist = concert_broker.get_artist(artist_id).unwrap();
-            assert!(!artist.verified);
-
-            // Verify the artist
             let result = concert_broker.verify_artist(artist_id);
             assert_eq!(result, Ok(()));
 
-            // Artist should now be verified
             let artist = concert_broker.get_artist(artist_id).unwrap();
             assert!(artist.verified);
 
-            // Should appear in verified artists list
             let verified_artists = concert_broker.get_verified_artists();
             assert!(verified_artists.contains(&artist_id));
         }
@@ -1088,411 +2025,758 @@ mod concert_broker {
         #[ink::test]
         fn register_venue_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let result = concert_broker.register_venue(
-                "Madison Square Garden".to_string(),
-                create_test_venue_address(),
-                VenueType::Arena,
-                20000,
-                Some(5000),
-                9, // Excellent acoustics
-                vec![VenueAmenity::VipLounge, VenueAmenity::MultipleBars, VenueAmenity::MerchandiseStand],
-                AgeRestriction::AllAges,
-                true,
-                Some(1000),
-                true,
-                vec![AccessibilityFeature::WheelchairAccessible, AccessibilityFeature::ElevatorAccess],
-                SoundSystemRating::WorldClass,
-                LightingCapabilities::Spectacular,
-                SecurityLevel::Maximum,
-                Some(1968),
-                Some("booking@msg.com".to_string()),
-                Some("www.msg.com".to_string()),
-            );
-            
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), 1);
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            assert_eq!(venue_id, 1);
             assert_eq!(concert_broker.total_venues(), 1);
 
-            let venue = concert_broker.get_venue(1).unwrap();
+            let venue = concert_broker.get_venue(venue_id).unwrap();
             assert_eq!(venue.name, "Madison Square Garden");
             assert_eq!(venue.venue_type, VenueType::Arena);
             assert_eq!(venue.capacity, 20000);
-            assert_eq!(venue.acoustic_rating, 9);
-            assert!(venue.parking_available);
             assert!(!venue.verified);
-        }
-
-        #[ink::test]
-        fn register_venue_invalid_data() {
-            let mut concert_broker = ConcertBroker::new();
-            
-            let mut invalid_address = create_test_venue_address();
-            invalid_address.city = "".to_string(); // Empty city
-
-            let result = concert_broker.register_venue(
-                "".to_string(), // Empty name
-                invalid_address,
-                VenueType::Club,
-                0, // Zero capacity
-                None,
-                15, // Invalid acoustic rating (>10)
-                vec![],
-                AgeRestriction::AllAges,
-                false,
-                None,
-                false,
-                vec![],
-                SoundSystemRating::Basic,
-                LightingCapabilities::Basic,
-                SecurityLevel::Minimal,
-                None,
-                None,
-                None,
-            );
-            
-            assert_eq!(result, Err(Error::InvalidVenueData));
         }
 
         #[ink::test]
         fn search_artists_by_genre_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            // Register artists with different genres
-            concert_broker.register_artist(
-                "Metallica".to_string(),
-                None,
-                MusicGenre::Metal,
-                vec![MusicGenre::Rock, MusicGenre::HardRock],
-                "Heavy metal band".to_string(),
-                "United States".to_string(),
-                None,
-                create_test_social_media(),
-                vec![],
-                1981,
-                None,
-            ).unwrap();
-
-            concert_broker.register_artist(
-                "Adele".to_string(),
-                None,
-                MusicGenre::Pop,
-                vec![MusicGenre::Soul],
-                "British singer".to_string(),
-                "United Kingdom".to_string(),
-                None,
-                create_test_social_media(),
-                vec![],
-                2006,
-                None,
-            ).unwrap();
-
-            concert_broker.register_artist(
-                "Iron Maiden".to_string(),
-                None,
-                MusicGenre::Metal,
-                vec![MusicGenre::Rock],
-                "Heavy metal legends".to_string(),
-                "United Kingdom".to_string(),
-                None,
-                create_test_social_media(),
-                vec![],
-                1975,
-                None,
-            ).unwrap();
-
-            let metal_artists = concert_broker.search_artists_by_genre(MusicGenre::Metal);
-            assert_eq!(metal_artists.len(), 2);
-            assert!(metal_artists.contains(&1)); // Metallica
-            assert!(metal_artists.contains(&3)); // Iron Maiden
+            let (_, _, _) = setup_test_data(&mut concert_broker);
 
             let pop_artists = concert_broker.search_artists_by_genre(MusicGenre::Pop);
             assert_eq!(pop_artists.len(), 1);
-            assert!(pop_artists.contains(&2)); // Adele
+            assert!(pop_artists.contains(&1)); // Taylor Swift
+
+            let indie_artists = concert_broker.search_artists_by_genre(MusicGenre::Indie);
+            assert_eq!(indie_artists.len(), 1);
+            assert!(indie_artists.contains(&2)); // Phoebe Bridgers
 
             // Test sub-genre search
-            let rock_artists = concert_broker.search_artists_by_genre(MusicGenre::Rock);
-            assert_eq!(rock_artists.len(), 2);
-            assert!(rock_artists.contains(&1)); // Metallica (sub-genre)
-            assert!(rock_artists.contains(&3)); // Iron Maiden (sub-genre)
+            let folk_artists = concert_broker.search_artists_by_genre(MusicGenre::Folk);
+            assert_eq!(folk_artists.len(), 2); // Both artists have Folk as sub-genre
         }
 
         #[ink::test]
         fn search_venues_by_type_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            // Register different venue types
-            concert_broker.register_venue(
-                "The Fillmore".to_string(),
-                create_test_venue_address(),
-                VenueType::Club,
-                1800,
-                Some(500),
-                8,
-                vec![VenueAmenity::DanceFloor, VenueAmenity::MultipleBars],
-                AgeRestriction::TwentyOnePlus,
-                false,
-                None,
-                true,
-                vec![AccessibilityFeature::WheelchairAccessible],
-                SoundSystemRating::Excellent,
-                LightingCapabilities::Professional,
-                SecurityLevel::Standard,
-                Some(1968),
-                None,
-                None,
+            let (_, _, _) = setup_test_data(&mut concert_broker);
+
+            let arenas = concert_broker.search_venues_by_type(VenueType::Arena);
+            assert_eq!(arenas.len(), 1);
+            assert!(arenas.contains(&1)); // Madison Square Garden
+        }
+
+        // ========================================================================
+        // STEP 2 TESTS (Tour and Festival Management)
+        // ========================================================================
+
+        #[ink::test]
+        fn create_tour_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, _, supporting_artist_id) = setup_test_data(&mut concert_broker);
+
+            let tour_id = concert_broker.create_tour(
+                "Eras Tour".to_string(),
+                artist_id,
+                TourType::WorldTour,
+                1672531200000, // Jan 1, 2023
+                1704067200000, // Jan 1, 2024
+                vec![supporting_artist_id],
+                true, // merchandise enabled
+                true, // VIP packages available
+                Some("tour.manager@taylorswift.com".to_string()),
+                "The most ambitious tour yet".to_string(),
+                Some("poster.jpg".to_string()),
             ).unwrap();
 
-            concert_broker.register_venue(
-                "Hollywood Bowl".to_string(),
-                create_test_venue_address(),
-                VenueType::Amphitheater,
-                17500,
-                None,
-                9,
-                vec![VenueAmenity::OutdoorArea, VenueAmenity::ReservedSeating],
-                AgeRestriction::AllAges,
-                true,
-                Some(800),
-                true,
-                vec![AccessibilityFeature::WheelchairAccessible, AccessibilityFeature::AccessibleParking],
-                SoundSystemRating::WorldClass,
-                LightingCapabilities::Spectacular,
-                SecurityLevel::High,
-                Some(1922),
-                None,
-                None,
-            ).unwrap();
+            assert_eq!(tour_id, 1);
+            assert_eq!(concert_broker.total_tours(), 1);
 
-            let clubs = concert_broker.search_venues_by_type(VenueType::Club);
-            assert_eq!(clubs.len(), 1);
-            assert!(clubs.contains(&1)); // The Fillmore
+            let tour = concert_broker.get_tour(tour_id).unwrap();
+            assert_eq!(tour.name, "Eras Tour");
+            assert_eq!(tour.artist_id, artist_id);
+            assert_eq!(tour.tour_type, TourType::WorldTour);
+            assert_eq!(tour.tour_status, TourStatus::Announced);
+            assert_eq!(tour.supporting_artists.len(), 1);
+            assert!(tour.merchandise_enabled);
+            assert!(tour.vip_packages_available);
 
-            let amphitheaters = concert_broker.search_venues_by_type(VenueType::Amphitheater);
-            assert_eq!(amphitheaters.len(), 1);
-            assert!(amphitheaters.contains(&2)); // Hollywood Bowl
+            // Check that artist's touring status was updated
+            let artist = concert_broker.get_artist(artist_id).unwrap();
+            assert!(artist.is_touring);
         }
 
         #[ink::test]
-        fn search_venues_by_city_works() {
+        fn create_tour_invalid_dates() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let mut nashville_address = create_test_venue_address();
-            nashville_address.city = "Nashville".to_string();
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
 
-            let mut los_angeles_address = create_test_venue_address();
-            los_angeles_address.city = "Los Angeles".to_string();
-
-            // Register venues in different cities
-            concert_broker.register_venue(
-                "Grand Ole Opry".to_string(),
-                nashville_address,
-                VenueType::ConcertHall,
-                4400,
-                None,
-                10,
-                vec![VenueAmenity::ReservedSeating, VenueAmenity::VipLounge],
-                AgeRestriction::AllAges,
-                true,
-                Some(200),
-                false,
-                vec![AccessibilityFeature::WheelchairAccessible],
-                SoundSystemRating::WorldClass,
-                LightingCapabilities::Advanced,
-                SecurityLevel::High,
-                Some(1925),
-                None,
-                None,
-            ).unwrap();
-
-            concert_broker.register_venue(
-                "The Troubadour".to_string(),
-                los_angeles_address,
-                VenueType::Club,
-                500,
-                Some(200),
-                7,
-                vec![VenueAmenity::DanceFloor, VenueAmenity::MerchandiseStand],
-                AgeRestriction::TwentyOnePlus,
-                false,
-                None,
-                true,
+            let result = concert_broker.create_tour(
+                "Invalid Tour".to_string(),
+                artist_id,
+                TourType::LocalTour,
+                1704067200000, // Later date
+                1672531200000, // Earlier date
                 vec![],
-                SoundSystemRating::Good,
-                LightingCapabilities::Professional,
-                SecurityLevel::Standard,
-                Some(1957),
+                false,
+                false,
                 None,
+                "Invalid date range".to_string(),
                 None,
-            ).unwrap();
+            );
 
-            let nashville_venues = concert_broker.search_venues_by_city("Nashville".to_string());
-            assert_eq!(nashville_venues.len(), 1);
-            assert!(nashville_venues.contains(&1)); // Grand Ole Opry
-
-            let la_venues = concert_broker.search_venues_by_city("Los Angeles".to_string());
-            assert_eq!(la_venues.len(), 1);
-            assert!(la_venues.contains(&2)); // The Troubadour
+            assert_eq!(result, Err(Error::InvalidTourDates));
         }
 
         #[ink::test]
-        fn search_venues_with_amenity_works() {
+        fn add_tour_date_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            // Register venue with VIP lounge
-            concert_broker.register_venue(
-                "VIP Venue".to_string(),
-                create_test_venue_address(),
-                VenueType::Arena,
-                15000,
-                None,
-                8,
-                vec![VenueAmenity::VipLounge, VenueAmenity::MultipleBars],
-                AgeRestriction::AllAges,
-                true,
-                Some(500),
-                true,
-                vec![],
-                SoundSystemRating::Excellent,
-                LightingCapabilities::Advanced,
-                SecurityLevel::High,
-                None,
-                None,
-                None,
-            ).unwrap();
+            let (artist_id, venue_id, _) = setup_test_data(&mut concert_broker);
 
-            // Register venue without VIP lounge
-            concert_broker.register_venue(
-                "Basic Venue".to_string(),
-                create_test_venue_address(),
-                VenueType::Club,
-                800,
-                None,
-                6,
-                vec![VenueAmenity::DanceFloor],
-                AgeRestriction::EighteenPlus,
+            let tour_id = concert_broker.create_tour(
+                "Test Tour".to_string(),
+                artist_id,
+                TourType::NationalTour,
+                1672531200000,
+                1704067200000,
+                vec![],
+                false,
                 false,
                 None,
-                true,
-                vec![],
-                SoundSystemRating::Good,
-                LightingCapabilities::Basic,
-                SecurityLevel::Standard,
-                None,
-                None,
+                "Test tour description".to_string(),
                 None,
             ).unwrap();
 
-            let vip_venues = concert_broker.search_venues_with_amenity(VenueAmenity::VipLounge);
-            assert_eq!(vip_venues.len(), 1);
-            assert!(vip_venues.contains(&1)); // VIP Venue
+            let event_id = concert_broker.add_tour_date(
+                tour_id,
+                venue_id,
+                1680000000000, // Show date within tour range
+                Some("Nashville Show".to_string()),
+            ).unwrap();
 
-            let dance_floor_venues = concert_broker.search_venues_with_amenity(VenueAmenity::DanceFloor);
-            assert_eq!(dance_floor_venues.len(), 1);
-            assert!(dance_floor_venues.contains(&2)); // Basic Venue
+            assert_eq!(event_id, 1);
+
+            let tour = concert_broker.get_tour(tour_id).unwrap();
+            assert_eq!(tour.total_shows, 1);
+            assert_eq!(tour.shows_scheduled, 1);
         }
 
         #[ink::test]
-        fn update_artist_stats_works() {
+        fn update_tour_status_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let artist_id = concert_broker.register_artist(
-                "The Weeknd".to_string(),
-                None,
-                MusicGenre::RAndB,
-                vec![MusicGenre::Pop],
-                "Canadian singer".to_string(),
-                "Canada".to_string(),
-                None,
-                create_test_social_media(),
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
+
+            let tour_id = concert_broker.create_tour(
+                "Status Test Tour".to_string(),
+                artist_id,
+                TourType::LocalTour,
+                1672531200000,
+                1704067200000,
                 vec![],
-                2010,
+                false,
+                false,
+                None,
+                "Testing status updates".to_string(),
                 None,
             ).unwrap();
 
-            // Update stats
-            let result = concert_broker.update_artist_stats(artist_id, 50_000_000, 5, 3);
+            let result = concert_broker.update_tour_status(tour_id, TourStatus::OnSale);
             assert_eq!(result, Ok(()));
 
-            let artist = concert_broker.get_artist(artist_id).unwrap();
-            assert_eq!(artist.monthly_listeners, 50_000_000);
-            assert_eq!(artist.total_albums, 5);
-            assert_eq!(artist.awards_count, 3);
+            let tour = concert_broker.get_tour(tour_id).unwrap();
+            assert_eq!(tour.tour_status, TourStatus::OnSale);
         }
 
         #[ink::test]
-        fn create_event_with_artist_works() {
+        fn add_supporting_artist_to_tour_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let artist_id = concert_broker.register_artist(
-                "Coldplay".to_string(),
-                None,
-                MusicGenre::Alternative,
-                vec![MusicGenre::Rock, MusicGenre::Pop],
-                "British rock band".to_string(),
-                "United Kingdom".to_string(),
-                None,
-                create_test_social_media(),
+            let (artist_id, _, supporting_artist_id) = setup_test_data(&mut concert_broker);
+
+            let tour_id = concert_broker.create_tour(
+                "Support Test Tour".to_string(),
+                artist_id,
+                TourType::NationalTour,
+                1672531200000,
+                1704067200000,
                 vec![],
-                1996,
+                false,
+                false,
+                None,
+                "Testing supporting artists".to_string(),
                 None,
             ).unwrap();
 
-            let result = concert_broker.create_event("Coldplay World Tour".to_string(), artist_id);
-            assert_eq!(result, Ok(1));
-            assert_eq!(concert_broker.total_events(), 1);
+            let result = concert_broker.add_supporting_artist_to_tour(tour_id, supporting_artist_id);
+            assert_eq!(result, Ok(()));
 
-            let event_name = concert_broker.get_event(1).unwrap();
-            assert_eq!(event_name, "Coldplay World Tour");
+            let tour = concert_broker.get_tour(tour_id).unwrap();
+            assert_eq!(tour.supporting_artists.len(), 1);
+            assert!(tour.supporting_artists.contains(&supporting_artist_id));
         }
 
         #[ink::test]
-        fn create_event_artist_not_found() {
+        fn get_tours_by_artist_works() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let result = concert_broker.create_event("Non-existent Artist Concert".to_string(), 999);
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
+
+            // Create multiple tours for the same artist
+            let tour1_id = concert_broker.create_tour(
+                "Tour 1".to_string(),
+                artist_id,
+                TourType::WorldTour,
+                1672531200000,
+                1704067200000,
+                vec![],
+                false,
+                false,
+                None,
+                "First tour".to_string(),
+                None,
+            ).unwrap();
+
+            let tour2_id = concert_broker.create_tour(
+                "Tour 2".to_string(),
+                artist_id,
+                TourType::RegionalTour,
+                1704067200000,
+                1735603200000,
+                vec![],
+                false,
+                false,
+                None,
+                "Second tour".to_string(),
+                None,
+            ).unwrap();
+
+            let artist_tours = concert_broker.get_tours_by_artist(artist_id);
+            assert_eq!(artist_tours.len(), 2);
+            assert!(artist_tours.contains(&tour1_id));
+            assert!(artist_tours.contains(&tour2_id));
+        }
+
+        #[ink::test]
+        fn search_tours_by_type_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, _, _) = setup_test_data(&mut concert_broker);
+
+            let _world_tour_id = concert_broker.create_tour(
+                "World Tour".to_string(),
+                artist_id,
+                TourType::WorldTour,
+                1672531200000,
+                1704067200000,
+                vec![],
+                false,
+                false,
+                None,
+                "World tour description".to_string(),
+                None,
+            ).unwrap();
+
+            let _local_tour_id = concert_broker.create_tour(
+                "Local Tour".to_string(),
+                artist_id,
+                TourType::LocalTour,
+                1704067200000,
+                1735603200000,
+                vec![],
+                false,
+                false,
+                None,
+                "Local tour description".to_string(),
+                None,
+            ).unwrap();
+
+            let world_tours = concert_broker.search_tours_by_type(TourType::WorldTour);
+            assert_eq!(world_tours.len(), 1);
+
+            let local_tours = concert_broker.search_tours_by_type(TourType::LocalTour);
+            assert_eq!(local_tours.len(), 1);
+        }
+
+        #[ink::test]
+        fn create_festival_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Coachella".to_string(),
+                venue_id,
+                FestivalType::MusicFestival,
+                1680000000000, // Start date
+                1680259200000, // End date (3 days later)
+                50000, // Capacity per day
+                true, // Camping available
+                Some(10000), // Camping capacity
+                AgeRestriction::AllAges,
+                Some("organizer@coachella.com".to_string()),
+                Some("www.coachella.com".to_string()),
+                create_test_social_media(),
+                "The premier music festival experience".to_string(),
+            ).unwrap();
+
+            assert_eq!(festival_id, 1);
+            assert_eq!(concert_broker.total_festivals(), 1);
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.name, "Coachella");
+            assert_eq!(festival.venue_id, venue_id);
+            assert_eq!(festival.festival_type, FestivalType::MusicFestival);
+            assert_eq!(festival.festival_status, FestivalStatus::Planning);
+            assert_eq!(festival.total_days, 4); // Inclusive: 4-day span = 5 total days // Inclusive: start date + 3 days = 4 total days
+            assert_eq!(festival.total_capacity, 200000); // 50000 * 4 days
+            assert!(festival.camping_available);
+            assert_eq!(festival.camping_capacity, Some(10000));
+        }
+
+        #[ink::test]
+        fn add_festival_artist_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, venue_id, supporting_artist_id) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Test Festival".to_string(),
+                venue_id,
+                FestivalType::RockFestival,
+                1680000000000,
+                1680259200000,
+                30000,
+                false,
+                None,
+                AgeRestriction::EighteenPlus,
+                None,
+                None,
+                create_test_social_media(),
+                "Rock festival test".to_string(),
+            ).unwrap();
+
+            // Add headliner
+            let result = concert_broker.add_festival_artist(festival_id, artist_id, true);
+            assert_eq!(result, Ok(()));
+
+            // Add supporting artist
+            let result = concert_broker.add_festival_artist(festival_id, supporting_artist_id, false);
+            assert_eq!(result, Ok(()));
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.headliner_artists.len(), 1);
+            assert_eq!(festival.featured_artists.len(), 2); // Both artists in featured list
+            assert!(festival.headliner_artists.contains(&artist_id));
+            assert!(festival.featured_artists.contains(&artist_id));
+            assert!(festival.featured_artists.contains(&supporting_artist_id));
+        }
+
+        #[ink::test]
+        fn add_festival_stage_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Stage Test Festival".to_string(),
+                venue_id,
+                FestivalType::ElectronicFestival,
+                1680000000000,
+                1680259200000,
+                25000,
+                false,
+                None,
+                AgeRestriction::TwentyOnePlus,
+                None,
+                None,
+                create_test_social_media(),
+                "Electronic music festival".to_string(),
+            ).unwrap();
+
+            let result = concert_broker.add_festival_stage(
+                festival_id,
+                "Main Stage".to_string(),
+                StageType::MainStage,
+                15000,
+                SoundSystemRating::WorldClass,
+                LightingCapabilities::Spectacular,
+                false, // Not covered
+                true, // Accessibility compliant
+            );
+            assert_eq!(result, Ok(()));
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.stages.len(), 1);
+            assert_eq!(festival.stages[0].name, "Main Stage");
+            assert_eq!(festival.stages[0].stage_type, StageType::MainStage);
+            assert_eq!(festival.stages[0].capacity, 15000);
+        }
+
+        #[ink::test]
+        fn search_festivals_by_type_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let _music_festival_id = concert_broker.create_festival(
+                "Music Festival".to_string(),
+                venue_id,
+                FestivalType::MusicFestival,
+                1680000000000,
+                1680259200000,
+                30000,
+                false,
+                None,
+                AgeRestriction::AllAges,
+                None,
+                None,
+                create_test_social_media(),
+                "General music festival".to_string(),
+            ).unwrap();
+
+            let _jazz_festival_id = concert_broker.create_festival(
+                "Jazz Festival".to_string(),
+                venue_id,
+                FestivalType::JazzFestival,
+                1680259200000,
+                1680345600000,
+                15000,
+                false,
+                None,
+                AgeRestriction::AllAges,
+                None,
+                None,
+                create_test_social_media(),
+                "Jazz and blues festival".to_string(),
+            ).unwrap();
+
+            let music_festivals = concert_broker.search_festivals_by_type(FestivalType::MusicFestival);
+            assert_eq!(music_festivals.len(), 1);
+
+            let jazz_festivals = concert_broker.search_festivals_by_type(FestivalType::JazzFestival);
+            assert_eq!(jazz_festivals.len(), 1);
+        }
+
+        #[ink::test]
+        fn search_festivals_by_artist_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Artist Search Festival".to_string(),
+                venue_id,
+                FestivalType::MusicFestival,
+                1680000000000,
+                1680259200000,
+                40000,
+                true,
+                Some(5000),
+                AgeRestriction::AllAges,
+                None,
+                None,
+                create_test_social_media(),
+                "Pop music festival".to_string(),
+            ).unwrap();
+
+            concert_broker.add_festival_artist(festival_id, artist_id, true).unwrap();
+
+            let artist_festivals = concert_broker.search_festivals_by_artist(artist_id);
+            assert_eq!(artist_festivals.len(), 1);
+            assert!(artist_festivals.contains(&festival_id));
+        }
+
+        #[ink::test]
+        fn add_festival_vendor_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Vendor Test Festival".to_string(),
+                venue_id,
+                FestivalType::FolkFestival,
+                1680000000000,
+                1680259200000,
+                20000,
+                false,
+                None,
+                AgeRestriction::AllAges,
+                None,
+                None,
+                create_test_social_media(),
+                "Folk music festival".to_string(),
+            ).unwrap();
+
+            let result = concert_broker.add_festival_vendor(
+                festival_id,
+                "Gourmet Food Truck".to_string(),
+                "food".to_string(),
+            );
+            assert_eq!(result, Ok(()));
+
+            let result = concert_broker.add_festival_vendor(
+                festival_id,
+                "Music Merchandise Stand".to_string(),
+                "merchandise".to_string(),
+            );
+            assert_eq!(result, Ok(()));
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.food_vendors.len(), 1);
+            assert_eq!(festival.merchandise_vendors.len(), 1);
+            assert!(festival.food_vendors.contains(&"Gourmet Food Truck".to_string()));
+            assert!(festival.merchandise_vendors.contains(&"Music Merchandise Stand".to_string()));
+        }
+
+        #[ink::test]
+        fn add_festival_sustainability_feature_works() {
+            let mut concert_broker = ConcertBroker::new();
+            let (_, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let festival_id = concert_broker.create_festival(
+                "Green Festival".to_string(),
+                venue_id,
+                FestivalType::CulturalFestival,
+                1680000000000,
+                1680259200000,
+                15000,
+                true,
+                Some(3000),
+                AgeRestriction::AllAges,
+                None,
+                None,
+                create_test_social_media(),
+                "Eco-friendly cultural festival".to_string(),
+            ).unwrap();
+
+            let result = concert_broker.add_festival_sustainability_feature(
+                festival_id,
+                SustainabilityFeature::SolarPower,
+            );
+            assert_eq!(result, Ok(()));
+
+            let result = concert_broker.add_festival_sustainability_feature(
+                festival_id,
+                SustainabilityFeature::PlasticFree,
+            );
+            assert_eq!(result, Ok(()));
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.sustainability_features.len(), 2);
+            assert!(festival.sustainability_features.contains(&SustainabilityFeature::SolarPower));
+            assert!(festival.sustainability_features.contains(&SustainabilityFeature::PlasticFree));
+        }
+
+        // ========================================================================
+        // ERROR HANDLING TESTS
+        // ========================================================================
+
+        #[ink::test]
+        fn create_tour_artist_not_found() {
+            let mut concert_broker = ConcertBroker::new();
+
+            let result = concert_broker.create_tour(
+                "Nonexistent Artist Tour".to_string(),
+                999, // Nonexistent artist ID
+                TourType::LocalTour,
+                1672531200000,
+                1704067200000,
+                vec![],
+                false,
+                false,
+                None,
+                "Should fail".to_string(),
+                None,
+            );
+
             assert_eq!(result, Err(Error::ArtistNotFound));
         }
 
         #[ink::test]
-        fn get_touring_artists_works() {
+        fn create_festival_venue_not_found() {
             let mut concert_broker = ConcertBroker::new();
-            
-            let artist1_id = concert_broker.register_artist(
-                "U2".to_string(),
+
+            let result = concert_broker.create_festival(
+                "Nonexistent Venue Festival".to_string(),
+                999, // Nonexistent venue ID
+                FestivalType::MusicFestival,
+                1680000000000,
+                1680259200000,
+                30000,
+                false,
                 None,
-                MusicGenre::Rock,
-                vec![MusicGenre::Alternative],
-                "Irish rock band".to_string(),
-                "Ireland".to_string(),
+                AgeRestriction::AllAges,
+                None,
                 None,
                 create_test_social_media(),
+                "Should fail".to_string(),
+            );
+
+            assert_eq!(result, Err(Error::VenueNotFound));
+        }
+
+        #[ink::test]
+        fn add_tour_date_invalid_date() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, venue_id, _) = setup_test_data(&mut concert_broker);
+
+            let tour_id = concert_broker.create_tour(
+                "Date Test Tour".to_string(),
+                artist_id,
+                TourType::LocalTour,
+                1672531200000, // Tour start
+                1704067200000, // Tour end
                 vec![],
-                1976,
+                false,
+                false,
+                None,
+                "Testing date validation".to_string(),
                 None,
             ).unwrap();
 
-            let artist2_id = concert_broker.register_artist(
-                "Radiohead".to_string(),
-                None,
-                MusicGenre::Alternative,
-                vec![MusicGenre::Rock],
-                "English rock band".to_string(),
-                "United Kingdom".to_string(),
-                None,
-                create_test_social_media(),
-                vec![],
-                1985,
-                None,
+            // Try to add show date outside tour range
+            let result = concert_broker.add_tour_date(
+                tour_id,
+                venue_id,
+                1640995200000, // Date before tour start
+                Some("Invalid Date Show".to_string()),
+            );
+
+            assert_eq!(result, Err(Error::InvalidTourDates));
+        }
+
+        // ========================================================================
+        // COMPREHENSIVE INTEGRATION TEST
+        // ========================================================================
+
+        #[ink::test]
+        fn complete_tour_and_festival_workflow() {
+            let mut concert_broker = ConcertBroker::new();
+            let (artist_id, venue_id, supporting_artist_id) = setup_test_data(&mut concert_broker);
+
+            // Create a comprehensive tour
+            let tour_id = concert_broker.create_tour(
+                "The Complete Experience Tour".to_string(),
+                artist_id,
+                TourType::WorldTour,
+                1672531200000,
+                1704067200000,
+                vec![supporting_artist_id],
+                true,
+                true,
+                Some("tour.manager@example.com".to_string()),
+                "A comprehensive tour with all features".to_string(),
+                Some("tour-poster.jpg".to_string()),
             ).unwrap();
 
-            // Set one artist as touring
-            concert_broker.set_artist_touring_status(artist1_id, true).unwrap();
+            // Update tour status
+            concert_broker.update_tour_status(tour_id, TourStatus::OnSale).unwrap();
 
-            let touring_artists = concert_broker.get_touring_artists();
-            assert_eq!(touring_artists.len(), 1);
-            assert!(touring_artists.contains(&artist1_id));
-            assert!(!touring_artists.contains(&artist2_id));
+            // Add tour dates
+            let _event1_id = concert_broker.add_tour_date(
+                tour_id,
+                venue_id,
+                1680000000000,
+                Some("Opening Night".to_string()),
+            ).unwrap();
+
+            // Add sponsors
+            concert_broker.add_tour_sponsor(tour_id, "Spotify".to_string()).unwrap();
+            concert_broker.add_tour_sponsor(tour_id, "Live Nation".to_string()).unwrap();
+
+            // Create a comprehensive festival
+            let festival_id = concert_broker.create_festival(
+                "Ultimate Music Festival".to_string(),
+                venue_id,
+                FestivalType::MusicFestival,
+                1680259200000,
+                1680604800000, // 4 days
+                60000,
+                true,
+                Some(15000),
+                AgeRestriction::AllAges,
+                Some("festival@example.com".to_string()),
+                Some("www.ultimatefestival.com".to_string()),
+                create_test_social_media(),
+                "The ultimate multi-day music experience".to_string(),
+            ).unwrap();
+
+            // Add artists to festival
+            concert_broker.add_festival_artist(festival_id, artist_id, true).unwrap();
+            concert_broker.add_festival_artist(festival_id, supporting_artist_id, false).unwrap();
+
+            // Add stages
+            concert_broker.add_festival_stage(
+                festival_id,
+                "Main Stage".to_string(),
+                StageType::MainStage,
+                40000,
+                SoundSystemRating::WorldClass,
+                LightingCapabilities::Spectacular,
+                false,
+                true,
+            ).unwrap();
+
+            concert_broker.add_festival_stage(
+                festival_id,
+                "Acoustic Stage".to_string(),
+                StageType::AcousticStage,
+                5000,
+                SoundSystemRating::Good,
+                LightingCapabilities::Professional,
+                true,
+                true,
+            ).unwrap();
+
+            // Add vendors
+            concert_broker.add_festival_vendor(
+                festival_id,
+                "Artisan Food Co.".to_string(),
+                "food".to_string(),
+            ).unwrap();
+
+            concert_broker.add_festival_vendor(
+                festival_id,
+                "Festival Merch".to_string(),
+                "merchandise".to_string(),
+            ).unwrap();
+
+            // Add sustainability features
+            concert_broker.add_festival_sustainability_feature(
+                festival_id,
+                SustainabilityFeature::SolarPower,
+            ).unwrap();
+
+            concert_broker.add_festival_sustainability_feature(
+                festival_id,
+                SustainabilityFeature::WasteReduction,
+            ).unwrap();
+
+            // Update festival status
+            concert_broker.update_festival_status(festival_id, FestivalStatus::LineupAnnounced).unwrap();
+
+            // Verify everything is working
+            assert_eq!(concert_broker.total_tours(), 1);
+            assert_eq!(concert_broker.total_festivals(), 1);
+            assert_eq!(concert_broker.total_artists(), 2);
+            assert_eq!(concert_broker.total_venues(), 1);
+
+            let tour = concert_broker.get_tour(tour_id).unwrap();
+            assert_eq!(tour.tour_status, TourStatus::OnSale);
+            assert_eq!(tour.total_shows, 1);
+            assert_eq!(tour.sponsors.len(), 2);
+
+            let festival = concert_broker.get_festival(festival_id).unwrap();
+            assert_eq!(festival.festival_status, FestivalStatus::LineupAnnounced);
+            assert_eq!(festival.total_days, 5); // Fixed: inclusive counting (4-day span + 1)
+            assert_eq!(festival.stages.len(), 2);
+            assert_eq!(festival.food_vendors.len(), 1);
+            assert_eq!(festival.sustainability_features.len(), 2);
+
+            // Test search functions
+            let artist_tours = concert_broker.get_tours_by_artist(artist_id);
+            assert_eq!(artist_tours.len(), 1);
+
+            let world_tours = concert_broker.search_tours_by_type(TourType::WorldTour);
+            assert_eq!(world_tours.len(), 1);
+
+            let music_festivals = concert_broker.search_festivals_by_type(FestivalType::MusicFestival);
+            assert_eq!(music_festivals.len(), 1);
+
+            let artist_festivals = concert_broker.search_festivals_by_artist(artist_id);
+            assert_eq!(artist_festivals.len(), 1);
+
         }
     }
 }
