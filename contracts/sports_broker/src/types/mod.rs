@@ -4,9 +4,9 @@ pub mod season;
 pub mod seat;
 pub mod team;
 pub mod ticket;
-pub mod user;
 pub mod venue;
-pub mod pricing;
+pub mod analytics;
+pub mod pricing; // Add this line
 
 pub use currency::*;
 pub use event::*;
@@ -15,5 +15,5 @@ pub use seat::*;
 pub use team::*;
 pub use ticket::*;
 pub use venue::*;
-pub use pricing::*;
-// Removed: pub use user::*; (since it's not used in the current implementation)
+pub use analytics::*;
+pub use pricing::*; // Add this line
