@@ -1,6 +1,5 @@
 use ink::prelude::string::String;
 use ink::primitives::AccountId;
-use crate::types::{CurrencyId, SeatType, AccessLevel};
 
 /// Enhanced Ticket structure for sports with multi-currency support
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -11,14 +10,14 @@ pub struct SportsTicket {
     pub event_id: u32,
     pub owner: AccountId,
     pub purchase_price: u128,
-    pub purchase_currency: CurrencyId,
+    pub purchase_currency: super::currency::CurrencyId,
     pub purchase_date: u64,
     pub seat_number: u32,
     pub transferable: bool,
     pub section: String,
     pub row: String,
-    pub seat_type: SeatType,
-    pub access_level: AccessLevel,
+    pub seat_type: super::seat::SeatType,
+    pub access_level: super::seat::AccessLevel,
     pub loyalty_points_earned: u32,
     pub season_pass_discount_applied: bool,
     pub is_season_pass_ticket: bool,
