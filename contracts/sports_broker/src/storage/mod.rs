@@ -1,5 +1,5 @@
-pub mod storage_manager;
-pub mod analytics;
+pub mod contract_storage;
+pub mod analytics_storage;
 
-pub use storage_manager::*;
-pub use analytics::*;
+pub use contract_storage::*;
+pub use analytics_storage::*;

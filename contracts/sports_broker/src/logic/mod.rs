@@ -1,13 +1,19 @@
 pub mod team_management;
 pub mod venue_management;
+pub mod season_management;
 pub mod event_management;
 pub mod ticket_management;
-pub mod merchandise_management;
-pub mod vip_management;
+pub mod currency_management;
+pub mod analytics;
+pub mod anti_scalping;
+pub mod loyalty;
 
 pub use team_management::*;
 pub use venue_management::*;
+pub use season_management::*;
 pub use event_management::*;
 pub use ticket_management::*;
-pub use merchandise_management::*;
-pub use vip_management::*;
+pub use currency_management::*;
+pub use analytics::*;
+pub use anti_scalping::*;
+pub use loyalty::*;
