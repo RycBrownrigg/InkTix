@@ -1,4 +1,3 @@
-use ink::prelude::*;
 use ink::primitives::AccountId;
 use crate::storage::contract_storage::SportsBrokerStorage;
 use crate::types::analytics::*;
@@ -354,10 +353,7 @@ impl Analytics {
         trends
     }
     
-    // Placeholder methods for unused functions
-    fn get_user_favorite_team(_storage: &SportsBrokerStorage, _user_id: AccountId) -> Option<u32> {
-        Some(1)
-    }
+
 }
 
 /// User engagement metrics

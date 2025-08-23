@@ -1,4 +1,4 @@
-use ink::prelude::*;
+
 use crate::types::*;
 use crate::storage::*;
 
@@ -47,9 +47,9 @@ impl TeamManagement {
         wins: u32,
         losses: u32,
         points_scored: u32,
-        playoff_rounds: u32,
+        _playoff_rounds: u32,
         points_allowed: u32,
-        total_games: u32,
+        _total_games: u32,
     ) -> Result<(), String> {
         if !storage.teams.contains(team_id) {
             return Err("Team not found".to_string());

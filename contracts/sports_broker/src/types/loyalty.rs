@@ -31,6 +31,7 @@ pub struct LoyaltyProfile {
     pub streak_days: u32,
     pub referral_count: u32,
     pub referral_points: u32,
+    pub fantasy_sports_points: u32,
 }
 
 /// Reward types available in the system

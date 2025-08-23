@@ -7,6 +7,8 @@ pub mod currency_management;
 pub mod analytics;
 pub mod anti_scalping;
 pub mod loyalty;
+pub mod season_pass_management;
+pub mod fantasy_sports_management;
 
 pub use team_management::*;
 pub use venue_management::*;
@@ -17,3 +19,5 @@ pub use currency_management::*;
 pub use analytics::*;
 pub use anti_scalping::*;
 pub use loyalty::*;
+pub use season_pass_management::*;
+pub use fantasy_sports_management::*;

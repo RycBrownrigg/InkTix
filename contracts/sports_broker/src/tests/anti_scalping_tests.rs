@@ -1,4 +1,4 @@
-use ink::prelude::*;
+
 
 /// Anti-scalping tests
 pub struct AntiScalpingTests;

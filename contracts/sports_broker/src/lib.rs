@@ -1,7 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
 use ink::prelude::*;
-use ink::storage::Mapping;
 
 // Import our modular components
 pub mod types;
@@ -130,40 +129,140 @@ pub mod sports_broker {
         #[ink(message)]
         pub fn create_sports_event(
             &mut self,
-            _name: String,
-            _home_team_id: u32,
-            _away_team_id: u32,
-            _venue_id: u32,
-            _season_id: u32,
-            _event_time: u64,
-            _venue_capacity: u32,
-            _base_ticket_price: u128,
-            _game_type: GameType,
+            name: String,
+            home_team_id: u32,
+            away_team_id: u32,
+            venue_id: u32,
+            season_id: u32,
+            event_time: u64,
+            venue_capacity: u32,
+            base_ticket_price: u128,
+            game_type: GameType,
         ) -> u32 {
-            // TODO: Implement in event_management module
-            0
+            EventManagement::create_sports_event(
+                &mut self.storage,
+                name,
+                venue_id,
+                event_time,
+                venue_capacity,
+                base_ticket_price,
+                home_team_id,
+                away_team_id,
+                season_id,
+                game_type,
+            ).unwrap_or(0)
         }
 
         #[ink(message)]
-        pub fn purchase_ticket(&mut self, _event_id: u32, _section: String, _row: String, _seat: u32) -> Result<u64, String> {
-            // TODO: Implement in ticket_management module
-            Err("Not implemented yet".to_string())
+        pub fn get_sports_event(&self, event_id: u32) -> Option<SportsEvent> {
+            EventManagement::get_event(&self.storage, event_id)
         }
 
         #[ink(message)]
-        pub fn purchase_ticket_with_currency(
-            &mut self,
-            _event_id: u32,
-            _section: String,
-            _row: String,
-            _seat: u32,
-            _currency: CurrencyId,
-        ) -> Result<u64, String> {
-            // TODO: Implement in ticket_management module
-            Err("Not implemented yet".to_string())
+        pub fn update_event_status(&mut self, event_id: u32, active: bool) -> Result<(), String> {
+            EventManagement::update_event_status(&mut self.storage, event_id, active)
         }
 
-        // Currency management placeholders
+        #[ink(message)]
+        pub fn get_events_by_season(&self, season_id: u32) -> Vec<SportsEvent> {
+            EventManagement::get_events_by_season(&self.storage, season_id)
+        }
+
+        #[ink(message)]
+        pub fn get_events_by_team(&self, team_id: u32) -> Vec<SportsEvent> {
+            EventManagement::get_events_by_team(&self.storage, team_id)
+        }
+
+        #[ink(message)]
+        pub fn get_events_by_venue(&self, venue_id: u32) -> Vec<SportsEvent> {
+            EventManagement::get_events_by_venue(&self.storage, venue_id)
+        }
+
+        #[ink(message)]
+        pub fn get_events_by_sport(&self, sport_type: SportType) -> Vec<SportsEvent> {
+            EventManagement::get_events_by_sport(&self.storage, sport_type)
+        }
+
+        #[ink(message)]
+        pub fn get_events_by_date_range(&self, start_date: u64, end_date: u64) -> Result<Vec<SportsEvent>, String> {
+            EventManagement::get_events_by_date_range(&self.storage, start_date, end_date)
+        }
+
+        #[ink(message)]
+        pub fn search_events_advanced(
+            &self,
+            sport_type: Option<SportType>,
+            team_id: Option<u32>,
+            venue_id: Option<u32>,
+            min_date: Option<u64>,
+            max_date: Option<u64>,
+            game_type: Option<GameType>,
+            max_price: Option<u128>,
+            min_availability: Option<u32>,
+            active_only: bool,
+        ) -> Vec<SportsEvent> {
+            EventManagement::search_events_advanced(
+                &self.storage,
+                sport_type,
+                team_id,
+                venue_id,
+                min_date,
+                max_date,
+                game_type,
+                max_price,
+                min_availability,
+                active_only,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_recommended_events(&self, user: ink::primitives::AccountId, limit: u32) -> Vec<SportsEvent> {
+            EventManagement::get_recommended_events(&self.storage, user, limit)
+        }
+
+        #[ink(message)]
+        pub fn update_event_capacity(&mut self, event_id: u32, new_capacity: u32) -> Result<(), String> {
+            EventManagement::update_event_capacity(&mut self.storage, event_id, new_capacity)
+        }
+
+        #[ink(message)]
+        pub fn update_base_ticket_price(&mut self, event_id: u32, new_price: u128) -> Result<(), String> {
+            EventManagement::update_base_ticket_price(&mut self.storage, event_id, new_price)
+        }
+
+        #[ink(message)]
+        pub fn get_event_stats(&self, event_id: u32) -> Option<EventStats> {
+            EventManagement::get_event_stats(&self.storage, event_id)
+        }
+
+        #[ink(message)]
+        pub fn get_event_analytics(&self, event_id: u32) -> Option<EventAnalytics> {
+            EventManagement::get_event_analytics(&self.storage, event_id)
+        }
+
+        // Ticket purchasing methods
+        #[ink(message)]
+        pub fn purchase_ticket(&mut self, event_id: u32, section: String, row: String, seat: u32) -> Result<u64, String> {
+            let caller = self.env().caller();
+            TicketManagement::purchase_ticket(&mut self.storage, event_id, section, row, seat, caller)
+        }
+
+        #[ink(message)]
+        pub fn get_ticket(&self, ticket_id: u64) -> Option<SportsTicket> {
+            TicketManagement::get_ticket(&self.storage, ticket_id)
+        }
+
+        #[ink(message)]
+        pub fn get_tickets_by_owner(&self, owner: ink::primitives::AccountId) -> Vec<SportsTicket> {
+            TicketManagement::get_tickets_by_owner(&self.storage, owner)
+        }
+
+        #[ink(message)]
+        pub fn get_tickets_by_event(&self, event_id: u32) -> Vec<SportsTicket> {
+            TicketManagement::get_tickets_by_event(&self.storage, event_id)
+        }
+
+        // Currency management methods
         #[ink(message)]
         pub fn get_supported_currencies(&self) -> Vec<CurrencyId> {
             self.storage.supported_currencies.clone()
@@ -184,15 +283,10 @@ pub mod sports_broker {
             self.storage.platform_stats.total_revenue
         }
 
-        // Analytics placeholders
+        // Analytics methods
         #[ink(message)]
         pub fn get_platform_stats(&self) -> PlatformStats {
             self.storage.platform_stats.clone()
-        }
-
-        #[ink(message)]
-        pub fn get_event_analytics(&self, event_id: u32) -> Option<EventAnalytics> {
-            self.storage.event_analytics.get(event_id)
         }
 
         #[ink(message)]
@@ -212,37 +306,35 @@ pub mod sports_broker {
             report_id
         }
 
-        // Anti-scalping placeholders
+        // Anti-scalping methods
         #[ink(message)]
         pub fn configure_anti_scalping(
             &mut self,
-            _event_id: u32,
-            _transfer_restrictions: bool,
-            _resale_price_cap: u128,
-            _blacklist_enabled: bool,
-            _whitelist_enabled: bool,
+            event_id: u32,
+            transfer_restrictions: bool,
+            resale_price_cap: u128,
+            blacklist_enabled: bool,
+            whitelist_enabled: bool,
         ) -> Result<(), String> {
-            // TODO: Implement in anti_scalping module
-            Ok(())
+            AntiScalping::configure_anti_scalping(&mut self.storage, event_id, transfer_restrictions, resale_price_cap, blacklist_enabled, whitelist_enabled)
         }
 
         #[ink(message)]
-        pub fn get_anti_scalping_config(&self, _event_id: u32) -> Option<AntiScalpingConfig> {
-            // TODO: Implement in anti_scalping module
-            None
+        pub fn get_anti_scalping_config(&self, event_id: u32) -> Option<AntiScalpingConfig> {
+            AntiScalping::get_anti_scalping_config(&self.storage, event_id)
         }
 
         #[ink(message)]
-        pub fn transfer_ticket(&mut self, _ticket_id: u64, _new_owner: ink::primitives::AccountId) -> Result<(), String> {
-            // TODO: Implement in anti_scalping module
-            Ok(())
+        pub fn transfer_ticket(&mut self, ticket_id: u64, new_owner: ink::primitives::AccountId) -> Result<(), String> {
+            AntiScalping::transfer_ticket(&mut self.storage, ticket_id, new_owner)
         }
 
         #[ink(message)]
-        pub fn list_ticket_for_resale(&mut self, _ticket_id: u64, _price: u128) -> Result<(), String> {
-            // TODO: Implement in anti_scalping module
-            Ok(())
+        pub fn list_ticket_for_resale(&mut self, ticket_id: u64, price: u128) -> Result<(), String> {
+            AntiScalping::list_ticket_for_resale(&mut self.storage, ticket_id, price)
         }
+
+
 
         #[ink(message)]
         pub fn get_resale_listings(&self) -> Vec<ResaleListing> {
@@ -262,210 +354,733 @@ pub mod sports_broker {
             Ok(())
         }
 
-        // Loyalty system placeholders
+        // Loyalty system methods
         #[ink(message)]
-        pub fn create_loyalty_profile(&mut self, _user: ink::primitives::AccountId) -> Result<(), String> {
-            // TODO: Implement in loyalty module
-            Ok(())
+        pub fn create_loyalty_profile(&mut self, user: ink::primitives::AccountId) -> Result<(), String> {
+            Loyalty::create_loyalty_profile(&mut self.storage, user)
         }
 
         #[ink(message)]
-        pub fn get_loyalty_profile(&self, _user: ink::primitives::AccountId) -> Option<LoyaltyProfile> {
-            // TODO: Implement in loyalty module
-            None
+        pub fn get_loyalty_profile(&self, user: ink::primitives::AccountId) -> Option<LoyaltyProfile> {
+            Loyalty::get_loyalty_profile(&self.storage, user)
         }
 
         #[ink(message)]
-        pub fn earn_loyalty_points(&mut self, _user: ink::primitives::AccountId, _points: u32, _reason: String) -> Result<(), String> {
-            // TODO: Implement in loyalty module
-            Ok(())
+        pub fn earn_loyalty_points(&mut self, user: ink::primitives::AccountId, points: u32, reason: String) -> Result<(), String> {
+            Loyalty::award_points(&mut self.storage, user, points, reason)
         }
 
         #[ink(message)]
-        pub fn get_loyalty_discount(&self, _user: ink::primitives::AccountId, _base_price: u128) -> u128 {
-            // TODO: Implement in loyalty module
-            _base_price
+        pub fn get_loyalty_discount(&self, user: ink::primitives::AccountId, base_price: u128) -> u128 {
+            if let Some(profile) = Loyalty::get_loyalty_profile(&self.storage, user) {
+                match profile.current_tier {
+                    LoyaltyTier::Bronze => base_price,
+                    LoyaltyTier::Silver => base_price * 95 / 100, // 5% discount
+                    LoyaltyTier::Gold => base_price * 90 / 100,   // 10% discount
+                    LoyaltyTier::Platinum => base_price * 85 / 100, // 15% discount
+                    LoyaltyTier::Diamond => base_price * 80 / 100,  // 20% discount
+                }
+            } else {
+                base_price
+            }
         }
 
         #[ink(message)]
-        pub fn redeem_reward(&mut self, _user: ink::primitives::AccountId, _reward_type: RewardType, _points_cost: u32) -> Result<u64, String> {
-            // TODO: Implement in loyalty module
-            Ok(1)
+        pub fn redeem_reward(&mut self, user: ink::primitives::AccountId, reward_type: RewardType, points_cost: u32) -> Result<u64, String> {
+            Loyalty::claim_reward(&mut self.storage, user, reward_type, points_cost)
         }
 
         #[ink(message)]
-        pub fn add_points_rule(&mut self, _rule_name: String, _points_per_dollar: u32, _min_purchase: u128) -> Result<u32, String> {
-            // TODO: Implement in loyalty module
-            Ok(1)
+        pub fn add_promotion(&mut self, name: String, description: String, discount_percentage: u8, valid_until: u64) -> Result<u32, String> {
+            Loyalty::create_promotion(&mut self.storage, name, description, discount_percentage, valid_until, LoyaltyTier::Bronze, 0)
         }
 
         #[ink(message)]
-        pub fn add_promotion(&mut self, _name: String, _description: String, _discount_percentage: u8, _valid_until: u64) -> Result<u32, String> {
-            // TODO: Implement in loyalty module
-            Ok(1)
+        pub fn add_referral(&mut self, referrer: ink::primitives::AccountId, referred: ink::primitives::AccountId) -> Result<(), String> {
+            Loyalty::process_referral_bonus(&mut self.storage, referrer, referred)
+        }
+
+
+
+        // Currency management methods
+        #[ink(message)]
+        pub fn update_currency_rate(&mut self, currency: CurrencyId, new_rate: u128) -> Result<(), String> {
+            CurrencyManagement::update_currency_rate(&mut self.storage, currency, new_rate)
         }
 
         #[ink(message)]
-        pub fn add_referral(&mut self, _referrer: ink::primitives::AccountId, _referred: ink::primitives::AccountId) -> Result<(), String> {
-            // TODO: Implement in loyalty module
-            Ok(())
+        pub fn add_supported_currency(&mut self, currency: CurrencyId, rate: u128) -> Result<(), String> {
+            CurrencyManagement::add_supported_currency(&mut self.storage, currency, rate)
         }
 
-        // Additional methods placeholders
+        // Season pass management methods
         #[ink(message)]
-        pub fn update_currency_rate(&mut self, _currency: CurrencyId, _new_rate: u128) -> Result<(), String> {
-            // TODO: Implement in currency_management module
-            Ok(())
+        pub fn create_season_pass_package(
+            &mut self,
+            team_id: u32,
+            season_id: u32,
+            package_name: String,
+            pass_type: SeasonPassType,
+            total_games: u32,
+            base_price: u128,
+            currency: CurrencyId,
+            max_quantity: u32,
+            benefits: SeasonPassBenefits,
+            staking_required: bool,
+            min_staking_amount: u128,
+            staking_reward_rate: u32,
+            sale_start_date: u64,
+            sale_end_date: u64,
+        ) -> Result<u32, String> {
+            SeasonPassManagement::create_season_pass_package(
+                &mut self.storage,
+                team_id,
+                season_id,
+                package_name,
+                pass_type,
+                total_games,
+                base_price,
+                currency,
+                max_quantity,
+                benefits,
+                staking_required,
+                min_staking_amount,
+                staking_reward_rate,
+                sale_start_date,
+                sale_end_date,
+            )
         }
 
         #[ink(message)]
-        pub fn add_supported_currency(&mut self, _currency: CurrencyId, _rate: u128) -> Result<(), String> {
-            // TODO: Implement in currency_management module
-            Ok(())
+        pub fn purchase_season_pass(
+            &mut self,
+            package_id: u32,
+            staking_amount: u128,
+        ) -> Result<u32, String> {
+            let buyer = self.env().caller();
+            let current_time = self.env().block_timestamp();
+            SeasonPassManagement::purchase_season_pass(
+                &mut self.storage,
+                package_id,
+                buyer,
+                staking_amount,
+                current_time,
+            )
         }
 
-        // Helper methods
-        fn get_ticket_transfer_count(&self, _ticket_id: u64) -> u32 {
-            // TODO: Implement in anti_scalping module
-            0
+        #[ink(message)]
+        pub fn activate_season_pass(&mut self, pass_id: u32) -> Result<(), String> {
+            let owner = self.env().caller();
+            let current_time = self.env().block_timestamp();
+            SeasonPassManagement::activate_season_pass(
+                &mut self.storage,
+                pass_id,
+                owner,
+                current_time,
+            )
         }
+
+        #[ink(message)]
+        pub fn use_season_pass_for_event(&mut self, pass_id: u32, event_id: u32) -> Result<(), String> {
+            let owner = self.env().caller();
+            let current_time = self.env().block_timestamp();
+            SeasonPassManagement::use_season_pass_for_event(
+                &mut self.storage,
+                pass_id,
+                event_id,
+                owner,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn transfer_season_pass(&mut self, pass_id: u32, to: AccountId) -> Result<(), String> {
+            let from = self.env().caller();
+            let current_time = self.env().block_timestamp();
+            SeasonPassManagement::transfer_season_pass(
+                &mut self.storage,
+                pass_id,
+                from,
+                to,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_season_pass(&self, pass_id: u32) -> Option<SeasonPass> {
+            SeasonPassManagement::get_season_pass(&self.storage, pass_id)
+        }
+
+        #[ink(message)]
+        pub fn get_user_season_passes(&self, user: AccountId) -> Vec<SeasonPass> {
+            SeasonPassManagement::get_user_season_passes(&self.storage, user)
+        }
+
+        #[ink(message)]
+        pub fn get_team_season_passes(&self, team_id: u32) -> Vec<SeasonPass> {
+            SeasonPassManagement::get_team_season_passes(&self.storage, team_id)
+        }
+
+        #[ink(message)]
+        pub fn get_season_pass_package(&self, package_id: u32) -> Option<SeasonPassPackage> {
+            SeasonPassManagement::get_season_pass_package(&self.storage, package_id)
+        }
+
+        #[ink(message)]
+        pub fn get_season_pass_analytics(&self, package_id: u32) -> Option<SeasonPassAnalytics> {
+            SeasonPassManagement::get_season_pass_analytics(&self.storage, package_id)
+        }
+
+        // ============================================================================
+        // FANTASY SPORTS INTEGRATION METHODS
+        // ============================================================================
+
+        #[ink(message)]
+        pub fn create_fantasy_league(
+            &mut self,
+            name: String,
+            description: String,
+            league_type: FantasyLeagueType,
+            max_teams: u32,
+            entry_fee: u128,
+            start_date: u64,
+            end_date: u64,
+            season_id: u32,
+            sport_type: String,
+            rules: String,
+            scoring_system: String,
+        ) -> Result<u32, String> {
+            let current_time = self.env().block_timestamp();
+            let caller = self.env().caller();
+            
+            FantasySportsManagement::create_fantasy_league(
+                &mut self.storage,
+                name,
+                description,
+                league_type,
+                max_teams,
+                entry_fee,
+                caller,
+                start_date,
+                end_date,
+                season_id,
+                sport_type,
+                rules,
+                scoring_system,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn join_fantasy_league(
+            &mut self,
+            league_id: u32,
+            team_name: String,
+            ticket_id: u64,
+        ) -> Result<u32, String> {
+            let current_time = self.env().block_timestamp();
+            let caller = self.env().caller();
+            
+            FantasySportsManagement::join_fantasy_league(
+                &mut self.storage,
+                caller,
+                league_id,
+                team_name,
+                ticket_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn add_player_to_fantasy_team(
+            &mut self,
+            team_id: u32,
+            player_id: u32,
+        ) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            let caller = self.env().caller();
+            
+            FantasySportsManagement::add_player_to_team(
+                &mut self.storage,
+                team_id,
+                caller,
+                player_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn set_team_captains(
+            &mut self,
+            team_id: u32,
+            captain_id: u32,
+            vice_captain_id: u32,
+        ) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            let caller = self.env().caller();
+            
+            FantasySportsManagement::set_team_captains(
+                &mut self.storage,
+                team_id,
+                caller,
+                captain_id,
+                vice_captain_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn transfer_players(
+            &mut self,
+            team_id: u32,
+            player_out: u32,
+            player_in: u32,
+            week_id: u32,
+        ) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            let caller = self.env().caller();
+            
+            FantasySportsManagement::transfer_players(
+                &mut self.storage,
+                team_id,
+                caller,
+                player_out,
+                player_in,
+                week_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn update_player_stats(
+            &mut self,
+            player_id: u32,
+            points: u32,
+            touchdowns: u32,
+            yards: u32,
+            completion_percentage: Option<u32>,
+            field_goal_percentage: Option<u32>,
+        ) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            
+            FantasySportsManagement::update_player_stats(
+                &mut self.storage,
+                player_id,
+                points,
+                touchdowns,
+                yards,
+                completion_percentage,
+                field_goal_percentage,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn calculate_team_points(
+            &mut self,
+            team_id: u32,
+            week_id: u32,
+        ) -> Result<u32, String> {
+            let current_time = self.env().block_timestamp();
+            
+            FantasySportsManagement::calculate_team_points(
+                &mut self.storage,
+                team_id,
+                week_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_league_leaderboard(&self, league_id: u32) -> Result<FantasyLeaderboard, String> {
+            FantasySportsManagement::get_league_leaderboard(&self.storage, league_id)
+        }
+
+        #[ink(message)]
+        pub fn get_user_fantasy_teams(&self, user: AccountId) -> Vec<FantasyTeam> {
+            FantasySportsManagement::get_user_fantasy_teams(&self.storage, user)
+        }
+
+        #[ink(message)]
+        pub fn get_user_fantasy_leagues(&self, user: AccountId) -> Vec<FantasyLeague> {
+            FantasySportsManagement::get_user_fantasy_leagues(&self.storage, user)
+        }
+
+        #[ink(message)]
+        pub fn award_fantasy_loyalty_points(
+            &mut self,
+            user: AccountId,
+            league_id: u32,
+            points: u32,
+        ) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            
+            FantasySportsManagement::award_fantasy_loyalty_points(
+                &mut self.storage,
+                user,
+                league_id,
+                points,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn create_fantasy_game_week(
+            &mut self,
+            league_id: u32,
+            season_id: u32,
+            start_date: u64,
+            end_date: u64,
+            games: Vec<u32>,
+            transfer_deadline: u64,
+            captain_selection_deadline: u64,
+        ) -> Result<u32, String> {
+            let current_time = self.env().block_timestamp();
+            
+            FantasySportsManagement::create_fantasy_game_week(
+                &mut self.storage,
+                league_id,
+                season_id,
+                start_date,
+                end_date,
+                games,
+                transfer_deadline,
+                captain_selection_deadline,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn activate_fantasy_game_week(&mut self, week_id: u32) -> Result<(), String> {
+            let current_time = self.env().block_timestamp();
+            
+            FantasySportsManagement::activate_fantasy_game_week(
+                &mut self.storage,
+                week_id,
+                current_time,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_fantasy_settings(&self, league_id: u32) -> Result<FantasySettings, String> {
+            FantasySportsManagement::get_fantasy_settings(&self.storage, league_id)
+        }
+
+        #[ink(message)]
+        pub fn update_fantasy_settings(
+            &mut self,
+            league_id: u32,
+            settings: FantasySettings,
+        ) -> Result<(), String> {
+            FantasySportsManagement::update_fantasy_settings(&mut self.storage, league_id, settings)
+        }
+
+
+
+        // ============================================================================
+        // TODO: MISSING FEATURES FROM PRODUCT SPECIFICATION
+        // ============================================================================
+        
+        // SEASON PASS MANAGEMENT (HIGH PRIORITY) - COMPLETED
+        // Implement season pass creation and management
+        // Implement DeFi staking rewards for season pass holders
+        // Implement dynamic playoff pricing based on team performance
+        // Implement season ticket holder benefits and alumni associations
+        // Implement half-season and playoff packages
+        
+        // FANTASY SPORTS INTEGRATION (HIGH PRIORITY) - COMPLETED
+        // Implement fantasy league participation with ticket purchases
+        // Implement exclusive player data access
+        // Implement fantasy sports rewards and leaderboards
+        // Implement fantasy sports integration with loyalty system
+        
+        // ADVANCED TEAM LOYALTY PROGRAMS (HIGH PRIORITY)
+        // TODO: Implement staking on favorite teams
+        // TODO: Implement attendance streak rewards
+        // TODO: Implement team performance-based loyalty tiers
+        // TODO: Implement team-specific loyalty benefits
+        
+        // STATISTICAL INTEGRATION (MEDIUM PRIORITY)
+        // TODO: Implement real-time game data integration
+        // TODO: Implement player statistics and performance analytics
+        // TODO: Implement historical performance tracking
+        // TODO: Implement statistical analysis for pricing optimization
+        
+        // VENUE-SPECIFIC FEATURES (HIGH PRIORITY)
+        // TODO: Implement parking pass integration
+        // TODO: Implement concession credits system
+        // TODO: Implement merchandise bundles
+        // TODO: Implement venue loyalty programs
+        // TODO: Implement venue-specific pricing and packages
+        
+        // GROUP SALES OPTIMIZATION (HIGH PRIORITY)
+        // TODO: Implement corporate packages
+        // TODO: Implement bulk purchase coordination
+        // TODO: Implement group discount algorithms
+        // TODO: Implement seating coordination tools
+        // TODO: Implement group payment splitting
+        
+        // ADVANCED DEFI INTEGRATION (MEDIUM PRIORITY)
+        // TODO: Implement liquid staking rewards
+        // TODO: Implement yield generation on escrow funds
+        // TODO: Implement automated currency conversion
+        // TODO: Implement staking-based loyalty rewards
+        // TODO: Implement DeFi savings accounts for event budgeting
+        
+        // CROSS-CHAIN EVENT DISCOVERY (LOWER PRIORITY)
+        // TODO: Implement real-time event aggregation
+        // TODO: Implement AI-powered recommendations
+        // TODO: Implement advanced filtering systems
+        // TODO: Implement social discovery features
+        // TODO: Implement cross-chain event search
+        
+        // ADVANCED TICKET FEATURES (MEDIUM PRIORITY)
+        // TODO: Implement NFT ticket authentication
+        // TODO: Implement digital collectibles
+        // TODO: Implement proof-of-attendance tokens
+        // TODO: Implement exclusive content access
+        // TODO: Implement ticket upgrade and downgrade
+        
+        // SOCIAL AND COMMUNITY FEATURES (LOWER PRIORITY)
+        // TODO: Implement friend activity feeds
+        // TODO: Implement group event planning
+        // TODO: Implement community challenges
+        // TODO: Implement user-generated content
+        // TODO: Implement social event sharing
+        
+        // MERCHANDISE AND EXPERIENCE BUNDLES (MEDIUM PRIORITY)
+        // TODO: Implement merchandise integration
+        // TODO: Implement VIP experience packages
+        // TODO: Implement meet-and-greet bundles
+        // TODO: Implement backstage access packages
+        
+        // ADVANCED ANALYTICS AND INSIGHTS (MEDIUM PRIORITY)
+        // TODO: Implement market intelligence reports
+        // TODO: Implement pricing optimization algorithms
+        // TODO: Implement demand forecasting
+        // TODO: Implement revenue optimization analytics
+        
+        // SECURITY AND COMPLIANCE (HIGH PRIORITY)
+        // TODO: Implement advanced fraud detection
+        // TODO: Implement KYC/AML integration
+        // TODO: Implement regulatory compliance features
+        // TODO: Implement audit and reporting systems
     } // End of impl SportsBroker
 
     #[cfg(test)]
     mod tests {
         use super::*;
-        use ink::env::test;
-        use ink::env::DefaultEnvironment;
+        use crate::tests::*;
 
-        fn setup() -> SportsBroker {
-            let accounts = test::default_accounts::<DefaultEnvironment>();
-            test::set_caller::<DefaultEnvironment>(accounts.alice);
-            test::set_value_transferred::<DefaultEnvironment>(0);
-            test::set_block_timestamp::<DefaultEnvironment>(0);
-            test::set_block_number::<DefaultEnvironment>(0);
-            test::set_contract::<DefaultEnvironment>(accounts.alice);
-            SportsBroker::new()
-        }
-
-        fn setup_with_test_env<F>(test_fn: F)
-        where
-            F: FnOnce(&mut SportsBroker),
-        {
-            ink::env::test::run_test::<DefaultEnvironment, _>(|_| {
-                let mut contract = setup();
-                test_fn(&mut contract);
-                Ok(())
-            }).unwrap()
-        }
-
+        // Core functionality tests
         #[test]
-        fn new_works() {
-            setup_with_test_env(|contract| {
-                assert_eq!(contract.storage.total_teams, 0);
-                assert_eq!(contract.storage.total_venues, 0);
-                assert_eq!(contract.storage.total_events, 0);
-                assert_eq!(contract.storage.total_tickets, 0);
-                assert_eq!(contract.storage.total_seasons, 0);
-            });
-        }
-
-        #[test]
-        fn owner_management_works() {
-            setup_with_test_env(|contract| {
-                let accounts = test::default_accounts::<DefaultEnvironment>();
-                let owner = contract.get_owner();
-                assert_eq!(owner, accounts.alice);
-            });
+        fn contract_initialization_works() {
+            CoreTests::test_contract_initialization();
         }
 
         #[test]
         fn register_team_works() {
-            setup_with_test_env(|contract| {
-                let team_id = contract.register_team("Lakers".to_string(), "Basketball".to_string(), "Los Angeles".to_string());
-                assert_eq!(team_id, 1);
-                assert_eq!(contract.storage.total_teams, 1);
-                
-                let team = contract.get_team(team_id).unwrap();
-                assert_eq!(team.name, "Lakers");
-                assert_eq!(team.city, "Los Angeles");
-            });
-        }
-
-        #[test]
-        fn update_team_performance_works() {
-            setup_with_test_env(|contract| {
-                let team_id = contract.register_team("Lakers".to_string(), "Basketball".to_string(), "Los Angeles".to_string());
-                
-                let result = contract.update_team_performance(team_id, 1, 30, 10, 8000, 5, 11000, 10000);
-                assert!(result.is_ok());
-                
-                let performance = contract.get_team_performance(team_id).unwrap();
-                assert_eq!(performance.wins, 30);
-                assert_eq!(performance.losses, 10);
-                assert_eq!(performance.win_percentage, 7500); // 75%
-            });
-        }
-
-        #[test]
-        fn dynamic_pricing_multipliers_work() {
-            setup_with_test_env(|contract| {
-                let team_id = contract.register_team("Lakers".to_string(), "Basketball".to_string(), "Los Angeles".to_string());
-                
-                // Update performance to trigger multiplier calculation
-                contract.update_team_performance(team_id, 1, 30, 10, 8000, 5, 11000, 10000).unwrap();
-                
-                let multiplier = contract.get_pricing_multiplier(team_id).unwrap();
-                // With 75% win rate, should have 1.2x performance multiplier
-                assert_eq!(multiplier.performance_multiplier, 12000);
-            });
-        }
-
-        #[test]
-        fn currency_management_works() {
-            setup_with_test_env(|contract| {
-                let currencies = contract.get_supported_currencies();
-                assert!(currencies.contains(&CurrencyId::DOT));
-                assert!(currencies.contains(&CurrencyId::ACA));
-                
-                let dot_rate = contract.get_currency_rate(CurrencyId::DOT).unwrap();
-                assert_eq!(dot_rate, 1_000_000_000_000_000_000);
-            });
-        }
-
-        #[test]
-        fn get_stats_works() {
-            setup_with_test_env(|contract| {
-                let _team_id = contract.register_team("Lakers".to_string(), "Basketball".to_string(), "Los Angeles".to_string());
-                
-                let stats = contract.get_stats();
-                assert_eq!(stats.0, 1); // teams
-                assert_eq!(stats.1, 0); // venues
-                assert_eq!(stats.2, 0); // events
-                assert_eq!(stats.3, 0); // tickets
-                assert_eq!(stats.4, 0); // seasons
-            });
+            CoreTests::test_register_team();
         }
 
         #[test]
         fn register_venue_works() {
-            setup_with_test_env(|contract| {
-                let venue_id = contract.register_venue("Staples Center".to_string(), 20000, "Los Angeles".to_string(), "Basketball".to_string());
-                assert_eq!(venue_id, 1);
-                assert_eq!(contract.storage.total_venues, 1);
-                
-                let venue = contract.get_venue(venue_id).unwrap();
-                assert_eq!(venue.name, "Staples Center");
-                assert_eq!(venue.capacity, 20000);
-            });
+            CoreTests::test_register_venue();
         }
 
         #[test]
+        fn get_stats_works() {
+            CoreTests::test_get_stats();
+        }
+
+        #[test]
+        fn update_team_performance_works() {
+            CoreTests::test_update_team_performance();
+        }
+
+        #[test]
+        fn owner_management_works() {
+            CoreTests::test_owner_management();
+        }
+
+        #[test]
+        fn dynamic_pricing_multipliers_work() {
+            CoreTests::test_dynamic_pricing_multipliers();
+        }
+
+        #[test]
+        fn currency_management_works() {
+            CoreTests::test_currency_management();
+        }
+
+        // Event management tests
+        #[test]
         fn create_season_works() {
-            setup_with_test_env(|contract| {
-                let season_id = contract.create_season("2024 Season".to_string(), "Basketball".to_string(), 2024, 1000000000, 2000000000);
-                assert_eq!(season_id, 1);
-                assert_eq!(contract.storage.total_seasons, 1);
-            });
+            EventManagementTests::test_create_season();
+        }
+
+        #[test]
+        fn create_sports_event_works() {
+            EventManagementTests::test_create_sports_event();
+        }
+
+        #[test]
+        fn update_event_capacity_works() {
+            EventManagementTests::test_update_event_capacity();
+        }
+
+        #[test]
+        fn update_base_ticket_price_works() {
+            EventManagementTests::test_update_base_ticket_price();
+        }
+
+        #[test]
+        fn search_events_advanced_works() {
+            EventManagementTests::test_search_events_advanced();
+        }
+
+        #[test]
+        fn update_event_status_works() {
+            EventManagementTests::test_update_event_status();
+        }
+
+        #[test]
+        fn get_event_stats_works() {
+            EventManagementTests::test_get_event_stats();
+        }
+
+        #[test]
+        fn get_event_analytics_works() {
+            EventManagementTests::test_get_event_analytics();
+        }
+
+        #[test]
+        fn get_events_by_team_works() {
+            EventManagementTests::test_get_events_by_team();
+        }
+
+        #[test]
+        fn get_events_by_venue_works() {
+            EventManagementTests::test_get_events_by_venue();
+        }
+
+        #[test]
+        fn get_events_by_sport_works() {
+            EventManagementTests::test_get_events_by_sport();
+        }
+
+        // Season pass management tests
+        #[test]
+        fn create_season_pass_package_works() {
+            SeasonPassTests::test_create_season_pass_package();
+        }
+
+        #[test]
+        fn purchase_season_pass_works() {
+            SeasonPassTests::test_purchase_season_pass();
+        }
+
+        #[test]
+        fn activate_season_pass_works() {
+            SeasonPassTests::test_activate_season_pass();
+        }
+
+        #[test]
+        fn use_season_pass_for_event_works() {
+            SeasonPassTests::test_use_season_pass_for_event();
+        }
+
+        #[test]
+        fn transfer_season_pass_works() {
+            SeasonPassTests::test_transfer_season_pass();
+        }
+
+        #[test]
+        fn season_pass_analytics_works() {
+            SeasonPassTests::test_season_pass_analytics();
+        }
+
+        #[test]
+        fn season_pass_validation_works() {
+            SeasonPassTests::test_season_pass_validation();
+        }
+
+        // Fantasy sports integration tests
+        #[test]
+        fn create_fantasy_league_works() {
+            FantasySportsTests::test_create_fantasy_league();
+        }
+
+        #[test]
+        fn join_fantasy_league_works() {
+            FantasySportsTests::test_join_fantasy_league();
+        }
+
+        #[test]
+        fn add_player_to_fantasy_team_works() {
+            FantasySportsTests::test_add_player_to_fantasy_team();
+        }
+
+        #[test]
+        fn set_team_captains_works() {
+            FantasySportsTests::test_set_team_captains();
+        }
+
+        #[test]
+        fn transfer_players_works() {
+            FantasySportsTests::test_transfer_players();
+        }
+
+        #[test]
+        fn update_player_stats_works() {
+            FantasySportsTests::test_update_player_stats();
+        }
+
+        #[test]
+        fn calculate_team_points_works() {
+            FantasySportsTests::test_calculate_team_points();
+        }
+
+        #[test]
+        fn get_league_leaderboard_works() {
+            FantasySportsTests::test_get_league_leaderboard();
+        }
+
+        #[test]
+        fn get_user_fantasy_teams_works() {
+            FantasySportsTests::test_get_user_fantasy_teams();
+        }
+
+
+
+        #[test]
+        fn get_user_fantasy_leagues_works() {
+            FantasySportsTests::test_get_user_fantasy_leagues();
+        }
+
+        #[test]
+        fn award_fantasy_loyalty_points_works() {
+            FantasySportsTests::test_award_fantasy_loyalty_points();
+        }
+
+        #[test]
+        fn create_fantasy_game_week_works() {
+            FantasySportsTests::test_create_fantasy_game_week();
+        }
+
+        #[test]
+        fn activate_fantasy_game_week_works() {
+            FantasySportsTests::test_activate_fantasy_game_week();
+        }
+
+        #[test]
+        fn get_fantasy_settings_works() {
+            FantasySportsTests::test_get_fantasy_settings();
+        }
+
+        #[test]
+        fn update_fantasy_settings_works() {
+            FantasySportsTests::test_update_fantasy_settings();
         }
     } // End of tests module
 } // End of sports_broker module

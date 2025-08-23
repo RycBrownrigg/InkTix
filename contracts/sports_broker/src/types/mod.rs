@@ -8,7 +8,9 @@ pub mod venue;
 pub mod analytics;
 pub mod pricing;
 pub mod anti_scalping;
-pub mod loyalty; // Add this line
+pub mod loyalty;
+pub mod season_pass;
+pub mod fantasy_sports;
 
 pub use currency::*;
 pub use event::*;
@@ -20,4 +22,6 @@ pub use venue::*;
 pub use analytics::*;
 pub use pricing::*;
 pub use anti_scalping::*;
-pub use loyalty::*; // Add this line
+pub use loyalty::*;
+pub use season_pass::*;
+pub use fantasy_sports::*;

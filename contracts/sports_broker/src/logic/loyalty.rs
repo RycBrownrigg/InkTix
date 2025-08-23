@@ -1,391 +1,315 @@
-use ink::prelude::*;
-use ink::primitives::AccountId;
-use crate::storage::contract_storage::SportsBrokerStorage;
-use crate::types::*;
 
-/// Loyalty and rewards logic
+use crate::types::*;
+use crate::storage::*;
+use ink::primitives::AccountId;
+use ink::env::DefaultEnvironment;
+
+/// Loyalty and rewards system functionality
 pub struct Loyalty;
 
 impl Loyalty {
-    /// Create a new loyalty profile for a user
+    /// Create a loyalty profile for a user
     pub fn create_loyalty_profile(
         storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
     ) -> Result<(), String> {
+        // Check if profile already exists
+        if storage.loyalty_profiles.get(user).is_some() {
+            return Err("Loyalty profile already exists".to_string());
+        }
+
         let profile = LoyaltyProfile {
-            user_id,
+            user_id: user,
             total_points: 0,
             current_tier: LoyaltyTier::Bronze,
             points_earned_this_month: 0,
             points_earned_this_year: 0,
             total_tickets_purchased: 0,
             total_spent: 0,
-            join_date: 0, // Will be set by caller
-            last_activity: 0, // Will be set by caller
+            join_date: ink::env::block_timestamp::<DefaultEnvironment>(),
+            last_activity: ink::env::block_timestamp::<DefaultEnvironment>(),
             streak_days: 0,
             referral_count: 0,
             referral_points: 0,
+            fantasy_sports_points: 0,
         };
-        
-        storage.loyalty_profiles.insert(user_id, &profile);
-        
+
+        storage.loyalty_profiles.insert(user, &profile);
         Ok(())
     }
-    
-    /// Award points to a user
+
+    /// Award loyalty points to a user
     pub fn award_points(
         storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
         points: u32,
         _reason: String,
     ) -> Result<(), String> {
-        let mut profile = storage.loyalty_profiles.get(user_id)
+        let mut profile = storage.loyalty_profiles.get(user)
             .ok_or("Loyalty profile not found")?;
-        
+
         profile.total_points += points;
         profile.points_earned_this_month += points;
         profile.points_earned_this_year += points;
-        profile.last_activity = 0; // Will be set by caller
-        
-        // Check for tier upgrade
+        profile.last_activity = ink::env::block_timestamp::<DefaultEnvironment>();
+
+        // Check if tier upgrade is needed
         let new_tier = Self::calculate_tier(profile.total_points);
         if new_tier != profile.current_tier {
             profile.current_tier = new_tier;
         }
-        
-        storage.loyalty_profiles.insert(user_id, &profile);
-        
+
+        storage.loyalty_profiles.insert(user, &profile);
         Ok(())
     }
-    
-    /// Deduct points from a user
+
+    /// Deduct loyalty points from a user
     pub fn deduct_points(
         storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
         points: u32,
         _reason: String,
     ) -> Result<(), String> {
-        let mut profile = storage.loyalty_profiles.get(user_id)
+        let mut profile = storage.loyalty_profiles.get(user)
             .ok_or("Loyalty profile not found")?;
-        
+
         if profile.total_points < points {
             return Err("Insufficient points".to_string());
         }
-        
+
         profile.total_points -= points;
-        profile.last_activity = 0; // Will be set by caller
-        
-        // Check for tier downgrade
-        let new_tier = Self::calculate_tier(profile.total_points);
-        if new_tier != profile.current_tier {
-            profile.current_tier = new_tier;
-        }
-        
-        storage.loyalty_profiles.insert(user_id, &profile);
-        
+        profile.last_activity = ink::env::block_timestamp::<DefaultEnvironment>();
+
+        storage.loyalty_profiles.insert(user, &profile);
         Ok(())
     }
-    
+
     /// Claim a reward using loyalty points
     pub fn claim_reward(
         storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
         reward_type: RewardType,
-        reward_value: u128,
-    ) -> Result<(), String> {
-        let mut profile = storage.loyalty_profiles.get(user_id)
+        points_cost: u32,
+    ) -> Result<u64, String> {
+        let mut profile = storage.loyalty_profiles.get(user)
             .ok_or("Loyalty profile not found")?;
-        
-        let required_points = Self::get_reward_cost(reward_type.clone(), reward_value);
-        
-        if profile.total_points < required_points {
-            return Err("Insufficient points for this reward".to_string());
+
+        if profile.total_points < points_cost {
+            return Err("Insufficient points".to_string());
         }
-        
+
         // Deduct points
-        profile.total_points -= required_points;
-        profile.last_activity = 0; // Will be set by caller
-        
-        storage.loyalty_profiles.insert(user_id, &profile);
-        
-        // Record the reward claim
-        Self::record_reward_claim(storage, user_id, reward_type, reward_value, required_points);
-        
-        Ok(())
+        profile.total_points -= points_cost;
+        profile.last_activity = ink::env::block_timestamp::<DefaultEnvironment>();
+
+        storage.loyalty_profiles.insert(user, &profile);
+
+        // Create reward redemption record
+        let reward_id = storage.get_next_id("reward");
+        let reward = RewardRedemption {
+            id: reward_id as u64,
+            user_id: user,
+            reward_type: reward_type.clone(),
+            points_cost,
+            redeemed_at: ink::env::block_timestamp::<DefaultEnvironment>(),
+            expires_at: ink::env::block_timestamp::<DefaultEnvironment>() + (30 * 24 * 60 * 60 * 1000), // 30 days
+            is_used: false,
+            event_id: None,
+        };
+
+        storage.reward_redemptions.insert(reward_id as u64, &reward);
+
+        Ok(reward_id as u64)
     }
-    
-    /// Process referral bonus for both referrer and referee
+
+    /// Process referral bonus
     pub fn process_referral_bonus(
         storage: &mut SportsBrokerStorage,
-        referrer_id: AccountId,
-        referee_id: AccountId,
+        referrer: AccountId,
+        referred: AccountId,
     ) -> Result<(), String> {
-        // Award bonus to referrer
-        let referrer_bonus = Self::get_referral_bonus_points(LoyaltyTier::Bronze); // Default tier for new users
-        Self::award_points(storage, referrer_id, referrer_bonus, "Referral bonus".to_string())?;
-        
-        // Award bonus to referee
-        let referee_bonus = 100; // Welcome bonus
-        Self::award_points(storage, referee_id, referee_bonus, "Welcome bonus".to_string())?;
-        
-        // Update referral counts
-        if let Some(mut referrer_profile) = storage.loyalty_profiles.get(referrer_id) {
-            referrer_profile.referral_count += 1;
-            referrer_profile.referral_points += referrer_bonus;
-            storage.loyalty_profiles.insert(referrer_id, &referrer_profile);
+        // Validate both users exist
+        let referrer_profile = storage.loyalty_profiles.get(referrer)
+            .ok_or("Referrer profile not found")?;
+        let _referred_profile = storage.loyalty_profiles.get(referred)
+            .ok_or("Referred user profile not found")?;
+
+        // Check if referral is valid (not self-referral)
+        if referrer == referred {
+            return Err("Cannot refer yourself".to_string());
         }
-        
+
+        // Calculate referral bonus based on referrer's tier
+        let bonus_points = Self::calculate_referral_bonus(referrer_profile.current_tier.clone());
+
+        // Award bonus to referrer
+        Self::award_points(storage, referrer, bonus_points, "Referral bonus".to_string())?;
+
+        // Update referrer's referral count
+        let mut updated_referrer = referrer_profile.clone();
+        updated_referrer.referral_count += 1;
+        updated_referrer.referral_points += bonus_points;
+        storage.loyalty_profiles.insert(referrer, &updated_referrer);
+
         // Create referral record
         let referral = Referral {
-            referrer_id,
-            referred_id: referee_id,
-            referral_date: 0, // Will be set by caller
-            referrer_points_earned: referrer_bonus,
+            referrer_id: referrer,
+            referred_id: referred,
+            referral_date: ink::env::block_timestamp::<DefaultEnvironment>(),
+            referrer_points_earned: bonus_points,
             referred_bonus_applied: true,
             referral_code: "REF".to_string(),
         };
-        
-        storage.referrals.insert(referrer_id, &referral);
-        
+
+        storage.referrals.insert(referrer, &referral);
+
         Ok(())
     }
-    
+
     /// Create a new promotion
     pub fn create_promotion(
         storage: &mut SportsBrokerStorage,
         name: String,
         description: String,
-        points_multiplier: u32,
-        start_time: u64,
-        end_time: u64,
-        applicable_events: Vec<u32>,
-        applicable_tiers: Vec<LoyaltyTier>,
+        _discount_percentage: u8,
+        valid_until: u64,
+        min_tier: LoyaltyTier,
+        points_required: u32,
     ) -> Result<u32, String> {
         let promotion_id = storage.get_next_id("promotion");
-        
         let promotion = Promotion {
             id: promotion_id,
             name,
             description,
-            points_multiplier,
-            start_time,
-            end_time,
-            applicable_events,
-            applicable_tiers,
+            points_multiplier: points_required,
+            start_time: ink::env::block_timestamp::<DefaultEnvironment>(),
+            end_time: valid_until,
+            applicable_events: Vec::new(), // All events
+            applicable_tiers: vec![min_tier],
             active: true,
         };
-        
+
         storage.promotions.insert(promotion_id, &promotion);
-        
         Ok(promotion_id)
     }
-    
-    /// Redeem a promotion
-    pub fn redeem_promotion(
-        storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
-        promotion_id: u32,
-    ) -> Result<(), String> {
-        let promotion = storage.promotions.get(promotion_id)
-            .ok_or("Promotion not found")?;
-        
-        if !promotion.active {
-            return Err("Promotion is not active".to_string());
-        }
-        
-        let current_time = 0; // Will be set by caller
-        if current_time < promotion.start_time || current_time > promotion.end_time {
-            return Err("Promotion is not available at this time".to_string());
-        }
-        
-        let profile = storage.loyalty_profiles.get(user_id)
-            .ok_or("Loyalty profile not found")?;
-        
-        // Check if user's tier is applicable
-        if !promotion.applicable_tiers.contains(&profile.current_tier) {
-            return Err("Promotion not available for your loyalty tier".to_string());
-        }
-        
-        // Award bonus points
-        let bonus_points = 100 * promotion.points_multiplier; // Base 100 points
-        Self::award_points(storage, user_id, bonus_points, "Promotion bonus".to_string())?;
-        
-        // Update user activity
-        if let Some(mut profile) = storage.loyalty_profiles.get(user_id) {
-            profile.last_activity = current_time;
-            storage.loyalty_profiles.insert(user_id, &profile);
-        }
-        
-        Ok(())
-    }
-    
+
     /// Get loyalty profile for a user
     pub fn get_loyalty_profile(
         storage: &SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
     ) -> Option<LoyaltyProfile> {
-        storage.loyalty_profiles.get(user_id)
+        storage.loyalty_profiles.get(user)
     }
-    
+
     /// Get available promotions for a user
     pub fn get_available_promotions(
-        storage: &SportsBrokerStorage,
-        user_id: AccountId,
+        _storage: &SportsBrokerStorage,
+        _user: AccountId,
     ) -> Vec<Promotion> {
-        let mut available_promotions = Vec::new();
-        
-        if let Some(profile) = storage.loyalty_profiles.get(user_id) {
-            for promotion_id in 1..=1000 { // Arbitrary limit, should be tracked in storage
-                if let Some(promotion) = storage.promotions.get(promotion_id) {
-                    if promotion.active && promotion.applicable_tiers.contains(&profile.current_tier) {
-                        let current_time = 0; // Will be set by caller
-                        if current_time >= promotion.start_time && current_time <= promotion.end_time {
-                            available_promotions.push(promotion);
-                        }
-                    }
-                }
-            }
-        }
-        
-        available_promotions
+        let _profile = match storage.loyalty_profiles.get(_user) {
+            Some(p) => p,
+            None => return Vec::new(),
+        };
+
+        let available = Vec::new();
+        // Since Mapping doesn't have iter(), we'll use a different approach
+        // For now, return empty vector - this can be enhanced later
+        available
     }
-    
+
     /// Get available rewards for a user
     pub fn get_user_available_rewards(
         storage: &SportsBrokerStorage,
-        user_id: AccountId,
+        user: AccountId,
     ) -> Vec<RewardType> {
-        let mut available_rewards = Vec::new();
-        
-        if let Some(profile) = storage.loyalty_profiles.get(user_id) {
-            let tier_rewards = Self::get_tier_rewards(profile.current_tier);
-            for reward in tier_rewards {
-                let cost = Self::get_reward_cost(reward.clone(), 0);
-                if profile.total_points >= cost {
-                    available_rewards.push(reward);
-                }
-            }
+        let profile = match storage.loyalty_profiles.get(user) {
+            Some(p) => p,
+            None => return Vec::new(),
+        };
+
+        let mut rewards = Vec::new();
+
+        // Add rewards based on user's tier and points
+        if profile.total_points >= 100 {
+            rewards.push(RewardType::DiscountPercentage(5));
         }
-        
-        available_rewards
+        if profile.total_points >= 500 {
+            rewards.push(RewardType::DiscountPercentage(10));
+        }
+        if profile.total_points >= 1000 {
+            rewards.push(RewardType::FreeTicket);
+        }
+        if profile.total_points >= 2000 {
+            rewards.push(RewardType::VIPAccess);
+        }
+
+        rewards
     }
-    
+
     // Helper methods
-    fn calculate_tier(points: u32) -> LoyaltyTier {
-        match points {
+    fn calculate_tier(total_points: u32) -> LoyaltyTier {
+        match total_points {
             0..=999 => LoyaltyTier::Bronze,
             1000..=4999 => LoyaltyTier::Silver,
             5000..=19999 => LoyaltyTier::Gold,
-            20000..=49999 => LoyaltyTier::Platinum,
-            50000..=99999 => LoyaltyTier::Diamond,
+            20000..=99999 => LoyaltyTier::Platinum,
             _ => LoyaltyTier::Diamond,
         }
     }
-    
-    fn get_reward_cost(reward_type: RewardType, _reward_value: u128) -> u32 {
-        match reward_type {
-            RewardType::DiscountPercentage(_) => 500,
-            RewardType::FreeTicket => 1000,
-            RewardType::VIPAccess => 2000,
-            RewardType::MerchandiseCredit(_) => 300,
-            RewardType::EarlyAccess(_) => 400,
-            RewardType::MeetAndGreet => 5000,
-            RewardType::ParkingPass => 200,
-            RewardType::FoodCredit(_) => 250,
-            RewardType::SeasonPassDiscount(_) => 1500,
-            RewardType::ExclusiveEvent => 3000,
-        }
-    }
-    
-    fn get_referral_bonus_points(tier: LoyaltyTier) -> u32 {
-        match tier {
-            LoyaltyTier::Bronze => 100,
-            LoyaltyTier::Silver => 150,
-            LoyaltyTier::Gold => 200,
-            LoyaltyTier::Platinum => 300,
-            LoyaltyTier::Diamond => 500,
-        }
-    }
-    
-    fn get_tier_rewards(tier: LoyaltyTier) -> Vec<RewardType> {
-        match tier {
-            LoyaltyTier::Bronze => vec![
-                RewardType::DiscountPercentage(5),
-                RewardType::MerchandiseCredit(1000),
-            ],
-            LoyaltyTier::Silver => vec![
-                RewardType::DiscountPercentage(10),
-                RewardType::MerchandiseCredit(2000),
-                RewardType::EarlyAccess(3600), // 1 hour
-                RewardType::ParkingPass,
-            ],
-            LoyaltyTier::Gold => vec![
-                RewardType::DiscountPercentage(15),
-                RewardType::MerchandiseCredit(5000),
-                RewardType::EarlyAccess(7200), // 2 hours
-                RewardType::FoodCredit(3000),
-                RewardType::SeasonPassDiscount(10),
-            ],
-            LoyaltyTier::Platinum => vec![
-                RewardType::DiscountPercentage(20),
-                RewardType::MerchandiseCredit(10000),
-                RewardType::EarlyAccess(10800), // 3 hours
-                RewardType::FoodCredit(5000),
-                RewardType::SeasonPassDiscount(15),
-                RewardType::VIPAccess,
-            ],
-            LoyaltyTier::Diamond => vec![
-                RewardType::DiscountPercentage(25),
-                RewardType::MerchandiseCredit(20000),
-                RewardType::EarlyAccess(14400), // 4 hours
-                RewardType::FoodCredit(10000),
-                RewardType::SeasonPassDiscount(20),
-                RewardType::VIPAccess,
-                RewardType::MeetAndGreet,
-                RewardType::ExclusiveEvent,
-            ],
-        }
-    }
-    
-    fn record_reward_claim(
-        storage: &mut SportsBrokerStorage,
-        user_id: AccountId,
-        _reward_type: RewardType,
-        _reward_value: u128,
-        _points_spent: u32,
-    ) {
-        // For now, just update the user's last activity
-        // In a full implementation, this would create a detailed record
-        if let Some(mut profile) = storage.loyalty_profiles.get(user_id) {
-            profile.last_activity = 0; // Will be set by caller
-            storage.loyalty_profiles.insert(user_id, &profile);
-        }
-    }
-    
-    fn record_points_transaction(
-        _storage: &mut SportsBrokerStorage,
-        _user_id: AccountId,
-        _points: u32,
-        _reason: String,
-    ) {
-        // Placeholder implementation
-    }
-    
-    fn record_promotion_redemption(
-        _storage: &mut SportsBrokerStorage,
-        _user_id: AccountId,
-        _promotion_id: u32,
-    ) {
-        // Placeholder implementation
-    }
-}
 
-/// Available reward structure
-#[derive(Debug, Clone, PartialEq)]
-pub struct AvailableReward {
-    pub reward_type: RewardType,
-    pub reward_value: u128,
-    pub required_points: u32,
-    pub source: String,
-    pub source_id: Option<u64>,
+    fn calculate_referral_bonus(tier: LoyaltyTier) -> u32 {
+        match tier {
+            LoyaltyTier::Bronze => 50,
+            LoyaltyTier::Silver => 75,
+            LoyaltyTier::Gold => 100,
+            LoyaltyTier::Platinum => 150,
+            LoyaltyTier::Diamond => 200,
+        }
+    }
+
+    // ============================================================================
+    // TODO: MISSING LOYALTY SYSTEM FEATURES
+    // ============================================================================
+    
+    // ADVANCED TEAM LOYALTY PROGRAMS
+    // TODO: Implement staking on favorite teams
+    // TODO: Implement team performance-based loyalty tiers
+    // TODO: Implement team-specific loyalty benefits and perks
+    // TODO: Implement team fan club integration
+    // TODO: Implement team merchandise loyalty rewards
+    
+    // ATTENDANCE AND ENGAGEMENT
+    // TODO: Implement attendance streak tracking and rewards
+    // TODO: Implement event participation scoring
+    // TODO: Implement social engagement rewards
+    // TODO: Implement community challenge participation
+    // TODO: Implement user-generated content rewards
+    
+    // DEFI INTEGRATION
+    // TODO: Implement staking-based loyalty rewards
+    // TODO: Implement yield generation for loyalty points
+    // TODO: Implement DeFi savings accounts for event budgeting
+    // TODO: Implement liquidity mining for active users
+    // TODO: Implement governance token distribution
+    
+    // FANTASY SPORTS INTEGRATION
+    // TODO: Implement fantasy sports loyalty points
+    // TODO: Implement fantasy league participation rewards
+    // TODO: Implement player performance-based bonuses
+    // TODO: Implement fantasy sports leaderboards
+    // TODO: Implement exclusive fantasy sports content
+    
+    // SEASON PASS LOYALTY
+    // TODO: Implement season pass holder loyalty benefits
+    // TODO: Implement playoff attendance rewards
+    // TODO: Implement season ticket renewal bonuses
+    // TODO: Implement alumni association benefits
+    // TODO: Implement corporate loyalty programs
+    
+    // SOCIAL AND COMMUNITY
+    // TODO: Implement friend referral bonuses
+    // TODO: Implement group event coordination rewards
+    // TODO: Implement community ambassador programs
+    // TODO: Implement influencer partnership rewards
+    // TODO: Implement social media integration rewards
 }

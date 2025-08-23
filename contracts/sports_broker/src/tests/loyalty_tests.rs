@@ -1,4 +1,4 @@
-use ink::prelude::*;
+
 
 /// Loyalty tests
 pub struct LoyaltyTests;

@@ -1,4 +1,4 @@
-use ink::prelude::*;
+
 
 /// Analytics tests
 pub struct AnalyticsTests;
