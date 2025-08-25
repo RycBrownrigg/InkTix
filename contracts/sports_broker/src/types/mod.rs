@@ -11,6 +11,7 @@ pub mod anti_scalping;
 pub mod loyalty;
 pub mod season_pass;
 pub mod fantasy_sports;
+pub mod team_loyalty;
 
 pub use currency::*;
 pub use event::*;
@@ -25,3 +26,4 @@ pub use anti_scalping::*;
 pub use loyalty::*;
 pub use season_pass::*;
 pub use fantasy_sports::*;
+pub use team_loyalty::*;

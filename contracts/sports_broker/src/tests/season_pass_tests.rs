@@ -500,8 +500,8 @@ impl SeasonPassTests {
         test::set_block_timestamp::<ink::env::DefaultEnvironment>(sale_start + 1000);
 
         // Purchase passes from both packages
-        let pass1_id = contract.purchase_season_pass(package1_id, 100_000_000_000_000_000_000).unwrap();
-        let pass2_id = contract.purchase_season_pass(package2_id, 0).unwrap();
+        let _pass1_id = contract.purchase_season_pass(package1_id, 100_000_000_000_000_000_000).unwrap();
+        let _pass2_id = contract.purchase_season_pass(package2_id, 0).unwrap();
 
         // Verify analytics for package 1
         let analytics1 = contract.get_season_pass_analytics(package1_id).unwrap();

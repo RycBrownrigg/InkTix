@@ -359,7 +359,7 @@ impl FantasySportsManagement {
         storage: &mut SportsBrokerStorage,
         team_id: u32,
         _week_id: u32,
-        _current_time: u64,
+        current_time: u64,
     ) -> Result<u32, String> {
         let team = storage.fantasy_teams.get(team_id)
             .ok_or("Fantasy team not found")?;
@@ -484,7 +484,7 @@ impl FantasySportsManagement {
         games: Vec<u32>,
         transfer_deadline: u64,
         captain_selection_deadline: u64,
-        current_time: u64,
+        _current_time: u64,
     ) -> Result<u32, String> {
         if start_date >= end_date {
             return Err("Start date must be before end date".to_string());

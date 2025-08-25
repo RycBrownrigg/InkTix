@@ -206,7 +206,7 @@ impl Loyalty {
         _storage: &SportsBrokerStorage,
         _user: AccountId,
     ) -> Vec<Promotion> {
-        let _profile = match storage.loyalty_profiles.get(_user) {
+        let _profile = match _storage.loyalty_profiles.get(_user) {
             Some(p) => p,
             None => return Vec::new(),
         };

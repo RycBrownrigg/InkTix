@@ -81,6 +81,21 @@ pub struct SportsBrokerStorage {
     pub user_fantasy_leagues: Mapping<ink::primitives::AccountId, Vec<u32>>,
     pub user_fantasy_teams: Mapping<ink::primitives::AccountId, Vec<u32>>,
     pub league_participants: Mapping<u32, Vec<u32>>,
+
+    // Advanced team loyalty management
+    pub total_team_loyalty_profiles: u32,
+    pub total_team_stakings: u32,
+    pub total_team_attendance: u32,
+    pub total_team_performance_rewards: u32,
+    pub total_team_loyalty_challenges: u32,
+    pub team_loyalty_profiles: Mapping<(ink::primitives::AccountId, u32), TeamLoyaltyProfile>,
+    pub team_stakings: Mapping<u32, TeamStaking>,
+    pub team_attendance: Mapping<u32, TeamAttendance>,
+    pub team_performance_rewards: Mapping<u32, TeamPerformanceReward>,
+    pub team_loyalty_challenges: Mapping<u32, TeamLoyaltyChallenge>,
+    pub team_loyalty_analytics: Mapping<u32, TeamLoyaltyAnalytics>,
+    pub user_team_loyalty: Mapping<ink::primitives::AccountId, Vec<u32>>,
+    pub team_fans: Mapping<u32, Vec<ink::primitives::AccountId>>,
 }
 
 impl Default for SportsBrokerStorage {
@@ -99,6 +114,11 @@ impl Default for SportsBrokerStorage {
             total_fantasy_rewards: 0,
             total_fantasy_game_weeks: 0,
             total_fantasy_transfers: 0,
+            total_team_loyalty_profiles: 0,
+            total_team_stakings: 0,
+            total_team_attendance: 0,
+            total_team_performance_rewards: 0,
+            total_team_loyalty_challenges: 0,
             next_report_id: 1,
             analytics_enabled: true,
 
@@ -164,6 +184,16 @@ impl Default for SportsBrokerStorage {
             user_fantasy_leagues: Mapping::default(),
             user_fantasy_teams: Mapping::default(),
             league_participants: Mapping::default(),
+
+            // Advanced team loyalty management
+            team_loyalty_profiles: Mapping::default(),
+            team_stakings: Mapping::default(),
+            team_attendance: Mapping::default(),
+            team_performance_rewards: Mapping::default(),
+            team_loyalty_challenges: Mapping::default(),
+            team_loyalty_analytics: Mapping::default(),
+            user_team_loyalty: Mapping::default(),
+            team_fans: Mapping::default(),
         }
     }
 }
@@ -196,6 +226,26 @@ impl SportsBrokerStorage {
             "season" => {
                 self.total_seasons += 1;
                 self.total_seasons
+            }
+            "team_loyalty_profile" => {
+                self.total_team_loyalty_profiles += 1;
+                self.total_team_loyalty_profiles
+            }
+            "team_staking" => {
+                self.total_team_stakings += 1;
+                self.total_team_stakings
+            }
+            "team_attendance" => {
+                self.total_team_attendance += 1;
+                self.total_team_attendance
+            }
+            "team_performance_reward" => {
+                self.total_team_performance_rewards += 1;
+                self.total_team_performance_rewards
+            }
+            "team_loyalty_challenge" => {
+                self.total_team_loyalty_challenges += 1;
+                self.total_team_loyalty_challenges
             }
             _ => 0,
         }

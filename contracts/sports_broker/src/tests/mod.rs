@@ -5,6 +5,7 @@ pub mod anti_scalping_tests;
 pub mod loyalty_tests;
 pub mod season_pass_tests;
 pub mod fantasy_sports_tests;
+pub mod advanced_team_loyalty_tests;
 
 pub use core_tests::*;
 pub use event_management_tests::*;
@@ -13,6 +14,7 @@ pub use anti_scalping_tests::*;
 pub use loyalty_tests::*;
 pub use season_pass_tests::*;
 pub use fantasy_sports_tests::*;
+pub use advanced_team_loyalty_tests::*;
 
 use crate::sports_broker::SportsBroker;
 use ink::env::test;

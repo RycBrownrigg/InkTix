@@ -1,6 +1,6 @@
 use ink::primitives::AccountId;
 use crate::storage::contract_storage::SportsBrokerStorage;
-use crate::types::analytics::*;
+
 use crate::types::*;
 
 /// Analytics logic
@@ -237,7 +237,7 @@ impl Analytics {
         tickets.iter().map(|ticket| ticket.purchase_price).sum()
     }
     
-    fn get_user_favorite_sport(storage: &SportsBrokerStorage, user_id: AccountId) -> Option<SportType> {
+    fn get_user_favorite_sport(_storage: &SportsBrokerStorage, _user_id: AccountId) -> Option<SportType> {
         // Placeholder implementation
         Some(SportType::Football)
     }
