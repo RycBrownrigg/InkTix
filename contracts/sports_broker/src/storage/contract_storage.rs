@@ -1,6 +1,7 @@
-use ink::prelude::*;
-use ink::storage::Mapping;
 use crate::types::*;
+use ink::prelude::*;
+use ink::primitives::AccountId;
+use ink::storage::Mapping;
 
 /// Main contract storage structure
 #[derive(Debug)]
@@ -96,6 +97,46 @@ pub struct SportsBrokerStorage {
     pub team_loyalty_analytics: Mapping<u32, TeamLoyaltyAnalytics>,
     pub user_team_loyalty: Mapping<ink::primitives::AccountId, Vec<u32>>,
     pub team_fans: Mapping<u32, Vec<ink::primitives::AccountId>>,
+
+    // Venue-specific management
+    pub total_parking_passes: u32,
+    pub total_concession_credits: u32,
+    pub total_merchandise_bundles: u32,
+    pub total_bundle_purchases: u32,
+    pub total_capacity_reservations: u32,
+    pub parking_passes: Mapping<u32, crate::types::venue::ParkingPass>,
+    pub concession_credits: Mapping<u32, crate::types::venue::ConcessionCredits>,
+    pub merchandise_bundles: Mapping<u32, crate::types::venue::MerchandiseBundle>,
+    pub bundle_purchases: Mapping<u32, crate::types::venue::MerchandiseBundlePurchase>,
+    pub capacity_reservations: Mapping<u32, crate::types::venue::CapacityReservation>,
+    pub user_parking_passes: Mapping<ink::primitives::AccountId, Vec<u32>>,
+    pub user_concession_credits: Mapping<ink::primitives::AccountId, Vec<u32>>,
+    pub user_merchandise_bundles: Mapping<ink::primitives::AccountId, Vec<u32>>,
+    pub venue_parking_passes: Mapping<u32, Vec<u32>>,
+    pub venue_concession_credits: Mapping<u32, Vec<u32>>,
+    pub venue_merchandise_bundles: Mapping<u32, Vec<u32>>,
+
+    // Cross-chain functionality
+    pub total_cross_chain_events: u32,
+    pub total_cross_chain_requests: u32,
+    pub total_cross_chain_transactions: u32,
+    pub total_connected_chains: u32,
+    pub cross_chain_events: Mapping<u32, CrossChainEvent>,
+    pub cross_chain_requests: Mapping<u32, CrossChainTicketRequest>,
+    pub cross_chain_transactions: Mapping<u32, CrossChainTransaction>,
+    pub chain_connectivity: Mapping<BlockchainNetwork, ChainConnectivityStatus>,
+    pub user_cross_chain_requests: Mapping<AccountId, Vec<u32>>,
+    pub user_cross_chain_transactions: Mapping<AccountId, Vec<u32>>,
+    pub chain_events: Mapping<BlockchainNetwork, Vec<u32>>,
+
+    // XCM Management
+    pub total_xcm_messages_sent: u64,
+    pub total_xcm_messages_received: u64,
+    pub next_xcm_message_id: u64,
+    pub next_nonce: u64,
+    pub xcm_messages: Mapping<u64, XcmMessage>,
+    pub xcm_chain_connectivity: Mapping<String, XcmConnectivityStatus>,
+    pub chain_xcm_messages: Mapping<String, Vec<u64>>,
 }
 
 impl Default for SportsBrokerStorage {
@@ -119,6 +160,11 @@ impl Default for SportsBrokerStorage {
             total_team_attendance: 0,
             total_team_performance_rewards: 0,
             total_team_loyalty_challenges: 0,
+            total_parking_passes: 0,
+            total_concession_credits: 0,
+            total_merchandise_bundles: 0,
+            total_bundle_purchases: 0,
+            total_capacity_reservations: 0,
             next_report_id: 1,
             analytics_enabled: true,
 
@@ -129,7 +175,13 @@ impl Default for SportsBrokerStorage {
             tickets: Mapping::default(),
             user_tickets: Mapping::default(),
 
-            supported_currencies: vec![CurrencyId::DOT, CurrencyId::ACA, CurrencyId::AUSD, CurrencyId::LDOT, CurrencyId::KSM],
+            supported_currencies: vec![
+                CurrencyId::DOT,
+                CurrencyId::ACA,
+                CurrencyId::AUSD,
+                CurrencyId::LDOT,
+                CurrencyId::KSM,
+            ],
             currency_rates: Mapping::default(),
             currency_revenue: Mapping::default(),
 
@@ -194,6 +246,41 @@ impl Default for SportsBrokerStorage {
             team_loyalty_analytics: Mapping::default(),
             user_team_loyalty: Mapping::default(),
             team_fans: Mapping::default(),
+
+            // Venue-specific management
+            parking_passes: Mapping::default(),
+            concession_credits: Mapping::default(),
+            merchandise_bundles: Mapping::default(),
+            bundle_purchases: Mapping::default(),
+            capacity_reservations: Mapping::default(),
+            user_parking_passes: Mapping::default(),
+            user_concession_credits: Mapping::default(),
+            user_merchandise_bundles: Mapping::default(),
+            venue_parking_passes: Mapping::default(),
+            venue_concession_credits: Mapping::default(),
+            venue_merchandise_bundles: Mapping::default(),
+
+            // Cross-chain functionality
+            total_cross_chain_events: 0,
+            total_cross_chain_requests: 0,
+            total_cross_chain_transactions: 0,
+            total_connected_chains: 0,
+            cross_chain_events: Mapping::default(),
+            cross_chain_requests: Mapping::default(),
+            cross_chain_transactions: Mapping::default(),
+            chain_connectivity: Mapping::default(),
+            user_cross_chain_requests: Mapping::default(),
+            user_cross_chain_transactions: Mapping::default(),
+            chain_events: Mapping::default(),
+
+            // XCM Management
+            total_xcm_messages_sent: 0,
+            total_xcm_messages_received: 0,
+            next_xcm_message_id: 1,
+            next_nonce: 1,
+            xcm_messages: Mapping::default(),
+            xcm_chain_connectivity: Mapping::default(),
+            chain_xcm_messages: Mapping::default(),
         }
     }
 }
@@ -201,11 +288,16 @@ impl Default for SportsBrokerStorage {
 impl SportsBrokerStorage {
     /// Initialize currency rates with default values
     pub fn initialize_currency_rates(&mut self) {
-        self.currency_rates.insert(CurrencyId::DOT, &1_000_000_000_000_000_000);
-        self.currency_rates.insert(CurrencyId::ACA, &50_000_000_000_000_000);
-        self.currency_rates.insert(CurrencyId::AUSD, &1_000_000_000_000_000_000);
-        self.currency_rates.insert(CurrencyId::LDOT, &1_000_000_000_000_000_000);
-        self.currency_rates.insert(CurrencyId::KSM, &15_000_000_000_000_000_000);
+        self.currency_rates
+            .insert(CurrencyId::DOT, &1_000_000_000_000_000_000);
+        self.currency_rates
+            .insert(CurrencyId::ACA, &50_000_000_000_000_000);
+        self.currency_rates
+            .insert(CurrencyId::AUSD, &1_000_000_000_000_000_000);
+        self.currency_rates
+            .insert(CurrencyId::LDOT, &1_000_000_000_000_000_000);
+        self.currency_rates
+            .insert(CurrencyId::KSM, &15_000_000_000_000_000_000);
     }
 
     /// Get the next available ID for a given entity type
@@ -247,6 +339,39 @@ impl SportsBrokerStorage {
                 self.total_team_loyalty_challenges += 1;
                 self.total_team_loyalty_challenges
             }
+            "parking_pass" => {
+                self.total_parking_passes += 1;
+                self.total_parking_passes
+            }
+            "concession_credits" => {
+                self.total_concession_credits += 1;
+                self.total_concession_credits
+            }
+            "merchandise_bundle" => {
+                self.total_merchandise_bundles += 1;
+                self.total_merchandise_bundles
+            }
+            "bundle_purchase" => {
+                self.total_bundle_purchases += 1;
+                self.total_bundle_purchases
+            }
+            "capacity_reservation" => {
+                self.total_capacity_reservations += 1;
+                self.total_capacity_reservations
+            }
+            "cross_chain_event" => {
+                self.total_cross_chain_events += 1;
+                self.total_cross_chain_events
+            }
+            "cross_chain_request" => {
+                self.total_cross_chain_requests += 1;
+                self.total_cross_chain_requests
+            }
+            "cross_chain_transaction" => {
+                self.total_cross_chain_transactions += 1;
+                self.total_cross_chain_transactions
+            }
+
             _ => 0,
         }
     }

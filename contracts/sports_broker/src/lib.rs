@@ -3,18 +3,18 @@
 use ink::prelude::*;
 
 // Import our modular components
-pub mod types;
-pub mod storage;
 pub mod logic;
-pub mod utils;
+pub mod storage;
 pub mod tests;
+pub mod types;
+pub mod utils;
 
-use types::*;
-use storage::*;
 use logic::*;
+use storage::*;
+use types::*;
 
 /// Sports Broker Contract
-/// 
+///
 /// A comprehensive sports ticketing platform with:
 /// - Team and venue management
 /// - Dynamic pricing based on performance
@@ -38,7 +38,7 @@ pub mod sports_broker {
             let mut storage = SportsBrokerStorage::default();
             storage.owner = Self::env().caller();
             storage.initialize_currency_rates();
-            
+
             Self { storage }
         }
 
@@ -56,6 +56,203 @@ pub mod sports_broker {
         #[ink(message)]
         pub fn get_venue(&self, venue_id: u32) -> Option<Venue> {
             VenueManagement::get_venue(&self.storage, venue_id)
+        }
+
+        // Venue-specific feature methods
+        #[ink(message)]
+        pub fn update_venue(
+            &mut self,
+            venue_id: u32,
+            name: Option<String>,
+            capacity: Option<u32>,
+            amenities: Option<Vec<venue::VenueAmenity>>,
+            parking_info: Option<venue::ParkingInfo>,
+            concession_info: Option<venue::ConcessionInfo>,
+            merchandise_info: Option<venue::MerchandiseInfo>,
+            loyalty_program: Option<venue::VenueLoyaltyProgram>,
+            pricing_tiers: Option<Vec<venue::VenuePricingTier>>,
+        ) -> Result<(), String> {
+            VenueManagement::update_venue(
+                &mut self.storage,
+                venue_id,
+                name,
+                capacity,
+                amenities,
+                parking_info,
+                concession_info,
+                merchandise_info,
+                loyalty_program,
+                pricing_tiers,
+            )
+        }
+
+        #[ink(message)]
+        pub fn create_parking_pass(
+            &mut self,
+            venue_id: u32,
+            pass_type: venue::ParkingPassType,
+            valid_from: u64,
+            valid_until: u64,
+            parking_lot: String,
+            space_number: Option<String>,
+            purchase_price: u128,
+            currency: String,
+        ) -> Result<u32, String> {
+            let caller = self.env().caller();
+            VenueManagement::create_parking_pass(
+                &mut self.storage,
+                caller,
+                venue_id,
+                pass_type,
+                valid_from,
+                valid_until,
+                parking_lot,
+                space_number,
+                purchase_price,
+                currency,
+            )
+        }
+
+        #[ink(message)]
+        pub fn purchase_concession_credits(
+            &mut self,
+            venue_id: u32,
+            credit_amount: u128,
+            credit_type: venue::ConcessionCreditType,
+            valid_from: u64,
+            valid_until: u64,
+            purchase_price: u128,
+            currency: String,
+        ) -> Result<u32, String> {
+            let caller = self.env().caller();
+            VenueManagement::purchase_concession_credits(
+                &mut self.storage,
+                caller,
+                venue_id,
+                credit_amount,
+                credit_type,
+                valid_from,
+                valid_until,
+                purchase_price,
+                currency,
+            )
+        }
+
+        #[ink(message)]
+        pub fn use_concession_credits(
+            &mut self,
+            credit_id: u32,
+            amount: u128,
+            item_purchased: String,
+            location: String,
+        ) -> Result<(), String> {
+            VenueManagement::use_concession_credits(
+                &mut self.storage,
+                credit_id,
+                amount,
+                item_purchased,
+                location,
+            )
+        }
+
+        #[ink(message)]
+        pub fn create_merchandise_bundle(
+            &mut self,
+            venue_id: u32,
+            name: String,
+            description: String,
+            items: Vec<venue::BundleItem>,
+            bundle_price: u128,
+            individual_price: u128,
+            limited_quantity: Option<u32>,
+        ) -> Result<u32, String> {
+            VenueManagement::create_merchandise_bundle(
+                &mut self.storage,
+                venue_id,
+                name,
+                description,
+                items,
+                bundle_price,
+                individual_price,
+                limited_quantity,
+            )
+        }
+
+        #[ink(message)]
+        pub fn purchase_merchandise_bundle(
+            &mut self,
+            venue_id: u32,
+            bundle_id: u32,
+            loyalty_discount: Option<u8>,
+            pickup_location: String,
+            pickup_deadline: u64,
+        ) -> Result<u32, String> {
+            let caller = self.env().caller();
+            VenueManagement::purchase_merchandise_bundle(
+                &mut self.storage,
+                caller,
+                venue_id,
+                bundle_id,
+                loyalty_discount,
+                pickup_location,
+                pickup_deadline,
+            )
+        }
+
+        #[ink(message)]
+        pub fn reserve_venue_capacity(
+            &mut self,
+            venue_id: u32,
+            event_id: u32,
+            reservation_type: venue::ReservationType,
+            capacity_reserved: u32,
+            reservation_fee: u128,
+            currency: String,
+            valid_until: u64,
+        ) -> Result<u32, String> {
+            let caller = self.env().caller();
+            VenueManagement::reserve_venue_capacity(
+                &mut self.storage,
+                venue_id,
+                event_id,
+                caller,
+                reservation_type,
+                capacity_reserved,
+                reservation_fee,
+                currency,
+                valid_until,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_user_parking_passes(&self) -> Vec<venue::ParkingPass> {
+            let caller = self.env().caller();
+            VenueManagement::get_user_parking_passes(&self.storage, caller)
+        }
+
+        #[ink(message)]
+        pub fn get_user_concession_credits(&self) -> Vec<venue::ConcessionCredits> {
+            let caller = self.env().caller();
+            VenueManagement::get_user_concession_credits(&self.storage, caller)
+        }
+
+        #[ink(message)]
+        pub fn get_user_merchandise_bundles(&self) -> Vec<venue::MerchandiseBundlePurchase> {
+            let caller = self.env().caller();
+            VenueManagement::get_user_merchandise_bundles(&self.storage, caller)
+        }
+
+        #[ink(message)]
+        pub fn get_venue_parking_passes(&self, venue_id: u32) -> Vec<venue::ParkingPass> {
+            VenueManagement::get_venue_parking_passes(&self.storage, venue_id)
+        }
+
+        #[ink(message)]
+        pub fn get_venue_merchandise_bundles(
+            &self,
+            venue_id: u32,
+        ) -> Vec<venue::MerchandiseBundle> {
+            VenueManagement::get_venue_merchandise_bundles(&self.storage, venue_id)
         }
 
         #[ink(message)]
@@ -117,13 +314,389 @@ pub mod sports_broker {
 
         // Delegate to module implementations
         #[ink(message)]
-        pub fn register_venue(&mut self, name: String, capacity: u32, address: String, sport_type: String) -> u32 {
-            VenueManagement::register_venue(&mut self.storage, name, capacity, address, sport_type)
+        pub fn register_venue(
+            &mut self,
+            name: String,
+            capacity: u32,
+            address: String,
+            sport_type: String,
+            venue_type: venue::VenueType,
+            amenities: Vec<venue::VenueAmenity>,
+            parking_info: venue::ParkingInfo,
+            concession_info: venue::ConcessionInfo,
+            merchandise_info: venue::MerchandiseInfo,
+            loyalty_program: venue::VenueLoyaltyProgram,
+            pricing_tiers: Vec<venue::VenuePricingTier>,
+        ) -> u32 {
+            VenueManagement::register_venue(
+                &mut self.storage,
+                name,
+                capacity,
+                address,
+                sport_type,
+                venue_type,
+                amenities,
+                parking_info,
+                concession_info,
+                merchandise_info,
+                loyalty_program,
+                pricing_tiers,
+            )
+        }
+
+        /// Register a basic venue with default configuration (for backward compatibility)
+        #[ink(message)]
+        pub fn register_basic_venue(
+            &mut self,
+            name: String,
+            capacity: u32,
+            address: String,
+            sport_type: String,
+        ) -> u32 {
+            // Create default venue configuration
+            let venue_type = venue::VenueType::Stadium;
+            let amenities = vec![venue::VenueAmenity::WheelchairAccessible];
+
+            let parking_info = venue::ParkingInfo {
+                total_spaces: capacity / 50, // Estimate parking spaces
+                reserved_spaces: 0,
+                general_parking_price: 25_000_000_000_000_000_000, // 25 DOT
+                premium_parking_price: 50_000_000_000_000_000_000, // 50 DOT
+                valet_available: false,
+                valet_price: 0,
+                parking_passes_available: false,
+                parking_pass_price: 0,
+                parking_pass_duration: 0,
+                overflow_lots: vec![],
+            };
+
+            let concession_info = venue::ConcessionInfo {
+                food_available: true,
+                beverage_available: true,
+                alcohol_available: false,
+                concession_credits_supported: false,
+                credit_denomination: 0,
+                credit_packages: vec![],
+                dietary_options: vec![],
+                average_meal_price: 15_000_000_000_000_000_000, // 15 DOT
+            };
+
+            let merchandise_info = venue::MerchandiseInfo {
+                merchandise_available: false,
+                online_store: false,
+                exclusive_items: false,
+                bundle_discounts: false,
+                merchandise_bundles: vec![],
+                loyalty_discounts: vec![],
+                average_item_price: 0,
+            };
+
+            let loyalty_program = venue::VenueLoyaltyProgram {
+                active: false,
+                points_per_dollar: 0,
+                tier_thresholds: vec![],
+                venue_specific_benefits: vec![],
+                partner_benefits: vec![],
+            };
+
+            let pricing_tiers = vec![venue::VenuePricingTier {
+                id: 1,
+                name: "General Admission".to_string(),
+                description: "Standard seating".to_string(),
+                base_price_multiplier: 10000, // 1.0x
+                amenities_included: vec![],
+                parking_included: false,
+                concession_credits_included: 0,
+                merchandise_discount: 0,
+                active: true,
+            }];
+
+            self.register_venue(
+                name,
+                capacity,
+                address,
+                sport_type,
+                venue_type,
+                amenities,
+                parking_info,
+                concession_info,
+                merchandise_info,
+                loyalty_program,
+                pricing_tiers,
+            )
+        }
+
+        // Cross-chain functionality messages
+        #[ink(message)]
+        pub fn register_cross_chain_event(
+            &mut self,
+            source_chain: cross_chain::BlockchainNetwork,
+            event_name: String,
+            event_description: String,
+            base_ticket_price: u128,
+            currency: String,
+            event_date: u64,
+            venue_name: String,
+            venue_location: String,
+            sport_type: String,
+            team_names: Vec<String>,
+            total_tickets: u32,
+            metadata: cross_chain::CrossChainEventMetadata,
+            fees: Vec<cross_chain::CrossChainFee>,
+            supported_currencies: Vec<cross_chain::SupportedCurrency>,
+            requirements: Vec<cross_chain::ChainRequirement>,
+        ) -> u32 {
+            self.storage.register_cross_chain_event(
+                source_chain,
+                event_name,
+                event_description,
+                base_ticket_price,
+                currency,
+                event_date,
+                venue_name,
+                venue_location,
+                sport_type,
+                team_names,
+                total_tickets,
+                metadata,
+                fees,
+                supported_currencies,
+                requirements,
+            )
         }
 
         #[ink(message)]
-        pub fn create_season(&mut self, name: String, sport: String, year: u32, start_date: u64, end_date: u64) -> u32 {
-            SeasonManagement::create_season(&mut self.storage, name, sport, year, start_date, end_date)
+        pub fn submit_cross_chain_request(
+            &mut self,
+            cross_chain_event_id: u32,
+            quantity: u32,
+            payment_currency: String,
+            payment_method: cross_chain::PaymentMethod,
+            source_chain: cross_chain::BlockchainNetwork,
+            destination_chain: cross_chain::BlockchainNetwork,
+        ) -> u32 {
+            let caller = self.env().caller();
+            self.storage.submit_cross_chain_request(
+                cross_chain_event_id,
+                caller,
+                quantity,
+                payment_currency,
+                payment_method,
+                source_chain,
+                destination_chain,
+            )
+        }
+
+        #[ink(message)]
+        pub fn process_cross_chain_request(
+            &mut self,
+            request_id: u32,
+            cross_chain_event_id: u32,
+            new_status: cross_chain::CrossChainRequestStatus,
+        ) -> bool {
+            self.storage
+                .process_cross_chain_request(request_id, cross_chain_event_id, new_status)
+        }
+
+        #[ink(message)]
+        pub fn update_transaction_status(
+            &mut self,
+            transaction_id: u32,
+            new_status: cross_chain::CrossChainTransactionStatus,
+        ) -> bool {
+            self.storage
+                .update_transaction_status(transaction_id, new_status)
+        }
+
+        #[ink(message)]
+        pub fn update_chain_connectivity(
+            &mut self,
+            chain: cross_chain::BlockchainNetwork,
+            is_connected: bool,
+            latency_ms: Option<u64>,
+            supported_features: Vec<String>,
+            maintenance_mode: bool,
+        ) -> bool {
+            self.storage.update_chain_connectivity(
+                chain,
+                is_connected,
+                latency_ms,
+                supported_features,
+                maintenance_mode,
+            )
+        }
+
+        // Cross-chain query messages
+        #[ink(message)]
+        pub fn discover_cross_chain_events(
+            &self,
+            filters: cross_chain::CrossChainEventFilters,
+        ) -> Vec<cross_chain::CrossChainEvent> {
+            self.storage.discover_cross_chain_events(filters)
+        }
+
+        #[ink(message)]
+        pub fn get_cross_chain_analytics(&self) -> cross_chain::CrossChainAnalytics {
+            self.storage.get_cross_chain_analytics()
+        }
+
+        #[ink(message)]
+        pub fn get_user_cross_chain_activity(
+            &self,
+        ) -> (
+            Vec<cross_chain::CrossChainTicketRequest>,
+            Vec<cross_chain::CrossChainTransaction>,
+        ) {
+            let caller = self.env().caller();
+            self.storage.get_user_cross_chain_activity(&caller)
+        }
+
+        // XCM Management Functions
+
+        #[ink(message)]
+        pub fn send_xcm_message(
+            &mut self,
+            destination_chain: String,
+            destination_parachain_id: u32,
+            message_type: xcm::XcmMessageType,
+            payload: Vec<u8>,
+            fee_currency: String,
+        ) -> Result<u64, String> {
+            self.storage.send_xcm_message(
+                destination_chain,
+                destination_parachain_id,
+                message_type,
+                payload,
+                fee_currency,
+            )
+        }
+
+        #[ink(message)]
+        pub fn process_incoming_xcm_message(
+            &mut self,
+            source_chain: String,
+            source_parachain_id: u32,
+            message_type: xcm::XcmMessageType,
+            payload: Vec<u8>,
+            xcm_version: u8,
+        ) -> Result<u64, String> {
+            self.storage.process_incoming_xcm_message(
+                source_chain,
+                source_parachain_id,
+                message_type,
+                payload,
+                xcm_version,
+            )
+        }
+
+        #[ink(message)]
+        pub fn update_xcm_message_status(
+            &mut self,
+            message_id: u64,
+            new_status: xcm::XcmMessageStatus,
+            error_message: Option<String>,
+        ) -> Result<(), String> {
+            self.storage
+                .update_xcm_message_status(message_id, new_status, error_message)
+        }
+
+        #[ink(message)]
+        pub fn send_xcm_ticket_purchase_request(
+            &mut self,
+            destination_chain: String,
+            destination_parachain_id: u32,
+            destination_event_id: u32,
+            quantity: u32,
+            preferred_sections: Vec<String>,
+            payment_currency: String,
+            payment_amount: u128,
+            user_signature: Vec<u8>,
+        ) -> Result<u64, String> {
+            self.storage.send_xcm_ticket_purchase_request(
+                destination_chain,
+                destination_parachain_id,
+                destination_event_id,
+                quantity,
+                preferred_sections,
+                payment_currency,
+                payment_amount,
+                user_signature,
+            )
+        }
+
+        #[ink(message)]
+        pub fn process_xcm_ticket_purchase_response(
+            &mut self,
+            request_message_id: u64,
+            success: bool,
+            ticket_ids: Option<Vec<u32>>,
+            error_message: Option<String>,
+            transaction_hash: Option<String>,
+        ) -> Result<(), String> {
+            self.storage.process_xcm_ticket_purchase_response(
+                request_message_id,
+                success,
+                ticket_ids,
+                error_message,
+                transaction_hash,
+            )
+        }
+
+        #[ink(message)]
+        pub fn get_xcm_message(&self, message_id: u64) -> Option<xcm::XcmMessage> {
+            self.storage.get_xcm_message(message_id)
+        }
+
+        #[ink(message)]
+        pub fn get_xcm_messages_by_filters(
+            &self,
+            filters: xcm::XcmMessageFilters,
+        ) -> Vec<xcm::XcmMessage> {
+            self.storage.get_xcm_messages_by_filters(filters)
+        }
+
+        #[ink(message)]
+        pub fn get_xcm_analytics(&self) -> xcm::XcmAnalytics {
+            self.storage.get_xcm_analytics()
+        }
+
+        #[ink(message)]
+        pub fn update_xcm_chain_connectivity(
+            &mut self,
+            chain_id: String,
+            is_connected: bool,
+            latency_ms: Option<u64>,
+            supported_xcm_version: u8,
+            max_message_size: u32,
+            fee_structure: xcm::XcmFeeStructure,
+        ) -> Result<(), String> {
+            self.storage.update_xcm_chain_connectivity(
+                chain_id,
+                is_connected,
+                latency_ms,
+                supported_xcm_version,
+                max_message_size,
+                fee_structure,
+            )
+        }
+
+        #[ink(message)]
+        pub fn create_season(
+            &mut self,
+            name: String,
+            sport: String,
+            year: u32,
+            start_date: u64,
+            end_date: u64,
+        ) -> u32 {
+            SeasonManagement::create_season(
+                &mut self.storage,
+                name,
+                sport,
+                year,
+                start_date,
+                end_date,
+            )
         }
 
         #[ink(message)]
@@ -150,7 +723,8 @@ pub mod sports_broker {
                 away_team_id,
                 season_id,
                 game_type,
-            ).unwrap_or(0)
+            )
+            .unwrap_or(0)
         }
 
         #[ink(message)]
@@ -184,7 +758,11 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn get_events_by_date_range(&self, start_date: u64, end_date: u64) -> Result<Vec<SportsEvent>, String> {
+        pub fn get_events_by_date_range(
+            &self,
+            start_date: u64,
+            end_date: u64,
+        ) -> Result<Vec<SportsEvent>, String> {
             EventManagement::get_events_by_date_range(&self.storage, start_date, end_date)
         }
 
@@ -216,17 +794,29 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn get_recommended_events(&self, user: ink::primitives::AccountId, limit: u32) -> Vec<SportsEvent> {
+        pub fn get_recommended_events(
+            &self,
+            user: ink::primitives::AccountId,
+            limit: u32,
+        ) -> Vec<SportsEvent> {
             EventManagement::get_recommended_events(&self.storage, user, limit)
         }
 
         #[ink(message)]
-        pub fn update_event_capacity(&mut self, event_id: u32, new_capacity: u32) -> Result<(), String> {
+        pub fn update_event_capacity(
+            &mut self,
+            event_id: u32,
+            new_capacity: u32,
+        ) -> Result<(), String> {
             EventManagement::update_event_capacity(&mut self.storage, event_id, new_capacity)
         }
 
         #[ink(message)]
-        pub fn update_base_ticket_price(&mut self, event_id: u32, new_price: u128) -> Result<(), String> {
+        pub fn update_base_ticket_price(
+            &mut self,
+            event_id: u32,
+            new_price: u128,
+        ) -> Result<(), String> {
             EventManagement::update_base_ticket_price(&mut self.storage, event_id, new_price)
         }
 
@@ -242,9 +832,22 @@ pub mod sports_broker {
 
         // Ticket purchasing methods
         #[ink(message)]
-        pub fn purchase_ticket(&mut self, event_id: u32, section: String, row: String, seat: u32) -> Result<u64, String> {
+        pub fn purchase_ticket(
+            &mut self,
+            event_id: u32,
+            section: String,
+            row: String,
+            seat: u32,
+        ) -> Result<u64, String> {
             let caller = self.env().caller();
-            TicketManagement::purchase_ticket(&mut self.storage, event_id, section, row, seat, caller)
+            TicketManagement::purchase_ticket(
+                &mut self.storage,
+                event_id,
+                section,
+                row,
+                seat,
+                caller,
+            )
         }
 
         #[ink(message)]
@@ -295,12 +898,19 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn get_user_analytics(&self, user: ink::primitives::AccountId) -> Option<UserAnalytics> {
+        pub fn get_user_analytics(
+            &self,
+            user: ink::primitives::AccountId,
+        ) -> Option<UserAnalytics> {
             self.storage.user_analytics.get(user)
         }
 
         #[ink(message)]
-        pub fn generate_analytics_report(&mut self, _report_type: ReportType, _time_period: TimePeriod) -> u32 {
+        pub fn generate_analytics_report(
+            &mut self,
+            _report_type: ReportType,
+            _time_period: TimePeriod,
+        ) -> u32 {
             let report_id = self.storage.get_next_report_id();
             // TODO: Implement full report generation
             report_id
@@ -316,7 +926,14 @@ pub mod sports_broker {
             blacklist_enabled: bool,
             whitelist_enabled: bool,
         ) -> Result<(), String> {
-            AntiScalping::configure_anti_scalping(&mut self.storage, event_id, transfer_restrictions, resale_price_cap, blacklist_enabled, whitelist_enabled)
+            AntiScalping::configure_anti_scalping(
+                &mut self.storage,
+                event_id,
+                transfer_restrictions,
+                resale_price_cap,
+                blacklist_enabled,
+                whitelist_enabled,
+            )
         }
 
         #[ink(message)]
@@ -325,16 +942,22 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn transfer_ticket(&mut self, ticket_id: u64, new_owner: ink::primitives::AccountId) -> Result<(), String> {
+        pub fn transfer_ticket(
+            &mut self,
+            ticket_id: u64,
+            new_owner: ink::primitives::AccountId,
+        ) -> Result<(), String> {
             AntiScalping::transfer_ticket(&mut self.storage, ticket_id, new_owner)
         }
 
         #[ink(message)]
-        pub fn list_ticket_for_resale(&mut self, ticket_id: u64, price: u128) -> Result<(), String> {
+        pub fn list_ticket_for_resale(
+            &mut self,
+            ticket_id: u64,
+            price: u128,
+        ) -> Result<(), String> {
             AntiScalping::list_ticket_for_resale(&mut self.storage, ticket_id, price)
         }
-
-
 
         #[ink(message)]
         pub fn get_resale_listings(&self) -> Vec<ResaleListing> {
@@ -343,42 +966,63 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn blacklist_address(&mut self, _address: ink::primitives::AccountId) -> Result<(), String> {
+        pub fn blacklist_address(
+            &mut self,
+            _address: ink::primitives::AccountId,
+        ) -> Result<(), String> {
             // TODO: Implement in anti_scalping module
             Ok(())
         }
 
         #[ink(message)]
-        pub fn whitelist_address(&mut self, _address: ink::primitives::AccountId) -> Result<(), String> {
+        pub fn whitelist_address(
+            &mut self,
+            _address: ink::primitives::AccountId,
+        ) -> Result<(), String> {
             // TODO: Implement in anti_scalping module
             Ok(())
         }
 
         // Loyalty system methods
         #[ink(message)]
-        pub fn create_loyalty_profile(&mut self, user: ink::primitives::AccountId) -> Result<(), String> {
+        pub fn create_loyalty_profile(
+            &mut self,
+            user: ink::primitives::AccountId,
+        ) -> Result<(), String> {
             Loyalty::create_loyalty_profile(&mut self.storage, user)
         }
 
         #[ink(message)]
-        pub fn get_loyalty_profile(&self, user: ink::primitives::AccountId) -> Option<LoyaltyProfile> {
+        pub fn get_loyalty_profile(
+            &self,
+            user: ink::primitives::AccountId,
+        ) -> Option<LoyaltyProfile> {
             Loyalty::get_loyalty_profile(&self.storage, user)
         }
 
         #[ink(message)]
-        pub fn earn_loyalty_points(&mut self, user: ink::primitives::AccountId, points: u32, reason: String) -> Result<(), String> {
+        pub fn earn_loyalty_points(
+            &mut self,
+            user: ink::primitives::AccountId,
+            points: u32,
+            reason: String,
+        ) -> Result<(), String> {
             Loyalty::award_points(&mut self.storage, user, points, reason)
         }
 
         #[ink(message)]
-        pub fn get_loyalty_discount(&self, user: ink::primitives::AccountId, base_price: u128) -> u128 {
+        pub fn get_loyalty_discount(
+            &self,
+            user: ink::primitives::AccountId,
+            base_price: u128,
+        ) -> u128 {
             if let Some(profile) = Loyalty::get_loyalty_profile(&self.storage, user) {
                 match profile.current_tier {
                     LoyaltyTier::Bronze => base_price,
                     LoyaltyTier::Silver => base_price * 95 / 100, // 5% discount
                     LoyaltyTier::Gold => base_price * 90 / 100,   // 10% discount
                     LoyaltyTier::Platinum => base_price * 85 / 100, // 15% discount
-                    LoyaltyTier::Diamond => base_price * 80 / 100,  // 20% discount
+                    LoyaltyTier::Diamond => base_price * 80 / 100, // 20% discount
                 }
             } else {
                 base_price
@@ -386,30 +1030,59 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn redeem_reward(&mut self, user: ink::primitives::AccountId, reward_type: RewardType, points_cost: u32) -> Result<u64, String> {
+        pub fn redeem_reward(
+            &mut self,
+            user: ink::primitives::AccountId,
+            reward_type: RewardType,
+            points_cost: u32,
+        ) -> Result<u64, String> {
             Loyalty::claim_reward(&mut self.storage, user, reward_type, points_cost)
         }
 
         #[ink(message)]
-        pub fn add_promotion(&mut self, name: String, description: String, discount_percentage: u8, valid_until: u64) -> Result<u32, String> {
-            Loyalty::create_promotion(&mut self.storage, name, description, discount_percentage, valid_until, LoyaltyTier::Bronze, 0)
+        pub fn add_promotion(
+            &mut self,
+            name: String,
+            description: String,
+            discount_percentage: u8,
+            valid_until: u64,
+        ) -> Result<u32, String> {
+            Loyalty::create_promotion(
+                &mut self.storage,
+                name,
+                description,
+                discount_percentage,
+                valid_until,
+                LoyaltyTier::Bronze,
+                0,
+            )
         }
 
         #[ink(message)]
-        pub fn add_referral(&mut self, referrer: ink::primitives::AccountId, referred: ink::primitives::AccountId) -> Result<(), String> {
+        pub fn add_referral(
+            &mut self,
+            referrer: ink::primitives::AccountId,
+            referred: ink::primitives::AccountId,
+        ) -> Result<(), String> {
             Loyalty::process_referral_bonus(&mut self.storage, referrer, referred)
         }
 
-
-
         // Currency management methods
         #[ink(message)]
-        pub fn update_currency_rate(&mut self, currency: CurrencyId, new_rate: u128) -> Result<(), String> {
+        pub fn update_currency_rate(
+            &mut self,
+            currency: CurrencyId,
+            new_rate: u128,
+        ) -> Result<(), String> {
             CurrencyManagement::update_currency_rate(&mut self.storage, currency, new_rate)
         }
 
         #[ink(message)]
-        pub fn add_supported_currency(&mut self, currency: CurrencyId, rate: u128) -> Result<(), String> {
+        pub fn add_supported_currency(
+            &mut self,
+            currency: CurrencyId,
+            rate: u128,
+        ) -> Result<(), String> {
             CurrencyManagement::add_supported_currency(&mut self.storage, currency, rate)
         }
 
@@ -481,7 +1154,11 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn use_season_pass_for_event(&mut self, pass_id: u32, event_id: u32) -> Result<(), String> {
+        pub fn use_season_pass_for_event(
+            &mut self,
+            pass_id: u32,
+            event_id: u32,
+        ) -> Result<(), String> {
             let owner = self.env().caller();
             let current_time = self.env().block_timestamp();
             SeasonPassManagement::use_season_pass_for_event(
@@ -552,7 +1229,7 @@ pub mod sports_broker {
         ) -> Result<u32, String> {
             let current_time = self.env().block_timestamp();
             let caller = self.env().caller();
-            
+
             FantasySportsManagement::create_fantasy_league(
                 &mut self.storage,
                 name,
@@ -580,7 +1257,7 @@ pub mod sports_broker {
         ) -> Result<u32, String> {
             let current_time = self.env().block_timestamp();
             let caller = self.env().caller();
-            
+
             FantasySportsManagement::join_fantasy_league(
                 &mut self.storage,
                 caller,
@@ -599,7 +1276,7 @@ pub mod sports_broker {
         ) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
             let caller = self.env().caller();
-            
+
             FantasySportsManagement::add_player_to_team(
                 &mut self.storage,
                 team_id,
@@ -618,7 +1295,7 @@ pub mod sports_broker {
         ) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
             let caller = self.env().caller();
-            
+
             FantasySportsManagement::set_team_captains(
                 &mut self.storage,
                 team_id,
@@ -639,7 +1316,7 @@ pub mod sports_broker {
         ) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
             let caller = self.env().caller();
-            
+
             FantasySportsManagement::transfer_players(
                 &mut self.storage,
                 team_id,
@@ -662,7 +1339,7 @@ pub mod sports_broker {
             field_goal_percentage: Option<u32>,
         ) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
-            
+
             FantasySportsManagement::update_player_stats(
                 &mut self.storage,
                 player_id,
@@ -676,13 +1353,9 @@ pub mod sports_broker {
         }
 
         #[ink(message)]
-        pub fn calculate_team_points(
-            &mut self,
-            team_id: u32,
-            week_id: u32,
-        ) -> Result<u32, String> {
+        pub fn calculate_team_points(&mut self, team_id: u32, week_id: u32) -> Result<u32, String> {
             let current_time = self.env().block_timestamp();
-            
+
             FantasySportsManagement::calculate_team_points(
                 &mut self.storage,
                 team_id,
@@ -714,7 +1387,7 @@ pub mod sports_broker {
             points: u32,
         ) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
-            
+
             FantasySportsManagement::award_fantasy_loyalty_points(
                 &mut self.storage,
                 user,
@@ -736,7 +1409,7 @@ pub mod sports_broker {
             captain_selection_deadline: u64,
         ) -> Result<u32, String> {
             let current_time = self.env().block_timestamp();
-            
+
             FantasySportsManagement::create_fantasy_game_week(
                 &mut self.storage,
                 league_id,
@@ -753,7 +1426,7 @@ pub mod sports_broker {
         #[ink(message)]
         pub fn activate_fantasy_game_week(&mut self, week_id: u32) -> Result<(), String> {
             let current_time = self.env().block_timestamp();
-            
+
             FantasySportsManagement::activate_fantasy_game_week(
                 &mut self.storage,
                 week_id,
@@ -781,10 +1454,7 @@ pub mod sports_broker {
 
         /// Create a team loyalty profile for a user
         #[ink(message)]
-        pub fn create_team_loyalty_profile(
-            &mut self,
-            team_id: u32,
-        ) -> Result<(), String> {
+        pub fn create_team_loyalty_profile(&mut self, team_id: u32) -> Result<(), String> {
             let caller = self.env().caller();
             let current_time = self.env().block_timestamp();
             AdvancedTeamLoyalty::create_team_loyalty_profile(
@@ -797,11 +1467,7 @@ pub mod sports_broker {
 
         /// Stake on a favorite team for loyalty rewards
         #[ink(message)]
-        pub fn stake_on_team(
-            &mut self,
-            team_id: u32,
-            amount: u128,
-        ) -> Result<u32, String> {
+        pub fn stake_on_team(&mut self, team_id: u32, amount: u128) -> Result<u32, String> {
             let caller = self.env().caller();
             let current_time = self.env().block_timestamp();
             AdvancedTeamLoyalty::stake_on_team(
@@ -815,18 +1481,10 @@ pub mod sports_broker {
 
         /// Unstake from a team
         #[ink(message)]
-        pub fn unstake_from_team(
-            &mut self,
-            team_id: u32,
-        ) -> Result<u128, String> {
+        pub fn unstake_from_team(&mut self, team_id: u32) -> Result<u128, String> {
             let caller = self.env().caller();
             let current_time = self.env().block_timestamp();
-            AdvancedTeamLoyalty::unstake_from_team(
-                &mut self.storage,
-                caller,
-                team_id,
-                current_time,
-            )
+            AdvancedTeamLoyalty::unstake_from_team(&mut self.storage, caller, team_id, current_time)
         }
 
         /// Record team attendance for streak tracking
@@ -897,10 +1555,7 @@ pub mod sports_broker {
 
         /// Join a team loyalty challenge
         #[ink(message)]
-        pub fn join_team_challenge(
-            &mut self,
-            challenge_id: u32,
-        ) -> Result<(), String> {
+        pub fn join_team_challenge(&mut self, challenge_id: u32) -> Result<(), String> {
             let caller = self.env().caller();
             let current_time = self.env().block_timestamp();
             AdvancedTeamLoyalty::join_team_challenge(
@@ -913,10 +1568,7 @@ pub mod sports_broker {
 
         /// Complete a team loyalty challenge
         #[ink(message)]
-        pub fn complete_team_challenge(
-            &mut self,
-            challenge_id: u32,
-        ) -> Result<(), String> {
+        pub fn complete_team_challenge(&mut self, challenge_id: u32) -> Result<(), String> {
             let caller = self.env().caller();
             let current_time = self.env().block_timestamp();
             AdvancedTeamLoyalty::complete_team_challenge(
@@ -948,98 +1600,101 @@ pub mod sports_broker {
 
         /// Get team loyalty analytics
         #[ink(message)]
-        pub fn get_team_loyalty_analytics(
-            &self,
-            team_id: u32,
-        ) -> Option<TeamLoyaltyAnalytics> {
+        pub fn get_team_loyalty_analytics(&self, team_id: u32) -> Option<TeamLoyaltyAnalytics> {
             AdvancedTeamLoyalty::get_team_loyalty_analytics(&self.storage, team_id)
         }
-
-
 
         // ============================================================================
         // TODO: MISSING FEATURES FROM PRODUCT SPECIFICATION
         // ============================================================================
-        
+
         // SEASON PASS MANAGEMENT (HIGH PRIORITY) - COMPLETED
         // Implement season pass creation and management
         // Implement DeFi staking rewards for season pass holders
         // Implement dynamic playoff pricing based on team performance
         // Implement season ticket holder benefits and alumni associations
         // Implement half-season and playoff packages
-        
+
         // FANTASY SPORTS INTEGRATION (HIGH PRIORITY) - COMPLETED
         // Implement fantasy league participation with ticket purchases
         // Implement exclusive player data access
         // Implement fantasy sports rewards and leaderboards
         // Implement fantasy sports integration with loyalty system
-        
+
         // ADVANCED TEAM LOYALTY PROGRAMS (HIGH PRIORITY) - COMPLETED
         // Implement staking on favorite teams
         // Implement attendance streak rewards
         // Implement team performance-based loyalty tiers
         // Implement team-specific loyalty benefits
-        
+
         // STATISTICAL INTEGRATION (MEDIUM PRIORITY)
         // TODO: Implement real-time game data integration
         // TODO: Implement player statistics and performance analytics
         // TODO: Implement historical performance tracking
         // TODO: Implement statistical analysis for pricing optimization
-        
-        // VENUE-SPECIFIC FEATURES (HIGH PRIORITY)
-        // TODO: Implement parking pass integration
-        // TODO: Implement concession credits system
-        // TODO: Implement merchandise bundles
-        // TODO: Implement venue loyalty programs
-        // TODO: Implement venue-specific pricing and packages
-        
+
+        // VENUE-SPECIFIC FEATURES (HIGH PRIORITY) - COMPLETED
+        // Implement parking pass integration
+        // Implement concession credits system
+        // Implement merchandise bundles
+        // Implement venue loyalty programs
+        // Implement venue-specific pricing and packages
+
         // GROUP SALES OPTIMIZATION (HIGH PRIORITY)
         // TODO: Implement corporate packages
         // TODO: Implement bulk purchase coordination
         // TODO: Implement group discount algorithms
         // TODO: Implement seating coordination tools
         // TODO: Implement group payment splitting
-        
+
         // ADVANCED DEFI INTEGRATION (MEDIUM PRIORITY)
         // TODO: Implement liquid staking rewards
         // TODO: Implement yield generation on escrow funds
         // TODO: Implement automated currency conversion
         // TODO: Implement staking-based loyalty rewards
         // TODO: Implement DeFi savings accounts for event budgeting
-        
+
+        // CROSS-CHAIN FUNCTIONALITY (HIGH PRIORITY) - COMPLETED
+        // Implement XCM integration for cross-chain messaging
+        // Implement cross-chain ticket purchase requests and responses
+        // Implement chain connectivity management and monitoring
+        // Implement XCM message status tracking and analytics
+        // Implement fee structure management for cross-chain operations
+        // Implement comprehensive testing and validation
+
         // CROSS-CHAIN EVENT DISCOVERY (LOWER PRIORITY)
         // TODO: Implement real-time event aggregation
         // TODO: Implement AI-powered recommendations
         // TODO: Implement advanced filtering systems
         // TODO: Implement social discovery features
         // TODO: Implement cross-chain event search
-        
+
         // ADVANCED TICKET FEATURES (MEDIUM PRIORITY)
         // TODO: Implement NFT ticket authentication
         // TODO: Implement digital collectibles
         // TODO: Implement proof-of-attendance tokens
         // TODO: Implement exclusive content access
         // TODO: Implement ticket upgrade and downgrade
-        
+
         // SOCIAL AND COMMUNITY FEATURES (LOWER PRIORITY)
         // TODO: Implement friend activity feeds
         // TODO: Implement group event planning
         // TODO: Implement community challenges
         // TODO: Implement user-generated content
         // TODO: Implement social event sharing
-        
+
         // MERCHANDISE AND EXPERIENCE BUNDLES (MEDIUM PRIORITY)
         // TODO: Implement merchandise integration
         // TODO: Implement VIP experience packages
         // TODO: Implement meet-and-greet bundles
         // TODO: Implement backstage access packages
-        
+
         // ADVANCED ANALYTICS AND INSIGHTS (MEDIUM PRIORITY)
         // TODO: Implement market intelligence reports
         // TODO: Implement pricing optimization algorithms
         // TODO: Implement demand forecasting
         // TODO: Implement revenue optimization analytics
-        
+
         // SECURITY AND COMPLIANCE (HIGH PRIORITY)
         // TODO: Implement advanced fraud detection
         // TODO: Implement KYC/AML integration
@@ -1292,5 +1947,36 @@ pub mod sports_broker {
             FantasySportsTests::test_update_fantasy_settings();
         }
         */
+
+        // Venue management tests
+        #[test]
+        fn comprehensive_venue_registration_works() {
+            VenueManagementTests::test_comprehensive_venue_registration();
+        }
+
+        #[test]
+        fn parking_pass_management_works() {
+            VenueManagementTests::test_parking_pass_management();
+        }
+
+        #[test]
+        fn concession_credits_system_works() {
+            VenueManagementTests::test_concession_credits_system();
+        }
+
+        #[test]
+        fn merchandise_bundle_system_works() {
+            VenueManagementTests::test_merchandise_bundle_system();
+        }
+
+        #[test]
+        fn venue_capacity_management_works() {
+            VenueManagementTests::test_venue_capacity_management();
+        }
+
+        #[test]
+        fn venue_update_functionality_works() {
+            VenueManagementTests::test_venue_update_functionality();
+        }
     } // End of tests module
 } // End of sports_broker module

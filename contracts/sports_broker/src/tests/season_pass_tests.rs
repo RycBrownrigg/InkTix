@@ -263,7 +263,7 @@ impl SeasonPassTests {
             "Boston".to_string(),
         );
 
-        let venue_id = contract.register_venue(
+        let venue_id = contract.register_basic_venue(
             "FTX Arena".to_string(),
             20000, // capacity
             "Miami, FL".to_string(),
@@ -589,7 +589,7 @@ impl SeasonPassTests {
             "Los Angeles".to_string(),
         );
 
-        let venue_id = contract.register_venue(
+        let venue_id = contract.register_basic_venue(
             "Crypto.com Arena".to_string(),
             19000,
             "Los Angeles, CA".to_string(),
