@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import ClientOnly from "../components/ClientOnly";
+import { BlockchainProvider } from "../contexts/BlockchainContext";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "InkTix - Revolutionary Sports Ticketing Platform",
+  title: "InkTix - Sports Ticketing on Polkadot",
   description:
-    "Experience the future of sports ticketing with InkTix. Built on Polkadot blockchain technology, featuring advanced loyalty programs, cross-chain functionality, and seamless fan experiences.",
-  keywords:
-    "sports ticketing, blockchain, Polkadot, InkTix, loyalty programs, cross-chain",
-  authors: [{ name: "InkTix Team" }],
-  openGraph: {
-    title: "InkTix - Revolutionary Sports Ticketing Platform",
-    description:
-      "Experience the future of sports ticketing with InkTix. Built on Polkadot blockchain technology.",
-    type: "website",
-    locale: "en_US",
-  },
+    "Decentralized sports ticketing platform built on Polkadot blockchain",
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -31,7 +25,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className={inter.className}>
+        <ClientOnly fallback={<div>Loading InkTix...</div>}>
+          <BlockchainProvider>{children}</BlockchainProvider>
+        </ClientOnly>
+      </body>
     </html>
   );
 }
