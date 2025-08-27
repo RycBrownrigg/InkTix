@@ -38,3 +38,23 @@ Icon
 # Temporary files
 **/.*~
 **/*~
+
+# Next.js specific ignores
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/dist/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.pnpm-debug.log*
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+frontend/.vercel
+frontend/.swc/
+frontend/next-swc.*.node
