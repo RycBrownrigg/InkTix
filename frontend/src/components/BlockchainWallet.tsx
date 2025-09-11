@@ -193,7 +193,9 @@ const BlockchainWallet: React.FC = () => {
                 {isLoadingBalance ? (
                   <RefreshCw className="w-6 h-6 animate-spin text-inktix-blue-600" />
                 ) : (
-                  `${formatBalance(balance)} DOT`
+                  `${formatBalance(balance)} ${
+                    networkInfo?.chain?.includes("Westend") ? "WND" : "DOT"
+                  }`
                 )}
               </span>
               <button

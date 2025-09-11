@@ -17,10 +17,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Concert Broker for music events and festivals
 - Culture Broker for museums and cultural events
 - Cross-chain messaging (XCM) integration
-- Frontend web application
 - Testnet deployment
 
-## [0.2.0] - 2025-08-10 - "Sports Broker MVP"
+## [0.3.0] - 2025-09-03 - "Frontend Integration"
+
+### Added
+
+- **Next.js Frontend Application**: Modern React application with TypeScript
+- **Wallet Integration**: Full Polkadot wallet connection (Polkadot.js, Talisman, SubWallet, Nova)
+- **Smart Contract Manager**: Deploy and interact with ink! smart contracts through web interface
+- **Blockchain Service Layer**: Complete Web3 integration with Substrate nodes
+- **Mock Mode**: Development mode with simulated contract interactions for testing
+- **Real Contract Support**: Deploy and call actual smart contracts on Substrate nodes
+- **Responsive Design**: Mobile-first UI with Tailwind CSS
+- **Auto-Restore**: Automatically restores wallet connection on page reload
+- **Network Detection**: Automatically detects and connects to Substrate nodes
+
+### Technical Improvements
+
+- **BlockchainContext**: React Context API for state management
+- **BlockchainService**: Service layer for all blockchain interactions
+- **Component Architecture**: Modular, reusable UI components
+- **TypeScript Integration**: Full type safety throughout the application
+- **Error Handling**: Comprehensive error handling and user feedback
+- **Development Tools**: Hot reload, TypeScript checking, and linting
+
+### Infrastructure
+
+- **Docker Integration**: Easy Substrate node setup with Docker
+- **Build System**: Automated build and deployment scripts
+- **Development Server**: Hot reload development environment
+- **Production Ready**: Optimized build for production deployment
+
+### Documentation
+
+- **Updated README**: Comprehensive documentation for setup and usage
+- **Frontend Documentation**: Detailed frontend-specific documentation
+- **Quick Start Guide**: Step-by-step setup instructions
+- **Feature Documentation**: Complete feature list and implementation status
+
+## [0.2.0] - 2025-08-17 - "Sports Broker MVP"
 
 ### Added
 
@@ -42,7 +78,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Technical Improvements
 
 - Extended InkTix Core foundation with 200+ sports-specific features
-- 15 comprehensive unit tests (100% pass rate)
+- 50+ comprehensive unit tests (100% pass rate)
 - Production-safe arithmetic with overflow protection
 - Memory-optimized data structures for complex sports data
 - Clone/Copy trait implementations for efficient data handling

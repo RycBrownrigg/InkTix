@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientOnly from "../components/ClientOnly";
-import { BlockchainProvider } from "../contexts/BlockchainContext";
+import BlockchainWrapper from "../components/BlockchainWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,10 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className} suppressHydrationWarning>
         <ClientOnly fallback={<div>Loading InkTix...</div>}>
-          <BlockchainProvider>{children}</BlockchainProvider>
+          <BlockchainWrapper>{children}</BlockchainWrapper>
         </ClientOnly>
       </body>
     </html>

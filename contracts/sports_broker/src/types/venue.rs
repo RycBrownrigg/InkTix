@@ -24,14 +24,20 @@ pub struct Venue {
     pub updated_at: u64,
 }
 
-/// Types of venues supported
+/// Types of venues supported by the system
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum VenueType {
     Stadium,          // Large outdoor sports venues
-    Arena,            // Indoor sports and entertainment venues
-    Theater,          // Performing arts venues
+    Arena,            // Indoor sports venues
+    Ballpark,         // Baseball-specific venues
+    SoccerField,      // Soccer/football fields
+    TennisCourt,      // Tennis venues
+    BasketballCourt,  // Basketball courts
+    IceRink,          // Hockey venues
+    SwimmingPool,     // Aquatic venues
+    TrackAndField,    // Athletics venues
     ConcertHall,      // Music performance venues
     ConventionCenter, // Multi-purpose event spaces
     RaceTrack,        // Motorsports venues

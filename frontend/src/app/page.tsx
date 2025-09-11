@@ -314,6 +314,12 @@ export default function HomePage() {
             >
               <span>Read Documentation</span>
             </Link>
+            <Link
+              href="/smart-contracts"
+              className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+            >
+              <span>Smart Contracts</span>
+            </Link>
           </div>
         </div>
       </section>

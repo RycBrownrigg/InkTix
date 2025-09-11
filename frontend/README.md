@@ -2,25 +2,27 @@
 
 A modern, responsive web application for the InkTix cross-chain sports ticketing platform, built with Next.js, TypeScript, and Tailwind CSS.
 
-## 🚀 Features
+## Features
 
 - **Modern UI/UX**: Beautiful, responsive design with smooth animations
-- **Wallet Integration**: Polkadot wallet connection for Web3 functionality
-- **Cross-Chain Ready**: Built to work with InkTix's XCM integration
-- **Sports Events**: Browse and filter sports events across all chains
+- **Wallet Integration**: Full Polkadot wallet connection (Polkadot.js, Talisman, SubWallet, Nova)
+- **Smart Contract Manager**: Deploy and interact with ink! smart contracts
+- **Blockchain Integration**: Complete Web3 integration with Substrate nodes
+- **Mock Mode**: Development mode with simulated contract interactions
+- **Real Contract Support**: Deploy and call actual smart contracts
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
 - **TypeScript**: Full type safety and better developer experience
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 14 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS with custom design system
 - **Icons**: Lucide React
-- **Web3**: Polkadot.js integration (planned)
-- **State Management**: React hooks (Zustand planned for future)
+- **Web3**: Polkadot.js integration with @polkadot/api
+- **State Management**: React Context API with custom hooks
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 frontend/
@@ -32,11 +34,19 @@ frontend/
 │   │   ├── layout.tsx      # Root layout component
 │   │   └── page.tsx        # Home page
 │   ├── components/          # Reusable UI components
+│   │   ├── BlockchainWallet.tsx
+│   │   ├── BlockchainWrapper.tsx
+│   │   ├── ClientOnly.tsx
+│   │   ├── Navigation.tsx
+│   │   ├── SmartContractManager.tsx
 │   │   └── WalletConnect.tsx
-│   ├── lib/                 # Utility libraries (future)
-│   ├── types/               # TypeScript type definitions (future)
-│   ├── hooks/               # Custom React hooks (future)
-│   └── utils/               # Utility functions (future)
+│   ├── contexts/            # React Context providers
+│   │   └── BlockchainContext.tsx
+│   ├── services/            # External service integrations
+│   │   └── blockchain.ts
+│   ├── types/               # TypeScript type definitions
+│   ├── hooks/               # Custom React hooks
+│   └── utils/               # Utility functions
 ├── public/                  # Static assets
 ├── tailwind.config.js       # Tailwind CSS configuration
 ├── next.config.js           # Next.js configuration
@@ -44,7 +54,7 @@ frontend/
 └── package.json             # Dependencies and scripts
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -82,7 +92,7 @@ frontend/
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
 
-## 🎨 Design System
+## Design System
 
 ### Colors
 
@@ -103,7 +113,7 @@ frontend/
 - **Sizes**: Responsive typography scale
 - **Weights**: 300, 400, 500, 600, 700
 
-## 🔌 Wallet Integration
+## Wallet Integration
 
 The frontend includes a comprehensive wallet connection system:
 
@@ -111,29 +121,34 @@ The frontend includes a comprehensive wallet connection system:
 - **Connection Flow**: Secure wallet detection and connection
 - **Account Management**: Multiple account support and switching
 - **Error Handling**: User-friendly error messages and guidance
+- **Auto-Restore**: Automatically restores wallet connection on page reload
+- **Network Detection**: Automatically detects and connects to Substrate nodes
 
-## 📱 Responsive Design
+## Responsive Design
 
 - **Mobile First**: Designed for mobile devices first
 - **Breakpoints**: Tailwind's responsive breakpoints
 - **Grid System**: Flexible grid layouts for all screen sizes
 - **Touch Friendly**: Optimized for touch interactions
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
-### Phase 1 (Current)
+### Phase 1 (Current) - COMPLETED
 
-- ✅ Basic UI components and pages
-- ✅ Wallet connection system
-- ✅ Responsive design
-- ✅ Event browsing interface
+- Basic UI components and pages
+- Wallet connection system
+- Responsive design
+- Smart contract integration
+- Contract deployment and interaction
+- Blockchain service layer
+- Mock mode for development
 
-### Phase 2 (Planned)
+### Phase 2 (In Progress)
 
-- [ ] Smart contract integration
-- [ ] Real-time event data
-- [ ] Ticket purchasing flow
-- [ ] User dashboard
+- Real-time event data integration
+- Ticket purchasing flow
+- User dashboard
+- Event management interface
 
 ### Phase 3 (Future)
 
@@ -142,7 +157,7 @@ The frontend includes a comprehensive wallet connection system:
 - [ ] Advanced analytics
 - [ ] Mobile app (PWA)
 
-## 🧪 Testing
+## Testing
 
 Currently using manual testing. Future plans include:
 
@@ -151,7 +166,7 @@ Currently using manual testing. Future plans include:
 - [ ] E2E tests with Playwright
 - [ ] Visual regression testing
 
-## 📦 Deployment
+## Deployment
 
 ### Development
 
@@ -176,7 +191,7 @@ NEXT_PUBLIC_NETWORK=polkadot
 NEXT_PUBLIC_RPC_ENDPOINT=your_rpc_endpoint
 ```
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -184,11 +199,11 @@ NEXT_PUBLIC_RPC_ENDPOINT=your_rpc_endpoint
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the same license as the main InkTix project.
 
-## 🆘 Support
+## Support
 
 For support and questions:
 
@@ -198,5 +213,4 @@ For support and questions:
 
 ---
 
-**Built with ❤️ for the Polkadot ecosystem**
-
+**Built for the Polkadot ecosystem**
