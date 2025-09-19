@@ -1,7 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
+mod tests;
 /// InkTix Core - Foundation Ticket Marketplace Contract
-/// 
+///
 /// This serves as the base template for specialized marketplace contracts.
 /// Features:
 /// - Event creation and management
@@ -10,17 +11,15 @@
 /// - Secure ticket transfers
 /// - Capacity management
 /// - Multi-currency support
-/// 
+///
 /// Specialization Guide:
 /// - Copy this contract for each specialized broker
 /// - Extend Event struct with domain-specific fields
 /// - Add specialized purchasing logic
 /// - Integrate with chain-specific features (DeFi, tokens, etc.)
-
 // Import our new modules
 mod types;
 mod utils;
-mod tests;
 
 // Re-export commonly used types for easy access
 pub use types::*;
@@ -33,31 +32,35 @@ pub use ink::storage::Mapping;
 #[ink::contract]
 mod inktix_core {
     use super::*;
-    
+
     // Import from our modules
-    use crate::types::{BaseEvent, BaseTicket, InkTixError, InkTixResult, CurrencyId};
-    use crate::utils::{validate_non_empty_string, validate_positive_number, validate_positive_balance};
+    use crate::types::{BaseEvent, BaseTicket, CurrencyId, InkTixError, InkTixResult};
+    use crate::utils::{
+        validate_non_empty_string, validate_positive_balance, validate_positive_number,
+    };
+    use ink::prelude::string::String;
+    use ink::prelude::vec::Vec;
 
     // ============================================================================
     // STORAGE & STATE
     // ============================================================================
-    
+
     /// Core marketplace storage
     #[ink(storage)]
     pub struct InkTixCore {
         // Event management
         events: Mapping<u32, BaseEvent>,
         next_event_id: u32,
-        
+
         // Ticket management
         tickets: Mapping<u64, BaseTicket>,
         user_tickets: Mapping<AccountId, Vec<u64>>,
         next_ticket_id: u64,
-        
+
         // Currency management
         currency_rates: Mapping<CurrencyId, Balance>,
         supported_currencies: Vec<CurrencyId>,
-        
+
         // Contract management
         owner: AccountId,
     }
@@ -70,12 +73,13 @@ mod inktix_core {
         /// Creates a new InkTix Core contract
         #[ink(constructor)]
         pub fn new() -> Self {
-            let mut supported_currencies = Vec::new();
-            supported_currencies.push(CurrencyId::DOT);
-            supported_currencies.push(CurrencyId::ACA);
-            supported_currencies.push(CurrencyId::AUSD);
-            supported_currencies.push(CurrencyId::LDOT);
-            supported_currencies.push(CurrencyId::KSM);
+            let supported_currencies = vec![
+                CurrencyId::DOT,
+                CurrencyId::ACA,
+                CurrencyId::AUSD,
+                CurrencyId::LDOT,
+                CurrencyId::KSM,
+            ];
 
             let mut contract = Self {
                 events: Mapping::new(),
@@ -89,11 +93,21 @@ mod inktix_core {
             };
 
             // Initialize currency rates (DOT as base)
-            contract.currency_rates.insert(CurrencyId::DOT, &1_000_000_000_000);
-            contract.currency_rates.insert(CurrencyId::ACA, &50_000_000_000);
-            contract.currency_rates.insert(CurrencyId::AUSD, &150_000_000_000);
-            contract.currency_rates.insert(CurrencyId::LDOT, &950_000_000_000);
-            contract.currency_rates.insert(CurrencyId::KSM, &15_000_000_000_000);
+            contract
+                .currency_rates
+                .insert(CurrencyId::DOT, &1_000_000_000_000);
+            contract
+                .currency_rates
+                .insert(CurrencyId::ACA, &50_000_000_000);
+            contract
+                .currency_rates
+                .insert(CurrencyId::AUSD, &150_000_000_000);
+            contract
+                .currency_rates
+                .insert(CurrencyId::LDOT, &950_000_000_000);
+            contract
+                .currency_rates
+                .insert(CurrencyId::KSM, &15_000_000_000_000);
 
             contract
         }
@@ -120,7 +134,8 @@ mod inktix_core {
             validate_positive_balance(base_price, "base_price")?;
 
             let event_id = self.next_event_id;
-            self.next_event_id = self.next_event_id
+            self.next_event_id = self
+                .next_event_id
                 .checked_add(1)
                 .ok_or(InkTixError::IdOverflow)?;
 
@@ -144,15 +159,15 @@ mod inktix_core {
         pub fn purchase_ticket(
             &mut self,
             event_id: u32,
-            _section: String,  // ← Add underscore
-            _row: String,      // ← Add underscore
+            _section: String, // ← Add underscore
+            _row: String,     // ← Add underscore
             seat_number: u32,
         ) -> InkTixResult<u64> {
             let buyer = self.env().caller();
             let payment = self.env().transferred_value();
 
             let event = self.events.get(event_id).ok_or(InkTixError::NotFound)?;
-            
+
             if !event.active {
                 return Err(InkTixError::InvalidData);
             }
@@ -166,7 +181,8 @@ mod inktix_core {
             }
 
             let ticket_id = self.next_ticket_id;
-            self.next_ticket_id = self.next_ticket_id
+            self.next_ticket_id = self
+                .next_ticket_id
                 .checked_add(1)
                 .ok_or(InkTixError::IdOverflow)?;
 
@@ -188,7 +204,9 @@ mod inktix_core {
 
             // Update event
             let mut updated_event = event;
-            updated_event.sold_tickets = updated_event.sold_tickets.checked_add(1)
+            updated_event.sold_tickets = updated_event
+                .sold_tickets
+                .checked_add(1)
                 .ok_or(InkTixError::IdOverflow)?;
             self.events.insert(event_id, &updated_event);
 

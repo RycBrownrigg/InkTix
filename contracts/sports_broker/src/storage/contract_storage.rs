@@ -2,6 +2,10 @@ use crate::types::*;
 use ink::prelude::*;
 use ink::primitives::AccountId;
 use ink::storage::Mapping;
+use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
+
+#[allow(clippy::arithmetic_side_effects)]
 
 /// Main contract storage structure
 #[derive(Debug)]
@@ -15,6 +19,7 @@ pub struct SportsBrokerStorage {
     pub total_tickets: u64,
     pub total_seasons: u32,
     pub total_season_passes: u32,
+    pub total_season_pass_packages: u32,
     pub next_report_id: u32,
     pub analytics_enabled: bool,
 
@@ -81,7 +86,7 @@ pub struct SportsBrokerStorage {
     pub fantasy_settings: Mapping<u32, FantasySettings>,
     pub user_fantasy_leagues: Mapping<ink::primitives::AccountId, Vec<u32>>,
     pub user_fantasy_teams: Mapping<ink::primitives::AccountId, Vec<u32>>,
-    pub league_participants: Mapping<u32, Vec<u32>>,
+    pub league_participants: Mapping<u32, Vec<ink::primitives::AccountId>>,
 
     // Advanced team loyalty management
     pub total_team_loyalty_profiles: u32,
@@ -92,6 +97,7 @@ pub struct SportsBrokerStorage {
     pub team_loyalty_profiles: Mapping<(ink::primitives::AccountId, u32), TeamLoyaltyProfile>,
     pub team_stakings: Mapping<u32, TeamStaking>,
     pub team_attendance: Mapping<u32, TeamAttendance>,
+    pub team_attendances: Mapping<u32, TeamAttendance>,
     pub team_performance_rewards: Mapping<u32, TeamPerformanceReward>,
     pub team_loyalty_challenges: Mapping<u32, TeamLoyaltyChallenge>,
     pub team_loyalty_analytics: Mapping<u32, TeamLoyaltyAnalytics>,
@@ -149,6 +155,7 @@ impl Default for SportsBrokerStorage {
             total_tickets: 0,
             total_seasons: 0,
             total_season_passes: 0,
+            total_season_pass_packages: 0,
             total_fantasy_leagues: 0,
             total_fantasy_teams: 0,
             total_fantasy_participations: 0,
@@ -241,6 +248,7 @@ impl Default for SportsBrokerStorage {
             team_loyalty_profiles: Mapping::default(),
             team_stakings: Mapping::default(),
             team_attendance: Mapping::default(),
+            team_attendances: Mapping::default(),
             team_performance_rewards: Mapping::default(),
             team_loyalty_challenges: Mapping::default(),
             team_loyalty_analytics: Mapping::default(),
@@ -285,6 +293,7 @@ impl Default for SportsBrokerStorage {
     }
 }
 
+#[allow(clippy::arithmetic_side_effects)]
 impl SportsBrokerStorage {
     /// Initialize currency rates with default values
     pub fn initialize_currency_rates(&mut self) {
@@ -439,5 +448,10 @@ impl SportsBrokerStorage {
     pub fn get_next_fantasy_transfer_id(&mut self) -> u32 {
         self.total_fantasy_transfers += 1;
         self.total_fantasy_transfers
+    }
+
+    /// Get current timestamp
+    pub fn get_current_timestamp(&self) -> u64 {
+        ink::env::block_timestamp::<ink::env::DefaultEnvironment>()
     }
 }

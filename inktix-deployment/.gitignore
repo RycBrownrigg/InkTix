@@ -1,0 +1,23 @@
+# Built frontend files
+_next/
+404/
+connect/
+events/
+smart-contracts/
+index.html
+index.txt
+404.html
+
+# Private keys and sensitive files
+id_rsa.pub
+Public and Private key.rtf
+
+# WASM files (should be built, not committed)
+*.wasm
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp

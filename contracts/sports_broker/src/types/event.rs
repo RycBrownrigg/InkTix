@@ -1,5 +1,6 @@
 use ink::prelude::string::String;
 
+#[allow(clippy::cast_possible_truncation)]
 
 /// Sport types
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -12,6 +13,7 @@ pub enum SportType {
     Baseball,
     Hockey,
     Tennis,
+    #[allow(clippy::cast_possible_truncation)]
     Other(String),
 }
 

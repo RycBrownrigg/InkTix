@@ -1,5 +1,6 @@
-
 use ink::primitives::AccountId;
+use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]

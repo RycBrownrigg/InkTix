@@ -1,8 +1,11 @@
 use ink::prelude::vec::Vec;
+use ink::prelude::string::String;
 
+#[allow(clippy::cast_possible_truncation)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum BlockchainNetwork {
     Polkadot,
     Kusama,
@@ -38,6 +41,7 @@ pub struct CrossChainEventMetadata {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum PaymentMethod {
     Native,
     StableCoin,
@@ -49,6 +53,7 @@ pub enum PaymentMethod {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum FeeType {
     Network,
     Processing,
@@ -70,6 +75,7 @@ pub struct CrossChainFee {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum SupportedCurrency {
     DOT,
     KSM,
@@ -86,6 +92,7 @@ pub enum SupportedCurrency {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum RequirementType {
     Age,
     Identity,
@@ -128,6 +135,13 @@ pub struct CrossChainEvent {
     pub requirements: Vec<ChainRequirement>,
     pub created_at: u64,
     pub updated_at: u64,
+    pub max_tickets: u32,
+    pub tickets_sold: u32,
+    pub target_chain: BlockchainNetwork,
+    pub bridge_fee: u128,
+    pub cross_chain_fee: u128,
+    pub bridge_tx_hash: Option<String>,
+    pub completion_timestamp: Option<u64>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]

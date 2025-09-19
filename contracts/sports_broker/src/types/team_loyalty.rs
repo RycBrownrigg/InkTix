@@ -1,6 +1,6 @@
-use ink::primitives::AccountId;
-use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
+use ink::primitives::AccountId;
 
 /// Team loyalty profile for a specific user-team relationship
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -27,11 +27,11 @@ pub struct TeamLoyaltyProfile {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum TeamLoyaltyTier {
-    Rookie,        // 0-99 points - Basic benefits
-    Fan,           // 100-499 points - Enhanced benefits
-    SuperFan,      // 500-1999 points - Premium benefits
-    UltraFan,      // 2000-9999 points - VIP benefits
-    LegendaryFan,  // 10000+ points - Exclusive benefits
+    Rookie,       // 0-99 points - Basic benefits
+    Fan,          // 100-499 points - Enhanced benefits
+    SuperFan,     // 500-1999 points - Premium benefits
+    UltraFan,     // 2000-9999 points - VIP benefits
+    LegendaryFan, // 10000+ points - Exclusive benefits
 }
 
 /// Team-specific benefits and perks
@@ -39,16 +39,16 @@ pub enum TeamLoyaltyTier {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum TeamBenefit {
-    PrioritySeating,           // Priority access to best seats
-    MeetAndGreetAccess,        // Access to player meet and greets
-    ExclusiveMerchandise,      // Access to team-exclusive merchandise
-    EarlyTicketAccess,         // Early access to ticket sales
-    ParkingPass,               // Free or discounted parking
-    ConcessionDiscounts,       // Discounts on food and drinks
-    BackstageAccess,           // Limited backstage access
-    TeamPracticeAccess,        // Access to team practices
-    ChampionshipRing,          // Special championship rewards
-    AlumniAssociation,         // Access to alumni events
+    PrioritySeating,      // Priority access to best seats
+    MeetAndGreetAccess,   // Access to player meet and greets
+    ExclusiveMerchandise, // Access to team-exclusive merchandise
+    EarlyTicketAccess,    // Early access to ticket sales
+    ParkingPass,          // Free or discounted parking
+    ConcessionDiscounts,  // Discounts on food and drinks
+    BackstageAccess,      // Limited backstage access
+    TeamPracticeAccess,   // Access to team practices
+    ChampionshipRing,     // Special championship rewards
+    AlumniAssociation,    // Access to alumni events
 }
 
 /// Team staking information for loyalty rewards
@@ -99,14 +99,14 @@ pub struct TeamPerformanceReward {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum TeamPerformanceRewardType {
-    PlayoffAppearance,         // Team made playoffs
-    ChampionshipWin,           // Team won championship
-    RegularSeasonChampion,     // Team won regular season
-    DivisionChampion,          // Team won division
-    ConferenceChampion,        // Team won conference
-    RecordBreakingSeason,      // Team broke records
-    ComebackVictory,           // Team had comeback wins
-    RivalryGameVictory,        // Team won rivalry games
+    PlayoffAppearance,     // Team made playoffs
+    ChampionshipWin,       // Team won championship
+    RegularSeasonChampion, // Team won regular season
+    DivisionChampion,      // Team won division
+    ConferenceChampion,    // Team won conference
+    RecordBreakingSeason,  // Team broke records
+    ComebackVictory,       // Team had comeback wins
+    RivalryGameVictory,    // Team won rivalry games
 }
 
 /// Team loyalty analytics and statistics
@@ -148,14 +148,14 @@ pub struct TeamLoyaltyChallenge {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum TeamChallengeType {
-    AttendanceStreak,          // Attend X consecutive games
-    SocialMediaEngagement,     // Engage with team on social media
-    MerchandisePurchase,       // Purchase team merchandise
-    ReferralChallenge,         // Refer new fans to the team
-    GamePrediction,            // Correctly predict game outcomes
-    FanArtSubmission,          // Submit fan art or content
-    CommunityParticipation,    // Participate in community events
-    SeasonPassHolder,          // Hold season pass for full season
+    AttendanceStreak,       // Attend X consecutive games
+    SocialMediaEngagement,  // Engage with team on social media
+    MerchandisePurchase,    // Purchase team merchandise
+    ReferralChallenge,      // Refer new fans to the team
+    GamePrediction,         // Correctly predict game outcomes
+    FanArtSubmission,       // Submit fan art or content
+    CommunityParticipation, // Participate in community events
+    SeasonPassHolder,       // Hold season pass for full season
 }
 
 impl Default for TeamLoyaltyProfile {

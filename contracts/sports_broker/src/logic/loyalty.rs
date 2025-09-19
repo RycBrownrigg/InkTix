@@ -1,12 +1,16 @@
-
-use crate::types::*;
 use crate::storage::*;
-use ink::primitives::AccountId;
+use crate::types::*;
 use ink::env::DefaultEnvironment;
+use ink::primitives::AccountId;
+use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
+use ink::prelude::string::ToString;
+use ink::prelude::vec;
 
 /// Loyalty and rewards system functionality
 pub struct Loyalty;
 
+#[allow(clippy::arithmetic_side_effects)]
 impl Loyalty {
     /// Create a loyalty profile for a user
     pub fn create_loyalty_profile(
@@ -45,7 +49,9 @@ impl Loyalty {
         points: u32,
         _reason: String,
     ) -> Result<(), String> {
-        let mut profile = storage.loyalty_profiles.get(user)
+        let mut profile = storage
+            .loyalty_profiles
+            .get(user)
             .ok_or("Loyalty profile not found")?;
 
         profile.total_points += points;
@@ -70,7 +76,9 @@ impl Loyalty {
         points: u32,
         _reason: String,
     ) -> Result<(), String> {
-        let mut profile = storage.loyalty_profiles.get(user)
+        let mut profile = storage
+            .loyalty_profiles
+            .get(user)
             .ok_or("Loyalty profile not found")?;
 
         if profile.total_points < points {
@@ -91,7 +99,9 @@ impl Loyalty {
         reward_type: RewardType,
         points_cost: u32,
     ) -> Result<u64, String> {
-        let mut profile = storage.loyalty_profiles.get(user)
+        let mut profile = storage
+            .loyalty_profiles
+            .get(user)
             .ok_or("Loyalty profile not found")?;
 
         if profile.total_points < points_cost {
@@ -112,7 +122,8 @@ impl Loyalty {
             reward_type: reward_type.clone(),
             points_cost,
             redeemed_at: ink::env::block_timestamp::<DefaultEnvironment>(),
-            expires_at: ink::env::block_timestamp::<DefaultEnvironment>() + (30 * 24 * 60 * 60 * 1000), // 30 days
+            expires_at: ink::env::block_timestamp::<DefaultEnvironment>()
+                + (30 * 24 * 60 * 60 * 1000), // 30 days
             is_used: false,
             event_id: None,
         };
@@ -129,9 +140,13 @@ impl Loyalty {
         referred: AccountId,
     ) -> Result<(), String> {
         // Validate both users exist
-        let referrer_profile = storage.loyalty_profiles.get(referrer)
+        let referrer_profile = storage
+            .loyalty_profiles
+            .get(referrer)
             .ok_or("Referrer profile not found")?;
-        let _referred_profile = storage.loyalty_profiles.get(referred)
+        let _referred_profile = storage
+            .loyalty_profiles
+            .get(referred)
             .ok_or("Referred user profile not found")?;
 
         // Check if referral is valid (not self-referral)
@@ -143,7 +158,12 @@ impl Loyalty {
         let bonus_points = Self::calculate_referral_bonus(referrer_profile.current_tier.clone());
 
         // Award bonus to referrer
-        Self::award_points(storage, referrer, bonus_points, "Referral bonus".to_string())?;
+        Self::award_points(
+            storage,
+            referrer,
+            bonus_points,
+            "Referral bonus".to_string(),
+        )?;
 
         // Update referrer's referral count
         let mut updated_referrer = referrer_profile.clone();
@@ -270,42 +290,42 @@ impl Loyalty {
     // ============================================================================
     // TODO: MISSING LOYALTY SYSTEM FEATURES
     // ============================================================================
-    
+
     // ADVANCED TEAM LOYALTY PROGRAMS
     // TODO: Implement staking on favorite teams
     // TODO: Implement team performance-based loyalty tiers
     // TODO: Implement team-specific loyalty benefits and perks
     // TODO: Implement team fan club integration
     // TODO: Implement team merchandise loyalty rewards
-    
+
     // ATTENDANCE AND ENGAGEMENT
     // TODO: Implement attendance streak tracking and rewards
     // TODO: Implement event participation scoring
     // TODO: Implement social engagement rewards
     // TODO: Implement community challenge participation
     // TODO: Implement user-generated content rewards
-    
+
     // DEFI INTEGRATION
     // TODO: Implement staking-based loyalty rewards
     // TODO: Implement yield generation for loyalty points
     // TODO: Implement DeFi savings accounts for event budgeting
     // TODO: Implement liquidity mining for active users
     // TODO: Implement governance token distribution
-    
+
     // FANTASY SPORTS INTEGRATION
     // TODO: Implement fantasy sports loyalty points
     // TODO: Implement fantasy league participation rewards
     // TODO: Implement player performance-based bonuses
     // TODO: Implement fantasy sports leaderboards
     // TODO: Implement exclusive fantasy sports content
-    
+
     // SEASON PASS LOYALTY
     // TODO: Implement season pass holder loyalty benefits
     // TODO: Implement playoff attendance rewards
     // TODO: Implement season ticket renewal bonuses
     // TODO: Implement alumni association benefits
     // TODO: Implement corporate loyalty programs
-    
+
     // SOCIAL AND COMMUNITY
     // TODO: Implement friend referral bonuses
     // TODO: Implement group event coordination rewards

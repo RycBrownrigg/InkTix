@@ -28,6 +28,7 @@ pub struct Venue {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum VenueType {
     Stadium,          // Large outdoor sports venues
     Arena,            // Indoor sports venues
@@ -49,6 +50,7 @@ pub enum VenueType {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum VenueAmenity {
     WheelchairAccessible,
     PremiumSeating,
@@ -83,6 +85,47 @@ pub struct ParkingInfo {
     pub parking_pass_price: u128,
     pub parking_pass_duration: u64, // Duration in seconds
     pub overflow_lots: Vec<OverflowLot>,
+    pub pricing_tiers: Vec<ParkingPricingTier>,
+    pub access_control: ParkingAccessControl,
+    pub payment_methods: Vec<PaymentMethod>,
+    pub special_events_pricing: bool,
+}
+
+/// Parking access control levels
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
+pub enum ParkingAccessControl {
+    Open,
+    Restricted,
+    VIPOnly,
+    StaffOnly,
+    Closed,
+}
+
+/// Parking pricing tier
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct ParkingPricingTier {
+    pub tier_name: String,
+    pub price_multiplier: u32, // Multiplier as basis points (10000 = 1.0x)
+    pub conditions: Vec<String>,
+}
+
+/// Payment method types
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
+pub enum PaymentMethod {
+    Cash,
+    CreditCard,
+    DigitalWallet,
+    Cryptocurrency,
+    VenueCredits,
+    Other(String),
 }
 
 /// Overflow parking lot information
@@ -110,6 +153,38 @@ pub struct ConcessionInfo {
     pub credit_packages: Vec<ConcessionCreditPackage>,
     pub dietary_options: Vec<DietaryOption>,
     pub average_meal_price: u128,
+    pub total_stalls: u32,
+    pub food_categories: Vec<FoodCategory>,
+    pub pricing_tiers: Vec<ConcessionPricingTier>,
+    pub payment_methods: Vec<PaymentMethod>,
+    pub special_dietary_options: bool,
+}
+
+/// Food category types
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
+pub enum FoodCategory {
+    Appetizers,
+    MainCourses,
+    Desserts,
+    Beverages,
+    Snacks,
+    HealthyOptions,
+    International,
+    LocalSpecialties,
+    Other(String),
+}
+
+/// Concession pricing tier
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct ConcessionPricingTier {
+    pub tier_name: String,
+    pub price_multiplier: u32, // Multiplier as basis points (10000 = 1.0x)
+    pub applicable_categories: Vec<FoodCategory>,
 }
 
 /// Concession credit package options
@@ -130,6 +205,7 @@ pub struct ConcessionCreditPackage {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum DietaryOption {
     Vegetarian,
     Vegan,
@@ -154,6 +230,37 @@ pub struct MerchandiseInfo {
     pub merchandise_bundles: Vec<MerchandiseBundle>,
     pub loyalty_discounts: Vec<LoyaltyDiscount>,
     pub average_item_price: u128,
+    pub total_stores: u32,
+    pub merchandise_categories: Vec<MerchandiseCategory>,
+    pub pricing_tiers: Vec<MerchandisePricingTier>,
+    pub payment_methods: Vec<PaymentMethod>,
+    pub online_ordering: bool,
+    pub delivery_available: bool,
+}
+
+/// Merchandise category types
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
+pub enum MerchandiseCategory {
+    Clothing,
+    Accessories,
+    Collectibles,
+    Souvenirs,
+    FoodAndBeverage,
+    DigitalContent,
+    Other(String),
+}
+
+/// Merchandise pricing tier
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct MerchandisePricingTier {
+    pub tier_name: String,
+    pub price_multiplier: u32, // Multiplier as basis points (10000 = 1.0x)
+    pub applicable_categories: Vec<MerchandiseCategory>,
 }
 
 /// Merchandise bundle options
@@ -188,6 +295,7 @@ pub struct BundleItem {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum MerchandiseType {
     Clothing,
     Accessories,
@@ -219,6 +327,43 @@ pub struct VenueLoyaltyProgram {
     pub tier_thresholds: Vec<TierThreshold>,
     pub venue_specific_benefits: Vec<VenueBenefit>,
     pub partner_benefits: Vec<PartnerBenefit>,
+    pub program_name: String,
+    pub tier_levels: Vec<TierLevel>,
+    pub benefits: Vec<LoyaltyBenefit>,
+    pub redemption_options: Vec<RedemptionOption>,
+    pub expiration_policy: String,
+}
+
+/// Loyalty tier level
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct TierLevel {
+    pub level_name: String,
+    pub points_required: u32,
+    pub benefits: Vec<String>,
+}
+
+/// Loyalty benefit
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct LoyaltyBenefit {
+    pub benefit_name: String,
+    pub benefit_type: String,
+    pub value: u128,
+    pub conditions: Vec<String>,
+}
+
+/// Redemption option
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+#[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+pub struct RedemptionOption {
+    pub option_name: String,
+    pub points_cost: u32,
+    pub description: String,
+    pub availability: bool,
 }
 
 /// Loyalty tier threshold
@@ -235,6 +380,7 @@ pub struct TierThreshold {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum VenueBenefit {
     FreeParking,
     ConcessionDiscounts(u8),  // Discount percentage
@@ -303,6 +449,7 @@ pub struct CapacityAlert {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum AlertType {
     Warning,
     Critical,
@@ -314,6 +461,7 @@ pub enum AlertType {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum OverflowStrategy {
     StandingRoomOnly,
     AdditionalSeating,
@@ -347,6 +495,7 @@ pub struct ParkingPass {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum ParkingPassType {
     SingleEvent,     // Valid for one event
     MultiEvent(u32), // Valid for multiple events
@@ -379,6 +528,7 @@ pub struct ConcessionCredits {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum ConcessionCreditType {
     Food,     // Food purchases only
     Beverage, // Beverage purchases only
@@ -455,6 +605,7 @@ pub struct CapacityReservation {
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
+#[allow(clippy::cast_possible_truncation)]
 pub enum ReservationType {
     Corporate,     // Corporate event reservation
     Group,         // Group reservation

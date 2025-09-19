@@ -1,7 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
 use ink::storage::Mapping;
 
 /// Simple working version of Concert Broker
@@ -71,6 +71,13 @@ pub mod concert_broker {
         pub next_ticket_id: u64,
     }
 
+    impl Default for ConcertBroker {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    #[allow(clippy::arithmetic_side_effects)]
     impl ConcertBroker {
         #[ink(constructor)]
         pub fn new() -> Self {
@@ -157,20 +164,20 @@ pub mod concert_broker {
         pub fn purchase_ticket(&mut self, event_id: u32, seat_number: u32) -> u64 {
             let caller = self.env().caller();
             let payment = self.env().transferred_value();
-            
+
             // Get the event
             let event = self.events.get(event_id).expect("Event not found");
-            
+
             // Check if event is sold out
             assert!(event.sold_tickets < event.capacity, "Event is sold out");
-            
+
             // Check if payment is sufficient
             assert!(payment >= event.base_price, "Insufficient payment");
-            
+
             // Create ticket
             let ticket_id = self.next_ticket_id;
             self.next_ticket_id += 1;
-            
+
             let ticket = ConcertTicket {
                 id: ticket_id,
                 event_id,
@@ -179,20 +186,20 @@ pub mod concert_broker {
                 purchase_price: payment,
                 purchase_date: self.env().block_timestamp(),
             };
-            
+
             // Store ticket
             self.tickets.insert(ticket_id, &ticket);
-            
+
             // Update user's ticket list
             let mut user_tickets = self.user_tickets.get(caller).unwrap_or_default();
             user_tickets.push(ticket_id);
             self.user_tickets.insert(caller, &user_tickets);
-            
+
             // Update event sold tickets
             let mut updated_event = event.clone();
             updated_event.sold_tickets += 1;
             self.events.insert(event_id, &updated_event);
-            
+
             self.total_tickets += 1;
             ticket_id
         }
@@ -224,7 +231,12 @@ pub mod concert_broker {
 
         #[ink(message)]
         pub fn get_stats(&self) -> (u32, u32, u32, u32) {
-            (self.total_artists, self.total_venues, self.total_events, self.total_tickets)
+            (
+                self.total_artists,
+                self.total_venues,
+                self.total_events,
+                self.total_tickets,
+            )
         }
     }
 
@@ -252,7 +264,8 @@ pub mod concert_broker {
         #[ink::test]
         fn register_venue_works() {
             let mut contract = ConcertBroker::new();
-            let venue_id = contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
+            let venue_id =
+                contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
             assert_eq!(venue_id, 1);
             assert_eq!(contract.total_venues, 1);
         }
@@ -261,8 +274,9 @@ pub mod concert_broker {
         fn create_event_works() {
             let mut contract = ConcertBroker::new();
             let artist_id = contract.register_artist("Test Artist".to_string());
-            let venue_id = contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
-            
+            let venue_id =
+                contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
+
             let event_id = contract.create_concert_event(
                 "Test Concert".to_string(),
                 artist_id,
@@ -271,7 +285,7 @@ pub mod concert_broker {
                 1000,
                 100_000_000_000_000, // 0.1 DOT
             );
-            
+
             assert_eq!(event_id, 1);
             assert_eq!(contract.total_events, 1);
         }
@@ -288,7 +302,8 @@ pub mod concert_broker {
         #[ink::test]
         fn get_venue_works() {
             let mut contract = ConcertBroker::new();
-            let venue_id = contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
+            let venue_id =
+                contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
             assert_eq!(venue_id, 1);
             assert_eq!(contract.total_venues, 1);
         }
@@ -297,8 +312,9 @@ pub mod concert_broker {
         fn get_event_works() {
             let mut contract = ConcertBroker::new();
             let artist_id = contract.register_artist("Test Artist".to_string());
-            let venue_id = contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
-            
+            let venue_id =
+                contract.register_venue("Test Venue".to_string(), 1000, "123 Main St".to_string());
+
             let event_id = contract.create_concert_event(
                 "Test Concert".to_string(),
                 artist_id,
@@ -307,10 +323,10 @@ pub mod concert_broker {
                 1000,
                 100_000_000_000_000,
             );
-            
+
             let event = contract.get_event(event_id);
             assert!(event.is_some());
-            
+
             // Fix: Use as_ref() to borrow the contents instead of moving
             let event_ref = event.as_ref().unwrap();
             assert_eq!(event_ref.name, "Test Concert");

@@ -1,4 +1,5 @@
 use ink::prelude::vec::Vec;
+use ink::prelude::string::String;
 
 /// XCM message types for cross-chain ticket operations
 #[derive(Debug, PartialEq, Eq, Clone)]

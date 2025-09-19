@@ -1,37 +1,35 @@
-
-use crate::types::*;
 use crate::storage::*;
+use crate::types::*;
+use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
+use ink::prelude::string::ToString;
 
 /// Team management logic
 pub struct TeamManagement;
 
+#[allow(clippy::arithmetic_side_effects)]
+#[allow(clippy::cast_possible_truncation)]
 impl TeamManagement {
     /// Register a new team
     pub fn register_team(
         storage: &mut SportsBrokerStorage,
         name: String,
-        sport: String,
         city: String,
-    ) -> u32 {
+        sport_type: SportType,
+    ) -> Result<u32, String> {
         let team_id = storage.get_next_id("team");
-        
+
         let team = Team {
             id: team_id,
             name,
-            sport_type: match sport.as_str() {
-                "Basketball" => SportType::Basketball,
-                "Football" => SportType::Football,
-                "Baseball" => SportType::Baseball,
-                "Soccer" => SportType::Soccer,
-                "Hockey" => SportType::Hockey,
-                _ => SportType::Basketball,
-            },
+            sport_type,
             city,
             verified: false,
         };
 
         storage.teams.insert(team_id, &team);
-        team_id
+        storage.total_teams += 1;
+        Ok(team_id)
     }
 
     /// Get team information
@@ -86,17 +84,27 @@ impl TeamManagement {
     }
 
     /// Get team performance
-    pub fn get_team_performance(storage: &SportsBrokerStorage, team_id: u32) -> Option<TeamPerformance> {
+    pub fn get_team_performance(
+        storage: &SportsBrokerStorage,
+        team_id: u32,
+    ) -> Option<TeamPerformance> {
         storage.team_performance.get(team_id)
     }
 
     /// Get pricing multiplier for a team
-    pub fn get_pricing_multiplier(storage: &SportsBrokerStorage, team_id: u32) -> Option<PricingMultiplier> {
+    pub fn get_pricing_multiplier(
+        storage: &SportsBrokerStorage,
+        team_id: u32,
+    ) -> Option<PricingMultiplier> {
         storage.pricing_multipliers.get(team_id)
     }
 
     /// Update pricing multiplier based on team performance
-    fn update_pricing_multiplier(storage: &mut SportsBrokerStorage, team_id: u32, win_percentage: u32) {
+    fn update_pricing_multiplier(
+        storage: &mut SportsBrokerStorage,
+        team_id: u32,
+        win_percentage: u32,
+    ) {
         let performance_multiplier = if win_percentage >= 7500 {
             12000 // 1.2x for 75%+ win rate
         } else if win_percentage >= 6000 {
@@ -104,23 +112,58 @@ impl TeamManagement {
         } else if win_percentage >= 5000 {
             10000 // 1.0x for 50%+ win rate
         } else if win_percentage >= 4000 {
-            9000  // 0.9x for 40%+ win rate
+            9000 // 0.9x for 40%+ win rate
         } else {
-            8000  // 0.8x for <40% win rate
+            8000 // 0.8x for <40% win rate
         };
 
         let multiplier = PricingMultiplier {
             team_id,
-            base_multiplier: 10000,   // 1.0x base
+            base_multiplier: 10000, // 1.0x base
             performance_multiplier,
-            playoff_multiplier: 10000, // 1.0x base
-            streak_multiplier: 10000,  // 1.0x base
-            rivalry_multiplier: 10000, // 1.0x base
-            demand_multiplier: 10000,  // 1.0x base
+            playoff_multiplier: 10000,                // 1.0x base
+            streak_multiplier: 10000,                 // 1.0x base
+            rivalry_multiplier: 10000,                // 1.0x base
+            demand_multiplier: 10000,                 // 1.0x base
             final_multiplier: performance_multiplier, // For simplicity
             last_updated: 0,
         };
 
         storage.pricing_multipliers.insert(team_id, &multiplier);
+    }
+
+    /// Get all teams
+    pub fn get_all_teams(storage: &SportsBrokerStorage) -> Vec<Team> {
+        let mut teams = Vec::new();
+        for team_id in 1..=storage.total_teams {
+            if let Some(team) = storage.teams.get(team_id) {
+                teams.push(team);
+            }
+        }
+        teams
+    }
+
+    /// Update team information
+    pub fn update_team(
+        storage: &mut SportsBrokerStorage,
+        team_id: u32,
+        name: Option<String>,
+        city: Option<String>,
+        sport_type: Option<SportType>,
+    ) -> Result<(), String> {
+        let mut team = storage.teams.get(team_id).ok_or("Team not found")?;
+
+        if let Some(name) = name {
+            team.name = name;
+        }
+        if let Some(city) = city {
+            team.city = city;
+        }
+        if let Some(sport_type) = sport_type {
+            team.sport_type = sport_type;
+        }
+
+        storage.teams.insert(team_id, &team);
+        Ok(())
     }
 }

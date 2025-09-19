@@ -19,6 +19,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Cross-chain messaging (XCM) integration
 - Testnet deployment
 
+## [0.4.0] - 2025-09-19 - "Production Deployment"
+
+### Added
+
+- **Production Deployment**: Successfully deployed on Debian 13.1 VPS (135.148.61.99)
+- **Debian Compatibility**: Full support for Debian 13.1 (Bookworm) deployment
+- **Automated Deployment Scripts**: Complete deployment automation with error handling
+- **SSL/TLS Support**: Self-signed certificates with Let's Encrypt readiness
+- **Process Management**: PM2 integration for production process management
+- **Web Server Configuration**: Optimized Nginx configuration for production
+- **Firewall Setup**: UFW configuration for security
+- **Health Monitoring**: Comprehensive health check and monitoring scripts
+- **Backup Strategy**: Automated backup system with retention policies
+
+### Technical Improvements
+
+- **Debian-Specific Optimizations**: Removed Ubuntu-specific dependencies
+- **Node.js Installation**: Multiple fallback methods (NodeSource, nvm)
+- **cargo-contract**: Robust installation with multiple version support
+- **Nginx Configuration**: Fixed syntax issues for Debian compatibility
+- **Error Handling**: Comprehensive error handling in deployment scripts
+- **Documentation**: Complete deployment documentation with troubleshooting
+
+### Infrastructure
+
+- **VPS Deployment**: Production-ready deployment on Debian 13.1
+- **SSL Certificates**: Self-signed certificates with domain support
+- **Process Management**: PM2 with auto-startup and monitoring
+- **Web Server**: Nginx with optimized configuration
+- **Security**: UFW firewall with proper port configuration
+- **Monitoring**: Health checks and log management
+- **Backup**: Automated backup system with 7-day retention
+
+### Documentation
+
+- **DEPLOYMENT.md**: Complete production deployment guide
+- **REQUIREMENTS.md**: Updated system requirements and verification
+- **DEBIAN_NOTES.md**: Debian-specific deployment considerations
+- **Troubleshooting**: Comprehensive troubleshooting guides
+- **Success Stories**: Documented successful deployment experience
+
 ## [0.3.0] - 2025-09-03 - "Frontend Integration"
 
 ### Added

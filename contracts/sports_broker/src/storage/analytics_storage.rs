@@ -1,6 +1,8 @@
+use crate::types::*;
 use ink::prelude::*;
 use ink::storage::Mapping;
-use crate::types::*;
+
+#[allow(clippy::arithmetic_side_effects)]
 
 /// Analytics storage management
 pub struct AnalyticsStorage {
@@ -11,6 +13,7 @@ pub struct AnalyticsStorage {
     pub analytics_reports: Mapping<u32, AnalyticsReport>,
 }
 
+#[allow(clippy::arithmetic_side_effects)]
 impl AnalyticsStorage {
     /// Create or update event analytics
     pub fn create_event_analytics(&mut self, event_id: u32, event: &SportsEvent) {

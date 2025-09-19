@@ -1,3 +1,5 @@
+use ink::prelude::string::String;
+
 /// Multi-currency support for Acala integration
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]

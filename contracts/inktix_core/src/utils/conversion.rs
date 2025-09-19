@@ -2,9 +2,9 @@ use crate::types::{CurrencyId, InkTixError, InkTixResult};
 
 /// Convert amount to DOT equivalent
 pub fn convert_to_dot_equivalent(
-    amount: u128, 
-    currency: CurrencyId, 
-    rates: &[u128]
+    amount: u128,
+    currency: CurrencyId,
+    rates: &[u128],
 ) -> InkTixResult<u128> {
     match currency {
         CurrencyId::DOT => Ok(amount),
@@ -24,9 +24,9 @@ pub fn convert_to_dot_equivalent(
 
 /// Convert from DOT equivalent to target currency
 pub fn convert_from_dot_equivalent(
-    dot_amount: u128, 
-    target_currency: CurrencyId, 
-    rates: &[u128]
+    dot_amount: u128,
+    target_currency: CurrencyId,
+    rates: &[u128],
 ) -> InkTixResult<u128> {
     match target_currency {
         CurrencyId::DOT => Ok(dot_amount),
@@ -35,6 +35,7 @@ pub fn convert_from_dot_equivalent(
             if rate == 0 {
                 return Err(InkTixError::InvalidCurrency);
             }
+            #[allow(clippy::arithmetic_side_effects)]
             let target_amount = dot_amount.saturating_mul(1_000_000_000_000) / rate;
             Ok(target_amount)
         }

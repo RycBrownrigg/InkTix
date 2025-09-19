@@ -1,6 +1,11 @@
 use crate::storage::contract_storage::SportsBrokerStorage;
 use crate::types::xcm::*;
 use ink::prelude::vec::Vec;
+use ink::env::DefaultEnvironment;
+use ink::prelude::string::String;
+use ink::prelude::string::ToString;
+
+#[allow(clippy::arithmetic_side_effects)]
 
 impl SportsBrokerStorage {
     /// Send an XCM message to another chain
@@ -38,8 +43,8 @@ impl SportsBrokerStorage {
             xcm_version: self.get_supported_xcm_version(),
             payload,
             status: XcmMessageStatus::Sent,
-            created_at: self.get_current_timestamp(),
-            updated_at: self.get_current_timestamp(),
+            created_at: ink::env::block_timestamp::<DefaultEnvironment>(),
+            updated_at: ink::env::block_timestamp::<DefaultEnvironment>(),
             fee_paid: fee,
             fee_currency,
             error_message: None,
@@ -91,8 +96,8 @@ impl SportsBrokerStorage {
             xcm_version,
             payload: payload.clone(),
             status: XcmMessageStatus::Processing,
-            created_at: self.get_current_timestamp(),
-            updated_at: self.get_current_timestamp(),
+            created_at: ink::env::block_timestamp::<DefaultEnvironment>(),
+            updated_at: ink::env::block_timestamp::<DefaultEnvironment>(),
             fee_paid: 0, // No fee for incoming messages
             fee_currency: String::new(),
             error_message: None,
@@ -114,7 +119,7 @@ impl SportsBrokerStorage {
             updated_message.status = XcmMessageStatus::Failed;
             updated_message.error_message = Some("Message processing failed".to_string());
         }
-        updated_message.updated_at = self.get_current_timestamp();
+        updated_message.updated_at = ink::env::block_timestamp::<DefaultEnvironment>();
 
         // Update stored message
         self.xcm_messages.insert(message_id, &updated_message);
@@ -143,7 +148,7 @@ impl SportsBrokerStorage {
             .ok_or("XCM message not found")?;
 
         message.status = new_status.clone();
-        message.updated_at = self.get_current_timestamp();
+        message.updated_at = ink::env::block_timestamp::<DefaultEnvironment>();
         message.error_message = error_message;
 
         // Update stored message
@@ -276,7 +281,7 @@ impl SportsBrokerStorage {
         max_message_size: u32,
         fee_structure: XcmFeeStructure,
     ) -> Result<(), String> {
-        let current_time = self.get_current_timestamp();
+        let current_time = ink::env::block_timestamp::<DefaultEnvironment>();
 
         let connectivity_status = XcmConnectivityStatus {
             chain_id: chain_id.clone(),

@@ -1,6 +1,7 @@
-
-use crate::types::*;
 use crate::storage::*;
+use crate::types::*;
+use ink::prelude::string::String;
+use ink::prelude::vec::Vec;
 
 /// Season management logic
 pub struct SeasonManagement;
@@ -16,7 +17,7 @@ impl SeasonManagement {
         end_date: u64,
     ) -> u32 {
         let season_id = storage.get_next_id("season");
-        
+
         let sport_type = match sport.as_str() {
             "Basketball" => SportType::Basketball,
             "Football" => SportType::Football,
@@ -35,7 +36,7 @@ impl SeasonManagement {
             regular_season_games: 82, // Default for most sports
             active: true,
             season_pass_base_price: 1000_000_000_000_000_000, // Default price
-            early_bird_discount: 20, // 20% discount
+            early_bird_discount: 20,                          // 20% discount
             early_bird_deadline: start_date.saturating_sub(30 * 24 * 60 * 60), // 30 days before
         };
 

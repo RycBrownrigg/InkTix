@@ -1,3 +1,4 @@
+#[allow(clippy::cast_possible_truncation)]
 pub mod analytics;
 pub mod anti_scalping;
 pub mod cross_chain;
