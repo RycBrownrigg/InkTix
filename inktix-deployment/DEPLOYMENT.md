@@ -6,7 +6,7 @@
 
 - **Domain**: inktix.com (or your domain)
 - **Server IP**: 135.148.61.99
-- **OS**: Debian 13.1 (Bookworm)
+- **OS**: Debian 13.1 (Trixie)
 - **Environment**: Production
 
 ## Prerequisites
@@ -660,32 +660,43 @@ After successful deployment:
 4. Configure CDN if needed
 5. Set up automated deployments
 
-## Deployment Success (2025-09-19)
+## Deployment Success (2025-09-24)
 
 ✅ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
 
 ### Final Working Configuration
 
-- **Server**: Debian 13.1 (Bookworm) VPS
+- **Server**: Debian 13.1 (Trixie) VPS
 - **IP Address**: 135.148.61.99
-- **Node.js**: 20.x LTS (via NodeSource repository)
-- **PM2**: Latest version for process management
-- **Nginx**: 1.18+ with optimized configuration
-- **SSL**: Self-signed certificates (ready for Let's Encrypt)
+- **Node.js**: 20.x LTS (via NodeSource repository with nvm fallback)
+- **PM2**: Latest version with `serve` package for static files
+- **Nginx**: 1.26+ with HTTP/2 and optimized configuration
+- **SSL**: Self-signed certificates with SAN (ready for Let's Encrypt)
 - **Firewall**: UFW with proper port configuration
+- **Application**: Fully functional HTTP/HTTPS access
 
 ### Key Fixes Applied
 
 1. **Debian Compatibility**: Removed Ubuntu-specific packages
-2. **Nginx Configuration**: Fixed `gzip_proxied` directive syntax
+2. **Nginx Configuration**: Fixed `gzip_proxied` directive syntax and HTTP/2 support
 3. **cargo-contract Installation**: Multiple fallback methods implemented
-4. **SSL Setup**: Self-signed certificates for initial deployment
-5. **PM2 Integration**: Seamless process management and auto-startup
+4. **SSL Setup**: Self-signed certificates with SAN for proper IP support
+5. **PM2 Integration**: Seamless process management with `serve` package
+6. **Frontend Handling**: Graceful handling of missing source directories
+7. **HTTP/2 Support**: Fixed deprecated `http2` directive syntax
+
+### Health Check Results
+
+- **PM2 Status**: Online (64MB memory usage)
+- **Nginx Status**: Active and running
+- **SSL Certificate**: Valid with SAN for IP address
+- **Application Response**: HTTP/2 200 OK
+- **System Resources**: Healthy (4GB RAM, 146GB storage)
 
 ### Access URLs
 
-- **HTTP**: http://135.148.61.99
-- **HTTPS**: https://135.148.61.99
+- **HTTP**: http://135.148.61.99 ✅
+- **HTTPS**: https://135.148.61.99 ✅ (with self-signed certificate warning)
 
 ---
 

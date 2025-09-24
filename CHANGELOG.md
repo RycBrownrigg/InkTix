@@ -19,6 +19,61 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Cross-chain messaging (XCM) integration
 - Testnet deployment
 
+## [0.4.1] - 2025-09-24 - "Production Deployment Success"
+
+### Added
+
+- **Final Deployment Success**: Successfully deployed and tested on Debian 13.1 VPS (135.148.61.99)
+- **HTTP/2 Support**: Fixed deprecated Nginx HTTP/2 directive syntax
+- **SSL Certificate SAN**: Self-signed certificates with Subject Alternative Name for IP addresses
+- **PM2 Serve Integration**: Added `serve` package for static file serving
+- **Frontend Build Handling**: Graceful handling of missing source directories
+- **Health Check System**: Comprehensive health monitoring with system resource checks
+- **Documentation Cleanup**: Updated all documentation with final working configuration
+
+### Fixed
+
+- **Nginx Configuration**: Fixed `gzip_proxied` directive syntax for Debian compatibility
+- **HTTP/2 Directive**: Separated deprecated `http2` directive from `listen` directive
+- **SSL Certificate**: Added SAN (Subject Alternative Name) for proper IP address support
+- **PM2 Configuration**: Updated to use `npx serve -s . -l 3000` for static file serving
+- **Frontend Build**: Added graceful handling when source directories are missing
+- **Script Robustness**: Enhanced error handling and fallback mechanisms
+
+### Technical Improvements
+
+- **Debian 13.1 (Trixie)**: Full compatibility with latest Debian version
+- **Node.js 20.x LTS**: Latest LTS version with NodeSource repository
+- **PM2 Process Management**: Enhanced with `serve` package for static files
+- **Nginx 1.26+**: Latest version with HTTP/2 and optimized configuration
+- **SSL Security**: Self-signed certificates with proper SAN for IP addresses
+- **System Monitoring**: Real-time health checks with resource monitoring
+
+### Infrastructure
+
+- **Production VPS**: Fully functional deployment on Debian 13.1 VPS
+- **HTTP/HTTPS Access**: Both HTTP and HTTPS working with proper SSL
+- **Process Management**: PM2 with auto-startup, monitoring, and restart capabilities
+- **Web Server**: Nginx with HTTP/2, gzip compression, and security headers
+- **SSL/TLS**: Self-signed certificates ready for Let's Encrypt upgrade
+- **Firewall**: UFW with proper port configuration and security
+
+### Documentation
+
+- **REQUIREMENTS.md**: Updated with final working configuration
+- **DEBIAN_NOTES.md**: Added deployment success and lessons learned
+- **DEPLOYMENT.md**: Updated with final working configuration and health check results
+- **Script Cleanup**: Removed all temporary fix scripts and deployment artifacts
+
+### Deployment Results
+
+- **HTTP Status**: ✅ 200 OK
+- **HTTPS Status**: ✅ HTTP/2 200 OK (with self-signed certificate warning)
+- **PM2 Status**: ✅ Online (64MB memory usage)
+- **Nginx Status**: ✅ Active and running
+- **SSL Certificate**: ✅ Valid with SAN for IP address
+- **System Resources**: ✅ Healthy (4GB RAM, 146GB storage)
+
 ## [0.4.0] - 2025-09-19 - "Production Deployment"
 
 ### Added

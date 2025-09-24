@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # InkTix Automated Deployment Script
-# For Debian 13.1 VPS
+# For Debian 13.1 (Trixie) VPS
 # IP: 135.148.61.99
 
 set -e  # Exit on any error
@@ -45,6 +45,16 @@ check_root() {
     fi
 }
 
+# Check sudo access
+check_sudo() {
+    log "Checking sudo access..."
+    if ! sudo -n true 2>/dev/null; then
+        warning "Sudo password required. Please enter your password when prompted."
+        sudo -v
+    fi
+    success "Sudo access confirmed"
+}
+
 # Update system packages
 update_system() {
     log "Updating system packages..."
@@ -77,6 +87,13 @@ install_pm2() {
     log "Installing PM2 process manager..."
     sudo npm install -g pm2
     success "PM2 installed: $(pm2 --version)"
+}
+
+# Install serve package
+install_serve() {
+    log "Installing serve package..."
+    sudo npm install -g serve
+    success "Serve package installed: $(serve --version)"
 }
 
 # Install Nginx
@@ -173,6 +190,15 @@ build_contracts() {
 # Build frontend
 build_frontend() {
     log "Building frontend application..."
+    
+    # Check if frontend directory exists
+    if [ ! -d "frontend" ]; then
+        warning "Frontend directory not found. Skipping frontend build."
+        warning "Using pre-built frontend files from deployment package."
+        success "Frontend build skipped (using pre-built files)"
+        return 0
+    fi
+    
     cd frontend
     npm install
     npm run build
@@ -194,7 +220,8 @@ configure_nginx() {
 
 server {
     listen 80;
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
     server_name $SERVER_IP $DOMAIN www.$DOMAIN;
     
     # SSL configuration (self-signed for IP)
@@ -216,7 +243,7 @@ server {
     gzip on;
     gzip_vary on;
     gzip_min_length 1024;
-    gzip_proxied expired no-cache no-store private must-revalidate auth;
+    gzip_proxied expired no-cache no-store private auth;
     gzip_types
         text/plain
         text/css
@@ -264,11 +291,12 @@ generate_ssl() {
         sudo certbot --nginx -d $DOMAIN -d www.$DOMAIN --non-interactive --agree-tos --email admin@$DOMAIN
         success "SSL certificate generated for domain: $DOMAIN"
     else
-        # Generate self-signed certificate for IP
+        # Generate self-signed certificate for IP with SAN
         sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
             -keyout /etc/ssl/private/inktix.key \
             -out /etc/ssl/certs/inktix.crt \
-            -subj "/C=US/ST=State/L=City/O=InkTix/CN=$SERVER_IP"
+            -subj "/C=US/ST=State/L=City/O=InkTix/CN=$SERVER_IP" \
+            -addext "subjectAltName=IP:$SERVER_IP"
         success "Self-signed SSL certificate generated for IP: $SERVER_IP"
     fi
 }
@@ -308,8 +336,8 @@ module.exports = {
   apps: [
     {
       name: 'inktix-frontend',
-      script: 'npm',
-      args: 'start',
+      script: 'npx',
+      args: 'serve -s . -l 3000',
       cwd: '$APP_DIR',
       env: {
         NODE_ENV: 'production',
@@ -424,9 +452,11 @@ deploy() {
     log "Starting InkTix deployment on $SERVER_IP..."
     
     check_root
+    check_sudo
     update_system
     install_nodejs
     install_pm2
+    install_serve
     install_nginx
     install_rust
     install_certbot

@@ -7,6 +7,8 @@ smart-contracts/
 index.html
 index.txt
 404.html
+inktix-deployment-clean-final.tar.gz
+web-server/
 
 # Private keys and sensitive files
 id_rsa.pub
@@ -21,3 +23,6 @@ Public and Private key.rtf
 # Temporary files
 *.tmp
 *.temp
+*.tar.gz
+
+

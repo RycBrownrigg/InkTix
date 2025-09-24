@@ -5,7 +5,7 @@
 ## Server Specifications
 
 - **IP Address**: 135.148.61.99
-- **Operating System**: Debian 13.1 (Bookworm)
+- **Operating System**: Debian 13.1 (Trixie)
 - **Architecture**: x86_64
 
 ## Minimum System Requirements
@@ -234,7 +234,7 @@ SESSION_SECRET=your-super-secure-session-secret-key
 - [x] Firewall is configured
 - [x] System updates are enabled
 
-## Deployment Success (2025-09-19)
+## Deployment Success (2025-09-24)
 
 ✅ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
 
@@ -244,17 +244,20 @@ SESSION_SECRET=your-super-secure-session-secret-key
 2. **Node.js Installation**: NodeSource repository works well, nvm as reliable fallback
 3. **cargo-contract**: Multiple installation methods needed for reliability
 4. **Nginx Configuration**: Fixed `gzip_proxied` directive syntax for Debian
-5. **SSL Setup**: Self-signed certificates work for initial deployment
-6. **PM2 Integration**: Seamless process management and auto-startup
+5. **SSL Setup**: Self-signed certificates with SAN work for initial deployment
+6. **PM2 Integration**: Seamless process management with `serve` package
+7. **Frontend Build**: Graceful handling of missing source directories
+8. **HTTP/2**: Fixed deprecated `http2` directive syntax
 
 ### Final Working Configuration
 
-- **OS**: Debian 13.1 (Bookworm)
+- **OS**: Debian 13.1 (Trixie)
 - **Node.js**: 20.x LTS via NodeSource
-- **PM2**: Latest version for process management
-- **Nginx**: 1.18+ with optimized configuration
-- **SSL**: Self-signed certificates (ready for Let's Encrypt)
+- **PM2**: Latest version with `serve` package for static files
+- **Nginx**: 1.26+ with optimized configuration and HTTP/2
+- **SSL**: Self-signed certificates with SAN (ready for Let's Encrypt)
 - **Firewall**: UFW with proper port configuration
+- **Application**: Fully functional HTTP/HTTPS access
 
 ## Troubleshooting Resources
 

@@ -223,7 +223,7 @@ curl -I http://135.148.61.99
 - [Debian Wiki](https://wiki.debian.org/)
 - [Node.js on Debian](https://nodejs.org/en/download/package-manager/#debian-and-ubuntu-based-linux-distributions)
 
-## Deployment Success (2025-09-19)
+## Deployment Success (2025-09-24)
 
 ✅ **Successfully deployed InkTix on Debian 13.1 VPS (135.148.61.99)**
 
@@ -233,26 +233,45 @@ curl -I http://135.148.61.99
 2. **nvm Fallback**: Reliable alternative when NodeSource fails
 3. **cargo-contract**: Multiple installation methods ensure reliability
 4. **Nginx Configuration**: Fixed syntax issues for Debian compatibility
-5. **PM2 Integration**: Seamless process management
+5. **PM2 Integration**: Seamless process management with `serve` package
 6. **UFW Firewall**: Simple and effective security setup
+7. **SSL Certificates**: Self-signed certificates with SAN work perfectly
+8. **HTTP/2 Support**: Fixed deprecated directive syntax
+9. **Frontend Handling**: Graceful handling of missing source directories
 
 ### Lessons Learned
 
 1. **Package Differences**: Ubuntu-specific packages not available on Debian
 2. **Repository Management**: Manual repository addition works better than `software-properties-common`
 3. **Service Management**: `systemctl` works consistently across Debian versions
-4. **SSL Setup**: Self-signed certificates work for initial deployment
-5. **Process Management**: PM2 provides excellent process management and monitoring
+4. **SSL Setup**: Self-signed certificates with SAN work for initial deployment
+5. **Process Management**: PM2 with `serve` package provides excellent static file serving
+6. **Nginx Syntax**: Debian requires specific syntax for `gzip_proxied` and `http2` directives
+7. **Frontend Build**: Script should handle missing source directories gracefully
+8. **Network Security**: SSH connection limits require careful management
+
+### Final Working Configuration
+
+- **OS**: Debian 13.1 (Trixie)
+- **Node.js**: 20.x LTS via NodeSource (nvm fallback)
+- **PM2**: Latest with `serve` package for static files
+- **Nginx**: 1.26+ with HTTP/2 and optimized configuration
+- **SSL**: Self-signed certificates with SAN (ready for Let's Encrypt)
+- **Application**: Fully functional HTTP/HTTPS access
+- **Process Management**: PM2 with auto-startup and monitoring
 
 ### Recommended Approach
 
-Use the automated `deploy.sh` script with the following modifications:
+Use the automated `deploy.sh` script with the following final configuration:
+
 - Skip `software-properties-common` installation
 - Use NodeSource repository with nvm fallback
 - Implement multiple cargo-contract installation methods
 - Fix Nginx configuration syntax for Debian
+- Add `serve` package installation for PM2
+- Generate SSL certificates with SAN
+- Handle missing source directories gracefully
 
 ---
 
 **Note**: This guide assumes you have a fresh Debian 13.1 installation. If you encounter issues, check the Debian documentation or community forums for specific solutions.
-
