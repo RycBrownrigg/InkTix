@@ -19,20 +19,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Cross-chain messaging (XCM) integration
 - Testnet deployment
 
-## [0.4.1] - 2025-09-24 - "Production Deployment Success"
+## [0.4.2] - 2025-09-25 - "Dynamic Contract Methods & Final Cleanup"
 
 ### Added
 
-- **Final Deployment Success**: Successfully deployed and tested on Debian 13.1 VPS (135.148.61.99)
-- **HTTP/2 Support**: Fixed deprecated Nginx HTTP/2 directive syntax
-- **SSL Certificate SAN**: Self-signed certificates with Subject Alternative Name for IP addresses
-- **PM2 Serve Integration**: Added `serve` package for static file serving
-- **Frontend Build Handling**: Graceful handling of missing source directories
-- **Health Check System**: Comprehensive health monitoring with system resource checks
-- **Documentation Cleanup**: Updated all documentation with final working configuration
+- **Dynamic Contract Methods**: Smart contract manager now automatically detects contract type (sports vs concert) and shows appropriate methods
+- **Contract Type Detection**: Based on filename (sports_broker.wasm vs concert_broker.wasm)
+- **Smart Argument Auto-fill**: Automatically fills method arguments with appropriate examples
+- **Westend AssetHub Integration**: Switched from localhost to reliable testnet endpoint
 
 ### Fixed
 
+- **Network Connection Issues**: Removed localhost auto-connection, switched to Westend AssetHub
+- **Smart Contracts Navigation**: Fixed Contract Registry and Cross-Chain Manager sections
+- **Method Display**: Contract methods now show correctly based on contract type
+- **SSL Certificate SAN**: Self-signed certificates with Subject Alternative Name for IP addresses
+- **PM2 Serve Integration**: Added `serve` package for static file serving
+- **Frontend Build Handling**: Graceful handling of missing source directories
+
+### Cleaned Up
+
+- **Temporary Files**: Removed all fix scripts and temporary deployment artifacts
+- **Documentation**: Updated all documentation with final working configuration
+- **Deployment Package**: Cleaned up unnecessary files from deployment directory
 - **Nginx Configuration**: Fixed `gzip_proxied` directive syntax for Debian compatibility
 - **HTTP/2 Directive**: Separated deprecated `http2` directive from `listen` directive
 - **SSL Certificate**: Added SAN (Subject Alternative Name) for proper IP address support
@@ -67,12 +76,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Deployment Results
 
-- **HTTP Status**: ✅ 200 OK
-- **HTTPS Status**: ✅ HTTP/2 200 OK (with self-signed certificate warning)
-- **PM2 Status**: ✅ Online (64MB memory usage)
-- **Nginx Status**: ✅ Active and running
-- **SSL Certificate**: ✅ Valid with SAN for IP address
-- **System Resources**: ✅ Healthy (4GB RAM, 146GB storage)
+- **HTTP Status**:  200 OK
+- **HTTPS Status**:  HTTP/2 200 OK (with self-signed certificate warning)
+- **PM2 Status**:  Online (64MB memory usage)
+- **Nginx Status**:  Active and running
+- **SSL Certificate**:  Valid with SAN for IP address
+- **System Resources**: Healthy (4GB RAM, 146GB storage)
+- **Blockchain Network**:  Connected to Shibuya testnet
+- **Contracts Pallet**:  Available for smart contract interaction
+- **Wallet Integration**:  Polkadot wallet connected successfully
 
 ## [0.4.0] - 2025-09-19 - "Production Deployment"
 

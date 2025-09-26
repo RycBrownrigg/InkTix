@@ -662,7 +662,7 @@ After successful deployment:
 
 ## Deployment Success (2025-09-24)
 
-✅ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
+ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
 
 ### Final Working Configuration
 
@@ -684,6 +684,8 @@ After successful deployment:
 5. **PM2 Integration**: Seamless process management with `serve` package
 6. **Frontend Handling**: Graceful handling of missing source directories
 7. **HTTP/2 Support**: Fixed deprecated `http2` directive syntax
+8. **Blockchain Network**: Configured for Westend AssetHub with contracts pallet support
+9. **Dynamic Contract Methods**: Smart contract manager automatically detects contract type and shows appropriate methods
 
 ### Health Check Results
 

@@ -26,13 +26,32 @@ const SmartContractManager: React.FC = () => {
   const [endowment, setEndowment] = useState("1.0");
   const [deploymentResult, setDeploymentResult] = useState<string>("");
   const [contractCallResult, setContractCallResult] = useState<string>("");
-  const [selectedMethod, setSelectedMethod] = useState("get_total_teams");
+  const [selectedMethod, setSelectedMethod] = useState("get_stats");
   const [methodArgs, setMethodArgs] = useState("[]");
+  const [contractType, setContractType] = useState<
+    "sports" | "concert" | "unknown"
+  >("unknown");
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.name.endsWith(".wasm")) {
       setSelectedFile(file);
+
+      // Detect contract type based on filename
+      const filename = file.name.toLowerCase();
+      if (filename.includes("sports") || filename.includes("sports_broker")) {
+        setContractType("sports");
+        setSelectedMethod("get_total_teams");
+      } else if (
+        filename.includes("concert") ||
+        filename.includes("concert_broker")
+      ) {
+        setContractType("concert");
+        setSelectedMethod("get_stats");
+      } else {
+        setContractType("unknown");
+        setSelectedMethod("get_stats");
+      }
     } else {
       alert("Please select a valid .wasm file");
     }
@@ -101,38 +120,156 @@ const SmartContractManager: React.FC = () => {
     }
   };
 
+  // Get contract methods based on type
+  const getContractMethods = () => {
+    if (contractType === "sports") {
+      return {
+        getters: [
+          { value: "get_total_teams", label: "get_total_teams" },
+          { value: "get_total_venues", label: "get_total_venues" },
+          { value: "get_total_events", label: "get_total_events" },
+          { value: "get_total_tickets", label: "get_total_tickets" },
+          { value: "get_owner", label: "get_owner" },
+        ],
+        creators: [
+          { value: "register_team", label: "register_team(name, sport, city)" },
+          {
+            value: "register_venue",
+            label: "register_venue(name, capacity, location)",
+          },
+          {
+            value: "create_event",
+            label: "create_event(homeTeamId, awayTeamId, venueId, date, price)",
+          },
+          {
+            value: "purchase_ticket",
+            label: "purchase_ticket(eventId, seatNumber, section, row)",
+          },
+        ],
+        queries: [
+          { value: "get_team_by_id", label: "get_team_by_id(teamId)" },
+          { value: "get_venue_by_id", label: "get_venue_by_id(venueId)" },
+          { value: "get_event_by_id", label: "get_event_by_id(eventId)" },
+          {
+            value: "get_tickets_by_event",
+            label: "get_tickets_by_event(eventId)",
+          },
+        ],
+      };
+    } else if (contractType === "concert") {
+      return {
+        getters: [
+          { value: "get_stats", label: "get_stats" },
+          { value: "get_owner", label: "get_owner" },
+        ],
+        creators: [
+          { value: "register_artist", label: "register_artist(name)" },
+          {
+            value: "register_venue",
+            label: "register_venue(name, capacity, address)",
+          },
+          {
+            value: "create_concert_event",
+            label:
+              "create_concert_event(name, artistId, venueId, date, capacity, price)",
+          },
+          {
+            value: "purchase_ticket",
+            label: "purchase_ticket(eventId, seatNumber)",
+          },
+        ],
+        queries: [
+          { value: "get_artist", label: "get_artist(artistId)" },
+          { value: "get_venue", label: "get_venue(venueId)" },
+          { value: "get_event", label: "get_event(eventId)" },
+          { value: "get_ticket", label: "get_ticket(ticketId)" },
+          { value: "get_user_tickets", label: "get_user_tickets(userId)" },
+        ],
+      };
+    } else {
+      // Default/unknown contract - show both
+      return {
+        getters: [
+          { value: "get_stats", label: "get_stats" },
+          { value: "get_owner", label: "get_owner" },
+        ],
+        creators: [
+          { value: "register_artist", label: "register_artist(name)" },
+          {
+            value: "register_venue",
+            label: "register_venue(name, capacity, address)",
+          },
+          { value: "create_event", label: "create_event(...)" },
+          { value: "purchase_ticket", label: "purchase_ticket(...)" },
+        ],
+        queries: [
+          { value: "get_artist", label: "get_artist(id)" },
+          { value: "get_venue", label: "get_venue(id)" },
+          { value: "get_event", label: "get_event(id)" },
+          { value: "get_ticket", label: "get_ticket(id)" },
+        ],
+      };
+    }
+  };
+
   // Auto-fill arguments based on selected method
   const handleMethodChange = (method: string) => {
     setSelectedMethod(method);
 
-    // Auto-fill example arguments
-    switch (method) {
-      case "register_team":
-        setMethodArgs('["Lakers", "Basketball", "Los Angeles"]');
-        break;
-      case "register_venue":
-        setMethodArgs('["Staples Center", 20000, "Los Angeles, CA"]');
-        break;
-      case "create_event":
-        setMethodArgs('[1, 2, 1, "2024-02-15", "150 DOT"]');
-        break;
-      case "purchase_ticket":
-        setMethodArgs('[1, 101, "A", "15"]');
-        break;
-      case "get_team_by_id":
-        setMethodArgs("[1]");
-        break;
-      case "get_venue_by_id":
-        setMethodArgs("[1]");
-        break;
-      case "get_event_by_id":
-        setMethodArgs("[1]");
-        break;
-      case "get_tickets_by_event":
-        setMethodArgs("[1]");
-        break;
-      default:
-        setMethodArgs("[]");
+    // Auto-fill example arguments based on contract type
+    if (contractType === "sports") {
+      switch (method) {
+        case "register_team":
+          setMethodArgs('["Lakers", "Basketball", "Los Angeles"]');
+          break;
+        case "register_venue":
+          setMethodArgs('["Staples Center", 20000, "Los Angeles, CA"]');
+          break;
+        case "create_event":
+          setMethodArgs('[1, 2, 1, "2024-02-15", "150 DOT"]');
+          break;
+        case "purchase_ticket":
+          setMethodArgs('[1, 101, "A", "15"]');
+          break;
+        case "get_team_by_id":
+        case "get_venue_by_id":
+        case "get_event_by_id":
+        case "get_tickets_by_event":
+          setMethodArgs("[1]");
+          break;
+        default:
+          setMethodArgs("[]");
+      }
+    } else if (contractType === "concert") {
+      switch (method) {
+        case "register_artist":
+          setMethodArgs('["Taylor Swift"]');
+          break;
+        case "register_venue":
+          setMethodArgs('["Madison Square Garden", 20000, "New York, NY"]');
+          break;
+        case "create_concert_event":
+          setMethodArgs(
+            '["Taylor Swift Concert", 1, 1, 1700000000, 20000, "1500000000000000000"]'
+          );
+          break;
+        case "purchase_ticket":
+          setMethodArgs("[1, 101]");
+          break;
+        case "get_artist":
+        case "get_venue":
+        case "get_event":
+        case "get_ticket":
+          setMethodArgs("[1]");
+          break;
+        case "get_user_tickets":
+          setMethodArgs('["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]');
+          break;
+        default:
+          setMethodArgs("[]");
+      }
+    } else {
+      setMethodArgs("[]");
     }
   };
 
@@ -307,45 +444,29 @@ const SmartContractManager: React.FC = () => {
                   onChange={(e) => handleMethodChange(e.target.value)}
                   className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-inktix-blue-500 focus:border-inktix-blue-500"
                 >
-                  {/* Getter methods (no arguments) */}
+                  {/* Dynamic methods based on contract type */}
                   <optgroup label="Get Information">
-                    <option value="get_total_teams">get_total_teams</option>
-                    <option value="get_total_venues">get_total_venues</option>
-                    <option value="get_total_events">get_total_events</option>
-                    <option value="get_total_tickets">get_total_tickets</option>
-                    <option value="get_owner">get_owner</option>
+                    {getContractMethods().getters.map((method) => (
+                      <option key={method.value} value={method.value}>
+                        {method.label}
+                      </option>
+                    ))}
                   </optgroup>
 
-                  {/* Methods that take arguments */}
                   <optgroup label="Registration & Creation">
-                    <option value="register_team">
-                      register_team(name, sport, city)
-                    </option>
-                    <option value="register_venue">
-                      register_venue(name, capacity, location)
-                    </option>
-                    <option value="create_event">
-                      create_event(homeTeamId, awayTeamId, venueId, date, price)
-                    </option>
-                    <option value="purchase_ticket">
-                      purchase_ticket(eventId, seatNumber, section, row)
-                    </option>
+                    {getContractMethods().creators.map((method) => (
+                      <option key={method.value} value={method.value}>
+                        {method.label}
+                      </option>
+                    ))}
                   </optgroup>
 
-                  {/* Query methods with parameters */}
                   <optgroup label="Queries with Parameters">
-                    <option value="get_team_by_id">
-                      get_team_by_id(teamId)
-                    </option>
-                    <option value="get_venue_by_id">
-                      get_venue_by_id(venueId)
-                    </option>
-                    <option value="get_event_by_id">
-                      get_event_by_id(eventId)
-                    </option>
-                    <option value="get_tickets_by_event">
-                      get_tickets_by_event(eventId)
-                    </option>
+                    {getContractMethods().queries.map((method) => (
+                      <option key={method.value} value={method.value}>
+                        {method.label}
+                      </option>
+                    ))}
                   </optgroup>
                 </select>
               </div>
@@ -386,6 +507,145 @@ const SmartContractManager: React.FC = () => {
           </div>
         )}
 
+        {/* Contract Registry */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <Database className="w-5 h-5 mr-2 text-inktix-purple-600" />
+            Contract Registry
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-800 mb-2">
+                Deployed Contracts
+              </h4>
+              <div className="space-y-2">
+                {contractAddress ? (
+                  <div className="flex items-center justify-between p-3 bg-white rounded border">
+                    <div className="flex items-center">
+                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                      <span className="text-sm font-mono text-gray-800">
+                        {contractAddress.slice(0, 20)}...
+                        {contractAddress.slice(-8)}
+                      </span>
+                    </div>
+                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                      Active
+                    </span>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <Database className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm">No contracts deployed yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h4 className="font-medium text-blue-800 mb-2">
+                Contract Methods Available (
+                {contractType === "sports"
+                  ? "Sports Broker"
+                  : contractType === "concert"
+                  ? "Concert Broker"
+                  : "Unknown"}
+                )
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {getContractMethods()
+                  .getters.slice(0, 2)
+                  .map((method) => (
+                    <div key={method.value} className="flex items-center">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                      <span>{method.value}</span>
+                    </div>
+                  ))}
+                {getContractMethods()
+                  .creators.slice(0, 2)
+                  .map((method) => (
+                    <div key={method.value} className="flex items-center">
+                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                      <span>{method.value}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cross-Chain Manager */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <Database className="w-5 h-5 mr-2 text-inktix-green-600" />
+            Cross-Chain Manager
+          </h3>
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h4 className="font-medium text-gray-800 mb-2">Network Status</h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">
+                    Current Network:
+                  </span>
+                  <span className="text-sm font-medium text-green-600">
+                    Westend AssetHub
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Connection:</span>
+                  <span className="text-sm font-medium text-green-600">
+                    Connected
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">
+                    Contracts Pallet:
+                  </span>
+                  <span className="text-sm font-medium text-green-600">
+                    Available
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 rounded-lg p-4">
+              <h4 className="font-medium text-yellow-800 mb-2">
+                Cross-Chain Features
+              </h4>
+              <div className="text-sm text-yellow-700 space-y-1">
+                <p>• XCM message passing between parachains</p>
+                <p>• Cross-chain asset transfers</p>
+                <p>• Multi-chain contract deployment</p>
+                <p>• Inter-parachain communication</p>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 rounded-lg p-4">
+              <h4 className="font-medium text-blue-800 mb-2">
+                Supported Networks
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  <span>Westend AssetHub</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                  <span>Westend (Coming Soon)</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                  <span>Kusama (Coming Soon)</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                  <span>Polkadot (Coming Soon)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Contract Info */}
         <div className="bg-blue-50 rounded-lg p-4">
           <h3 className="text-lg font-semibold text-blue-800 mb-3 flex items-center">
@@ -404,8 +664,8 @@ const SmartContractManager: React.FC = () => {
               event creation, ticket purchasing
             </p>
             <p>
-              • <strong>Network:</strong> Local Substrate Node
-              (ws://127.0.0.1:9944)
+              • <strong>Network:</strong> Westend AssetHub
+              (wss://westend-asset-hub-rpc.polkadot.io)
             </p>
           </div>
         </div>

@@ -90,7 +90,7 @@ export class BlockchainService {
   }
 
   async connectToNetwork(
-    endpoint: string = "ws://127.0.0.1:9944"
+    endpoint: string = "wss://westend-asset-hub-rpc.polkadot.io"
   ): Promise<ContractCallResult> {
     try {
       if (typeof window === "undefined") {

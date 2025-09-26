@@ -236,7 +236,7 @@ SESSION_SECRET=your-super-secure-session-secret-key
 
 ## Deployment Success (2025-09-24)
 
-✅ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
+ **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
 
 ### Key Learnings
 

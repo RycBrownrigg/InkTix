@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
+  trailingSlash: true,
   outputFileTracingRoot: __dirname,
   webpack: (config) => {
     config.resolve.fallback = {
@@ -12,6 +14,7 @@ const nextConfig = {
   },
   images: {
     domains: ["localhost"],
+    unoptimized: true,
   },
   env: {
     CUSTOM_KEY: "my-value",

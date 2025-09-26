@@ -310,8 +310,8 @@ create_env() {
 NODE_ENV=production
 NEXT_PUBLIC_API_URL=https://$SERVER_IP/api
 NEXT_PUBLIC_WS_URL=wss://$SERVER_IP/ws
-NEXT_PUBLIC_RPC_URL=wss://westend-rpc.polkadot.io
-NEXT_PUBLIC_HTTP_RPC_URL=https://westend-rpc.polkadot.io
+NEXT_PUBLIC_RPC_URL=wss://rpc.shibuya.astar.network
+NEXT_PUBLIC_HTTP_RPC_URL=https://rpc.shibuya.astar.network
 
 # Contract Addresses (update with your deployed contracts)
 NEXT_PUBLIC_SPORTS_BROKER_ADDRESS=5CR7KXVKZ8tuNh7u3xY7tekt6s6HF2ZpemytdGrH5bt1jFbk

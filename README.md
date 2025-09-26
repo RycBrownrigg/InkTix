@@ -4,9 +4,9 @@
   <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="350">
 </p>
 
-![version](https://img.shields.io/badge/version-v0.1.0-blue)
+![version](https://img.shields.io/badge/version-v0.4.2-blue)
 ![status](https://img.shields.io/badge/status-alpha-orange)
-![license](https://img.shields.io/badge/license-MIT-green)
+![license](https://img.shields.io/badge/license-Apache_r2.0-green)
 
 > A decentralized, cross-chain ticketing marketplace built with ink! smart contracts on Polkadot.
 

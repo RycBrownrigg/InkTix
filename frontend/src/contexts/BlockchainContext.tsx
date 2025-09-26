@@ -477,7 +477,9 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({
     checkContractStatus();
   }, []);
 
-  const connectToNetwork = async (endpoint: string = "ws://127.0.0.1:9944") => {
+  const connectToNetwork = async (
+    endpoint: string = "wss://westend-asset-hub-rpc.polkadot.io"
+  ) => {
     if (typeof window === "undefined" || !blockchainService) {
       return { success: false, error: "Blockchain service not available" };
     }
@@ -561,15 +563,17 @@ export const BlockchainProvider: React.FC<BlockchainProviderProps> = ({
           "✅ BlockchainContext: Wallet state updated - isWalletConnected set to true"
         );
 
-        // Automatically connect to local network after wallet connection
+        // Automatically connect to Westend AssetHub after wallet connection
         console.log(
-          "🌐 BlockchainContext: Automatically connecting to local network..."
+          "🌐 BlockchainContext: Automatically connecting to Westend AssetHub..."
         );
         try {
-          const networkResult = await connectToNetwork("ws://127.0.0.1:9944");
+          const networkResult = await connectToNetwork(
+            "wss://westend-asset-hub-rpc.polkadot.io"
+          );
           if (networkResult.success) {
             console.log(
-              "✅ BlockchainContext: Automatically connected to local network - isConnected set to true"
+              "✅ BlockchainContext: Automatically connected to Westend AssetHub - isConnected set to true"
             );
           } else {
             console.log(

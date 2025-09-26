@@ -13,8 +13,8 @@ const config = {
 
   // Substrate/Polkadot Configuration
   substrate: {
-    rpcUrl: "wss://westend-rpc.polkadot.io",
-    httpUrl: "https://westend-rpc.polkadot.io",
+    rpcUrl: "wss://westend-asset-hub-rpc.polkadot.io",
+    httpUrl: "https://westend-asset-hub-rpc.polkadot.io",
   },
 
   // Contract Configuration

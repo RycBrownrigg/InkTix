@@ -4,11 +4,11 @@
 
 ## Package Differences from Ubuntu
 
-### ❌ Not Available on Debian
+###  Not Available on Debian
 
 - `software-properties-common` - Ubuntu-specific package
 
-### ✅ Debian Alternatives
+###  Debian Alternatives
 
 #### 1. Adding External Repositories
 
@@ -225,7 +225,7 @@ curl -I http://135.148.61.99
 
 ## Deployment Success (2025-09-24)
 
-✅ **Successfully deployed InkTix on Debian 13.1 VPS (135.148.61.99)**
+ **Successfully deployed InkTix on Debian 13.1 VPS (135.148.61.99)**
 
 ### What Worked
 
