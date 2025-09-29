@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InkTix Documentation</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(
+          135deg,
+          #f0f9ff 0%,
+          #ffffff 50%,
+          #fff7ed 100%
+        );
+        min-height: 100vh;
+      }
+      .header {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 0;
+      }
+      .back-link {
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .back-link:hover {
+        color: #374151;
+      }
+      .page-header {
+        text-align: center;
+        padding: 60px 0;
+      }
+      .page-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #111827;
+        margin-bottom: 20px;
+      }
+      .page-subtitle {
+        font-size: 1.25rem;
+        color: #6b7280;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .docs-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 30px;
+        padding: 40px 0;
+      }
+      .section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+      .section-header {
+        background: linear-gradient(135deg, #3b82f6, #f59e0b);
+        color: white;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+      }
+      .section-content {
+        padding: 20px;
+      }
+      .doc-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        transition: all 0.2s;
+      }
+      .doc-item:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-1px);
+      }
+      .doc-title {
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 8px;
+      }
+      .doc-description {
+        font-size: 14px;
+        color: #6b7280;
+        margin-bottom: 12px;
+      }
+      .doc-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .doc-type {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .type-markdown {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .type-contract {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .type-config {
+        background: #f3f4f6;
+        color: #374151;
+      }
+      .doc-link {
+        color: #3b82f6;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .doc-link:hover {
+        text-decoration: underline;
+      }
+      .quick-links {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 40px;
+        margin: 40px 0;
+      }
+      .quick-links-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: #111827;
+        margin-bottom: 30px;
+      }
+      .quick-links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      .quick-link {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px;
+        background: linear-gradient(135deg, #f0f9ff, #f0f9ff);
+        border-radius: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s;
+      }
+      .quick-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .quick-link-icon {
+        width: 24px;
+        height: 24px;
+        color: #3b82f6;
+      }
+      .quick-link-content h3 {
+        margin: 0 0 4px 0;
+        font-weight: 600;
+        color: #111827;
+      }
+      .quick-link-content p {
+        margin: 0;
+        font-size: 14px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="container">
+        <div class="nav">
+          <a href="/" class="back-link"> ← Back to Home </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">InkTix Documentation</h1>
+        <p class="page-subtitle">
+          Complete documentation for the InkTix blockchain ticketing platform
+        </p>
+      </div>
+
+      <div class="docs-grid">
+        <div class="section">
+          <div class="section-header">
+            <span>📄</span>
+            <h2 class="section-title">Project Documentation</h2>
+          </div>
+          <div class="section-content">
+            <div class="doc-item">
+              <div class="doc-title">Product Specification</div>
+              <div class="doc-description">
+                Complete product requirements and features
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/product_specification.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">System Architecture</div>
+              <div class="doc-description">
+                Technical architecture and system design
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/system_architecture.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Deployment Guide</div>
+              <div class="doc-description">
+                Step-by-step deployment instructions
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/DEPLOYMENT.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Requirements</div>
+              <div class="doc-description">
+                System requirements and dependencies
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/REQUIREMENTS.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Debian Notes</div>
+              <div class="doc-description">
+                Debian-specific deployment notes
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/DEBIAN_NOTES.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Changelog</div>
+              <div class="doc-description">Version history and changes</div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/CHANGELOG.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>🔧</span>
+            <h2 class="section-title">Smart Contracts</h2>
+          </div>
+          <div class="section-content">
+            <div class="doc-item">
+              <div class="doc-title">Sports Broker Contract</div>
+              <div class="doc-description">
+                Sports event management smart contract
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-contract">contract</span>
+                <a href="/contracts/sports_broker/" class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Concert Broker Contract</div>
+              <div class="doc-description">
+                Concert event management smart contract
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-contract">contract</span>
+                <a href="/contracts/concert_broker/" class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">InkTix Core Library</div>
+              <div class="doc-description">Shared types and utilities</div>
+              <div class="doc-meta">
+                <span class="doc-type type-contract">contract</span>
+                <a href="/contracts/inktix_core/" class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>🌐</span>
+            <h2 class="section-title">Frontend Documentation</h2>
+          </div>
+          <div class="section-content">
+            <div class="doc-item">
+              <div class="doc-title">Smart Contracts README</div>
+              <div class="doc-description">
+                Frontend smart contract integration guide
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/README_SMART_CONTRACTS.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Frontend README</div>
+              <div class="doc-description">
+                Frontend development and setup guide
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-markdown">markdown</span>
+                <a
+                  href="/markdown-viewer.html?file=/docs/README.md"
+                  class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span>⚙️</span>
+            <h2 class="section-title">Development Resources</h2>
+          </div>
+          <div class="section-content">
+            <div class="doc-item">
+              <div class="doc-title">Package Configuration</div>
+              <div class="doc-description">
+                Project dependencies and scripts
+              </div>
+              <div class="doc-meta">
+                <span class="doc-type type-config">config</span>
+                <a href="/package.json" class="doc-link">View Documentation</a>
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">Next.js Configuration</div>
+              <div class="doc-description">Frontend build configuration</div>
+              <div class="doc-meta">
+                <span class="doc-type type-config">config</span>
+                <a href="/frontend/next.config.js" class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+            <div class="doc-item">
+              <div class="doc-title">TypeScript Configuration</div>
+              <div class="doc-description">TypeScript compiler settings</div>
+              <div class="doc-meta">
+                <span class="doc-type type-config">config</span>
+                <a href="/frontend/tsconfig.json" class="doc-link"
+                  >View Documentation</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-links">
+        <h2 class="quick-links-title">Quick Links</h2>
+        <div class="quick-links-grid">
+          <a href="/smart-contracts/" class="quick-link">
+            <span class="quick-link-icon">🔧</span>
+            <div class="quick-link-content">
+              <h3>Smart Contracts</h3>
+              <p>Deploy and interact with contracts</p>
+            </div>
+          </a>
+          <a href="/connect/" class="quick-link">
+            <span class="quick-link-icon">🔐</span>
+            <div class="quick-link-content">
+              <h3>Connect Wallet</h3>
+              <p>Connect your Polkadot wallet</p>
+            </div>
+          </a>
+          <a href="/events/" class="quick-link">
+            <span class="quick-link-icon">⚡</span>
+            <div class="quick-link-content">
+              <h3>Browse Events</h3>
+              <p>Discover sports and concert events</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

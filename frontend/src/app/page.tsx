@@ -302,7 +302,7 @@ export default function HomePage() {
             }`}
           >
             <Link
-              href="/demo"
+              href="/events"
               className="btn-accent text-lg px-10 py-4 inline-flex items-center gap-3 group"
             >
               <span>Try Demo</span>

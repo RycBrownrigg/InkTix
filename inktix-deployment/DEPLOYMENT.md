@@ -662,7 +662,7 @@ After successful deployment:
 
 ## Deployment Success (2025-09-24)
 
- **Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
+**Successfully deployed on Debian 13.1 VPS (135.148.61.99)**
 
 ### Final Working Configuration
 

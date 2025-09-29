@@ -10,16 +10,18 @@ import {
   Clock,
   DollarSign,
   Globe,
+  ArrowLeft,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
-// Mock data for demonstration
+// Current events data for 2025
 const mockEvents = [
   {
     id: 1,
     title: "Lakers vs Warriors",
     sport: "Basketball",
-    date: "2024-01-15",
+    date: "2025-01-15",
     time: "19:30",
     venue: "Crypto.com Arena",
     location: "Los Angeles, CA",
@@ -34,7 +36,7 @@ const mockEvents = [
     id: 2,
     title: "Dodgers vs Giants",
     sport: "Baseball",
-    date: "2024-01-18",
+    date: "2025-01-18",
     time: "20:00",
     venue: "Dodger Stadium",
     location: "Los Angeles, CA",
@@ -49,7 +51,7 @@ const mockEvents = [
     id: 3,
     title: "Rams vs 49ers",
     sport: "Football",
-    date: "2024-01-21",
+    date: "2025-01-21",
     time: "16:25",
     venue: "SoFi Stadium",
     location: "Inglewood, CA",
@@ -64,7 +66,7 @@ const mockEvents = [
     id: 4,
     title: "Kings vs Oilers",
     sport: "Hockey",
-    date: "2024-01-24",
+    date: "2025-01-24",
     time: "19:00",
     venue: "Crypto.com Arena",
     location: "Los Angeles, CA",
@@ -79,7 +81,7 @@ const mockEvents = [
     id: 5,
     title: "Galaxy vs LAFC",
     sport: "Soccer",
-    date: "2024-01-27",
+    date: "2025-01-27",
     time: "19:30",
     venue: "Dignity Health Sports Park",
     location: "Carson, CA",
@@ -94,7 +96,7 @@ const mockEvents = [
     id: 6,
     title: "Clippers vs Suns",
     sport: "Basketball",
-    date: "2024-01-30",
+    date: "2025-01-30",
     time: "19:30",
     venue: "Crypto.com Arena",
     location: "Los Angeles, CA",
@@ -132,6 +134,21 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen py-12 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="container-max px-4 sm:px-6 lg:px-8">
         {/* Enhanced Header */}
         <div

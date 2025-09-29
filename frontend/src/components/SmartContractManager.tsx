@@ -654,14 +654,23 @@ const SmartContractManager: React.FC = () => {
           </h3>
           <div className="text-sm text-blue-700 space-y-2">
             <p>
-              • <strong>Name:</strong> Sports Broker Contract
+              • <strong>Name:</strong>{" "}
+              {contractType === "sports"
+                ? "Sports Broker Contract"
+                : contractType === "concert"
+                ? "Concert Broker Contract"
+                : "Smart Contract"}
             </p>
             <p>
               • <strong>Type:</strong> Ink! Smart Contract
             </p>
             <p>
-              • <strong>Features:</strong> Team management, venue registration,
-              event creation, ticket purchasing
+              • <strong>Features:</strong>{" "}
+              {contractType === "sports"
+                ? "Team management, venue registration, event creation, ticket purchasing"
+                : contractType === "concert"
+                ? "Artist management, venue registration, concert creation, ticket purchasing"
+                : "Smart contract functionality"}
             </p>
             <p>
               • <strong>Network:</strong> Westend AssetHub

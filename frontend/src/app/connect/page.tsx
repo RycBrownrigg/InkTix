@@ -2,7 +2,8 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import { Shield, Zap, Globe, Lock } from "lucide-react";
+import Link from "next/link";
+import { Shield, Zap, Globe, Lock, ArrowLeft } from "lucide-react";
 
 // Dynamically import the wallet component to prevent SSR issues
 const BlockchainWallet = dynamic(
@@ -21,8 +22,23 @@ const BlockchainWallet = dynamic(
 const ConnectPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-inktix-blue-50 via-white to-inktix-orange-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4 py-12">
-        {/* Header */}
+        {/* Page Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Connect to{" "}
