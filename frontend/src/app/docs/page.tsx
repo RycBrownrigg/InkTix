@@ -80,6 +80,18 @@ const DocsPage: React.FC = () => {
           href: "/contracts/inktix_core/",
           type: "contract",
         },
+        {
+          name: "Concert Broker Smart Contract Interaction Guide",
+          description: "A guide to using the Concert Broker Smart Contract",
+          href: "/markdown-viewer.html?file=/docs/CONCERT_BROKER_GUIDE.md",
+          type: "markdown",
+        },
+        {
+          name: "Sports Broker Smart Contract Interaction Guide",
+          description: "A guide to using the Sports Broker Smart Contract",
+          href: "/markdown-viewer.html?file=/docs/SPORTS_BROKER_GUIDE.md",
+          type: "markdown",
+        },
       ],
     },
     {

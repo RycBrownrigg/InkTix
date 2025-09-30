@@ -110,7 +110,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section (now displays CTA content on light background) */}
+      <section className="bg-gradient-to-b from-blue-100 via-blue-200 to-blue-300 section-padding">
+        <div className="container-max text-center">
+          <h2
+            className={`heading-2 mb-8 ${isVisible ? "animate-fade-in" : ""}`}
+          >
+            <span className="text-gradient">
+              Ready to Experience the Future?
+            </span>
+          </h2>
+          <p
+            className={`text-xl text-slate-800 mb-12 max-w-3xl mx-auto leading-relaxed ${
+              isVisible ? "animate-slide-up" : ""
+            }`}
+          >
+            Join the revolution in sports ticketing with InkTix
+          </p>
+          <div
+            className={`flex flex-col sm:flex-row gap-6 justify-center ${
+              isVisible ? "animate-scale-in" : ""
+            }`}
+          >
+            <Link
+              href="/events"
+              className="btn-accent text-lg px-10 py-4 inline-flex items-center gap-3 group"
+            >
+              <span>Try Demo</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              href="/docs"
+              className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+            >
+              <span>Read Documentation</span>
+            </Link>
+            <Link
+              href="/smart-contracts"
+              className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+            >
+              <span>Smart Contracts</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Bottom Section (Features on light/white background) */}
       <section className="bg-gradient-to-b from-white via-inktix-blue-50 to-inktix-orange-50 section-padding">
         <div className="container-max">
           <div className="text-center mb-20">
@@ -272,54 +317,6 @@ export default function HomePage() {
                 </span>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced CTA Section */}
-      <section className="bg-gradient-to-r from-inktix-blue-500 via-inktix-blue-600 to-inktix-blue-700 text-white section-padding relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-        </div>
-
-        <div className="relative container-max text-center">
-          <h2
-            className={`heading-2 mb-8 ${isVisible ? "animate-fade-in" : ""}`}
-          >
-            Ready to Experience the Future?
-          </h2>
-          <p
-            className={`text-xl mb-12 text-blue-100 max-w-3xl mx-auto leading-relaxed ${
-              isVisible ? "animate-slide-up" : ""
-            }`}
-          >
-            Join the revolution in sports ticketing with InkTix
-          </p>
-          <div
-            className={`flex flex-col sm:flex-row gap-6 justify-center ${
-              isVisible ? "animate-scale-in" : ""
-            }`}
-          >
-            <Link
-              href="/events"
-              className="btn-accent text-lg px-10 py-4 inline-flex items-center gap-3 group"
-            >
-              <span>Try Demo</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/docs"
-              className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
-            >
-              <span>Read Documentation</span>
-            </Link>
-            <Link
-              href="/smart-contracts"
-              className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
-            >
-              <span>Smart Contracts</span>
-            </Link>
           </div>
         </div>
       </section>
