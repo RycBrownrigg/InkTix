@@ -1,7 +1,7 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
 
 <p align="center">
-  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="350">
+  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="425">
 </p>
 
 ## Changelog
