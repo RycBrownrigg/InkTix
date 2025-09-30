@@ -1,7 +1,7 @@
 # InkTix: Cross-Chain Ticket Marketplace Network
 
 <p align="center">
-  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="350">
+  <img src="./docs/InkTix_logo.png" alt="InkTix Logo" width="425">
 </p>
 
 ![version](https://img.shields.io/badge/version-v0.4.2-blue)
@@ -23,6 +23,7 @@
 - [Product Specification](./docs/product_specification.md)
 - [System Architecture](./docs/system_architecture.md)
 - [Changelog](./CHANGELOG.md)
+- [Polkadot Alumni Hackathon Submission](./docs/HACKATHON_SUBMISSION.md)
 
 ---
 
