@@ -14,10 +14,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Planned
 
-- Concert Broker for music events and festivals
 - Culture Broker for museums and cultural events
-- Cross-chain messaging (XCM) integration
-- Testnet deployment
+- Advanced XCM messaging for complex cross-chain operations
+- Mobile app development (iOS/Android)
+
+## [0.4.3] - 2025-09-30
+
+### Added
+
+- **Real XCM Cross-Chain Demo**: Functional cross-chain transfers from Westend Asset Hub to destination parachains
+- **Hackathon Submission Document**: Comprehensive submission covering ecosystem impact, technical difficulty, functionality, and roadmap
+- **Cross-Chain Purchase Flow**: Complete UI for cross-chain ticket purchasing with real blockchain integration
+- **Executive Summary**: One-paragraph overview of InkTix's value proposition and market impact
+- **Detailed Roadmap**: 6-phase development plan from foundation to industry transformation
+
+### Enhanced
+
+- **Cross-Chain Infrastructure**: Working XCM transfers with proper weight limits and MultiLocation handling
+- **Smart Contract Integration**: Enhanced XCM service with proper Polkadot.js extension integration
+- **Documentation**: Updated project documentation with hackathon submission and smart contract guides
+
+### Fixed
+
+- **XCM Weight Format**: Corrected WeightV2 format for XCM transfers
+- **Wallet Integration**: Fixed web3Enable requirement for signer access
+- **Timeline Accuracy**: Corrected development timeline to reflect actual 7-week development period
+
+## [0.4.2] - 2025-09-29
 
 ## [0.4.2] - 2025-09-25 - "Dynamic Contract Methods & Final Cleanup"
 
@@ -76,15 +99,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Deployment Results
 
-- **HTTP Status**:  200 OK
-- **HTTPS Status**:  HTTP/2 200 OK (with self-signed certificate warning)
-- **PM2 Status**:  Online (64MB memory usage)
-- **Nginx Status**:  Active and running
-- **SSL Certificate**:  Valid with SAN for IP address
+- **HTTP Status**: 200 OK
+- **HTTPS Status**: HTTP/2 200 OK (with self-signed certificate warning)
+- **PM2 Status**: Online (64MB memory usage)
+- **Nginx Status**: Active and running
+- **SSL Certificate**: Valid with SAN for IP address
 - **System Resources**: Healthy (4GB RAM, 146GB storage)
-- **Blockchain Network**:  Connected to Shibuya testnet
-- **Contracts Pallet**:  Available for smart contract interaction
-- **Wallet Integration**:  Polkadot wallet connected successfully
+- **Blockchain Network**: Connected to Shibuya testnet
+- **Contracts Pallet**: Available for smart contract interaction
+- **Wallet Integration**: Polkadot wallet connected successfully
 
 ## [0.4.0] - 2025-09-19 - "Production Deployment"
 
