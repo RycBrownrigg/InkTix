@@ -33,21 +33,19 @@ export async function limitedReserveTransferAssets(
     console.log("🔍 XCM: fromAddress resolved to:", fromAddress);
     if (!fromAddress) return { success: false, error: "Wallet not connected" };
 
-    // If explicit address differs from service-selected, fetch signer for it
-    let signer = await blockchainService.getSelectedAccountSigner();
-    if (!signer || (account && account.address !== fromAddress)) {
-      try {
-        const { web3Enable, web3FromAddress } = await import(
-          "@polkadot/extension-dapp"
-        );
-        // Ensure extension is enabled in this call path
-        await web3Enable("InkTix Sports Platform");
-        const injector = await web3FromAddress(fromAddress);
-        signer = injector?.signer;
-      } catch (e) {
-        console.error("Failed to resolve signer for fromAddress", e);
-        return { success: false, error: "No signer available" };
-      }
+    // Get signer from Polkadot extension
+    let signer;
+    try {
+      const { web3Enable, web3FromAddress } = await import(
+        "@polkadot/extension-dapp"
+      );
+      // Ensure extension is enabled
+      await web3Enable("InkTix Sports Platform");
+      const injector = await web3FromAddress(fromAddress);
+      signer = injector?.signer;
+    } catch (e) {
+      console.error("Failed to resolve signer for fromAddress", e);
+      return { success: false, error: "No signer available" };
     }
     if (!signer) return { success: false, error: "No signer available" };
 

@@ -231,10 +231,6 @@ export class BlockchainService {
     );
   }
 
-  getSelectedAccount(): InjectedAccountWithMeta | null {
-    return this.selectedAccount;
-  }
-
   async getBalance(address: string): Promise<ContractCallResult<string>> {
     try {
       if (typeof window === "undefined") {
@@ -716,6 +712,22 @@ export class BlockchainService {
       localStorage.getItem("blockchain_connected") === "true";
 
     return apiConnected || localStorageConnected;
+  }
+
+  /**
+   * Get the current API instance
+   * @returns The current ApiPromise instance or null if not connected
+   */
+  getApi(): ApiPromise | null {
+    return this.api;
+  }
+
+  /**
+   * Get the selected account
+   * @returns The currently selected account or null
+   */
+  getSelectedAccount(): InjectedAccountWithMeta | null {
+    return this.selectedAccount;
   }
 }
 

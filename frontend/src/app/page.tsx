@@ -72,8 +72,15 @@ export default function HomePage() {
               }`}
             >
               <Link
-                href="/events"
+                href="/cross-chain-demo"
                 className="btn-accent text-lg px-10 py-4 inline-flex items-center gap-3 group"
+              >
+                <Zap className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>Try XCM Demo</span>
+              </Link>
+              <Link
+                href="/events"
+                className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
               >
                 <span>Browse Events</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
