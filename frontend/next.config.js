@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: "/inktix",
   output: "export",
   trailingSlash: true,
   outputFileTracingRoot: __dirname,
