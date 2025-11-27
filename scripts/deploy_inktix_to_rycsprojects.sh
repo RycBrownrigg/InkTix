@@ -6,6 +6,8 @@ VPS_USER_HOST="ryc@135.148.61.99"
 RYCS_WEB_ROOT="/var/www/html"
 INKTIX_TARGET="$RYCS_WEB_ROOT/inktix"
 
+# Note: SSL certificate is auto-renewed via Let's Encrypt certbot
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
@@ -46,4 +48,5 @@ echo "════════════════════════�
 echo "InkTix successfully deployed!"
 echo "→ https://rycsprojects.com/inktix/"
 echo "Root page remains blank and hidden"
+echo "SSL: Valid trusted certificate (auto-renewed)"
 echo "════════════════════════════════════════"

@@ -68,7 +68,7 @@ const tx = api.tx.polkadotXcm.limitedReserveTransferAssets(
 
 - **Debian 13.1 VPS Deployment**: Production-ready with Nginx, PM2, SSL
 - **Static Export**: Optimized for CDN deployment
-- **Security**: Self-signed SSL with SAN, UFW firewall configuration
+- **Security**: Valid trusted SSL certificate with auto-renewal, UFW firewall configuration
 
 ## Functionality and User Experience
 
@@ -307,8 +307,8 @@ Our platform not only showcases advanced technical capabilities but also address
 - ✅ Comprehensive documentation
 - ✅ Live, accessible demo
 
-**Live Demo:** https://135.148.61.99  
-**Cross-Chain Demo:** https://135.148.61.99/cross-chain
+**Live Demo:** https://rycsprojects.com/inktix/
+**Cross-Chain Demo:** https://rycsprojects.com/inktix/cross-chain
 
 ---
 
