@@ -12,7 +12,7 @@ By harnessing Polkadot's multi-chain architecture, we facilitate cross-chain liq
 
 InkTix represents an innovative cross-chain sports ticketing platform developed on the Polkadot network. It utilizes XCM (Cross-Consensus Message) technology to facilitate smooth ticket transactions across various parachains. The platform exemplifies practical blockchain application through genuine XCM transfers, integration of smart contracts, and its readiness for production deployment frontend.
 
-**Live Demo:** https://135.148.61.99  
+**Live Demo:** https://rycsprojects.com/inktix/
 **GitHub:** https://github.com/RycBrownrigg/InkTix
 
 ## Ecosystem Impact and Usefulness

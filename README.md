@@ -86,6 +86,25 @@ cd frontend && npm install && npm run dev
 
 3. **Access Application**: Navigate to [http://localhost:3000](http://localhost:3000)
 
+## Live URL
+
+**Current location (showcase mode)**  
+→ https://rycsprojects.com/inktix/
+
+The root https://rycsprojects.com is intentionally blank.  
+All projects are hidden unless you know the exact subdirectory path.
+
+**Previous location (no longer used)**  
+http://135.148.61.99/ → decommissioned
+
+## Deployment
+
+Run the one-command deploy script from the repository root:
+
+```bash
+./deploy_inktix_to_rycsprojects.sh
+```
+
 ### FEATURES IMPLEMENTED
 
 - Smart contract deployment and interaction
@@ -94,3 +113,7 @@ cd frontend && npm install && npm run dev
 - Responsive UI for all screen sizes
 - Mock mode for development and testing
 - Real Substrate node integration
+
+```
+
+```
