@@ -14,6 +14,7 @@ import {
   Zap,
   Lock,
   TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -105,6 +106,13 @@ export default function HomePage() {
               >
                 <Sparkles className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span>My Tickets</span>
+              </Link>
+              <Link
+                href="/analytics"
+                className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+              >
+                <BarChart3 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>Analytics</span>
               </Link>
             </div>
 
