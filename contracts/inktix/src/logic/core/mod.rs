@@ -1,6 +1,7 @@
 pub mod anti_scalping;
 pub mod currency_management;
 pub mod event_management;
+pub mod nft_management;
 pub mod ticket_management;
 pub mod venue_management;
 pub mod xcm_management;

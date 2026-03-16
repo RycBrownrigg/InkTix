@@ -564,6 +564,26 @@ export class BlockchainService {
         case "get_tickets_by_event":
           return sdk.getUserTickets(args[0]); // Fallback
 
+        // ─── Resale ───
+        case "resell_ticket":
+          return sdk.resellTicket(args[0], args[1], args[2]);
+        case "get_resale_listings":
+          return sdk.getResaleListings();
+        case "buy_resale_ticket":
+          return sdk.buyResaleTicket(args[0]);
+
+        // ─── NFT ───
+        case "mint_ticket_nft":
+          return sdk.mintTicketNft(args[0]);
+        case "verify_ticket_nft":
+          return sdk.verifyTicketNft(args[0]);
+        case "use_ticket_nft":
+          return sdk.useTicketNft(args[0]);
+        case "get_user_nft_tickets":
+          return sdk.getUserNftTickets(args[0]);
+        case "get_nft_by_ticket":
+          return sdk.getNftByTicket(args[0]);
+
         // ─── Anti-scalping ───
         case "get_anti_scalping_config":
           return sdk.getAntiScalpingConfig(args[0]);

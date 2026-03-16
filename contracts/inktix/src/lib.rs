@@ -30,7 +30,7 @@ pub use types::*;
 pub mod inktix {
     use super::*;
     use crate::logic::core::{
-        anti_scalping, currency_management, event_management, ticket_management, venue_management,
+        anti_scalping, currency_management, event_management, nft_management, ticket_management, venue_management,
     };
     #[cfg(feature = "sports")]
     use crate::logic::sports::{
@@ -209,6 +209,49 @@ pub mod inktix {
         #[ink(message)]
         pub fn get_anti_scalping_config(&self, event_id: u32) -> Option<AntiScalpingConfig> {
             self.storage.anti_scalping_configs.get(event_id)
+        }
+
+        // =============================================================================
+        // CORE: NFT TICKET MANAGEMENT
+        // =============================================================================
+
+        /// Mint an NFT for an owned ticket
+        #[ink(message)]
+        pub fn mint_ticket_nft(&mut self, ticket_id: u64) -> Result<u64, String> {
+            let caller = self.env().caller();
+            nft_management::NftManagement::mint_ticket_nft(&mut self.storage, caller, ticket_id)
+        }
+
+        /// Verify a ticket NFT
+        #[ink(message)]
+        pub fn verify_ticket_nft(&self, token_id: u64) -> Result<TicketVerification, String> {
+            nft_management::NftManagement::verify_ticket_nft(&self.storage, token_id)
+        }
+
+        /// Mark ticket as used at event entry, receive attendance token
+        #[ink(message)]
+        pub fn use_ticket_nft(&mut self, token_id: u64) -> Result<u64, String> {
+            let caller = self.env().caller();
+            nft_management::NftManagement::use_ticket_nft(&mut self.storage, caller, token_id)
+        }
+
+        /// Get all NFT tickets for a user
+        #[ink(message)]
+        pub fn get_user_nft_tickets(&self, user: AccountId) -> Vec<TicketNft> {
+            nft_management::NftManagement::get_user_nft_tickets(&self.storage, user)
+        }
+
+        /// Get NFT for a specific ticket
+        #[ink(message)]
+        pub fn get_nft_by_ticket(&self, ticket_id: u64) -> Option<TicketNft> {
+            nft_management::NftManagement::get_nft_by_ticket(&self.storage, ticket_id)
+        }
+
+        /// Transfer NFT to another owner
+        #[ink(message)]
+        pub fn transfer_nft(&mut self, token_id: u64, to: AccountId) -> Result<(), String> {
+            let caller = self.env().caller();
+            nft_management::NftManagement::transfer_nft(&mut self.storage, caller, token_id, to)
         }
 
         // =============================================================================
@@ -658,6 +701,50 @@ pub mod inktix {
             let result = contract.purchase_ticket(event_id, seat.clone(), CurrencyId::DOT);
             assert!(result.is_err());
             assert_eq!(result.unwrap_err(), "Purchase limit reached");
+        }
+
+        #[ink::test]
+        fn test_mint_ticket_nft() {
+            let mut contract = InkTix::new();
+            // Setup: create venue and event
+            let venue_id = contract.register_venue("Arena".to_string(), 1000, "LA".to_string(), VenueType::Arena).unwrap();
+            let event_id = contract.create_event("Game".to_string(), venue_id, 1000, 1000, 100, EventCategory::Generic).unwrap();
+            // Purchase ticket
+            let ticket_id = contract.purchase_ticket(event_id, Seat {
+                seat_number: "1".to_string(), section: "A".to_string(), row: "1".to_string(),
+                seat_type: SeatType::GeneralAdmission, access_level: AccessLevel::Standard,
+                price_multiplier: 10000,
+            }, CurrencyId::DOT).unwrap();
+            // Mint NFT
+            let token_id = contract.mint_ticket_nft(ticket_id).unwrap();
+            assert_eq!(token_id, 1);
+            // Verify
+            let verification = contract.verify_ticket_nft(token_id).unwrap();
+            assert!(verification.is_valid);
+            assert!(!verification.is_used);
+            // Can't mint again
+            assert!(contract.mint_ticket_nft(ticket_id).is_err());
+        }
+
+        #[ink::test]
+        fn test_use_ticket_nft() {
+            let mut contract = InkTix::new();
+            let venue_id = contract.register_venue("Arena".to_string(), 1000, "LA".to_string(), VenueType::Arena).unwrap();
+            let event_id = contract.create_event("Game".to_string(), venue_id, 1000, 1000, 100, EventCategory::Generic).unwrap();
+            let ticket_id = contract.purchase_ticket(event_id, Seat {
+                seat_number: "1".to_string(), section: "A".to_string(), row: "1".to_string(),
+                seat_type: SeatType::GeneralAdmission, access_level: AccessLevel::Standard,
+                price_multiplier: 10000,
+            }, CurrencyId::DOT).unwrap();
+            let token_id = contract.mint_ticket_nft(ticket_id).unwrap();
+            // Use ticket
+            let attendance_id = contract.use_ticket_nft(token_id).unwrap();
+            assert_eq!(attendance_id, 1);
+            // Verify shows used
+            let verification = contract.verify_ticket_nft(token_id).unwrap();
+            assert!(verification.is_used);
+            // Can't use again
+            assert!(contract.use_ticket_nft(token_id).is_err());
         }
 
         #[ink::test]

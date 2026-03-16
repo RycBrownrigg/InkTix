@@ -14,8 +14,11 @@ import type {
   Venue,
   Event,
   Ticket,
+  ResaleListing,
   PlatformStats,
   AntiScalpingConfig,
+  TicketNft,
+  TicketVerification,
   ContractCallResult,
 } from "./types";
 import inktixMetadata from "./abi/inktix.json";
@@ -323,6 +326,52 @@ export class ContractProvider implements InkTixSDK {
     to: string
   ): Promise<ContractCallResult<void>> {
     return this.tx("transfer_ticket", ticketId, to);
+  }
+
+  // ─── Resale ───
+
+  async resellTicket(
+    ticketId: number,
+    price: string,
+    currency: string
+  ): Promise<ContractCallResult<void>> {
+    return this.tx("resell_ticket", ticketId, price, { [currency]: null });
+  }
+
+  async getResaleListings(): Promise<ContractCallResult<ResaleListing[]>> {
+    // The contract stores resale listings per ticket ID.
+    // No bulk query in the contract yet, return empty for now.
+    // In production, an indexer would aggregate these.
+    return { success: true, data: [] };
+  }
+
+  async buyResaleTicket(
+    ticketId: number
+  ): Promise<ContractCallResult<void>> {
+    // Buy = transfer from seller to buyer via transfer_ticket
+    return this.tx("transfer_ticket", ticketId, this.callerAddress);
+  }
+
+  // ─── NFT Management ───
+
+  async mintTicketNft(ticketId: number): Promise<ContractCallResult<number>> {
+    return this.tx("mint_ticket_nft", ticketId);
+  }
+
+  async verifyTicketNft(tokenId: number): Promise<ContractCallResult<TicketVerification>> {
+    return this.query("verify_ticket_nft", tokenId);
+  }
+
+  async useTicketNft(tokenId: number): Promise<ContractCallResult<number>> {
+    return this.tx("use_ticket_nft", tokenId);
+  }
+
+  async getUserNftTickets(userId: string): Promise<ContractCallResult<TicketNft[]>> {
+    return this.query("get_user_nft_tickets", userId);
+  }
+
+  async getNftByTicket(ticketId: number): Promise<ContractCallResult<TicketNft>> {
+    return this.query("get_nft_by_ticket", ticketId);
   }
 
   // ─── Analytics ───

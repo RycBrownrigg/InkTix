@@ -11,6 +11,9 @@ import type {
   Ticket,
   PlatformStats,
   AntiScalpingConfig,
+  ResaleListing,
+  TicketNft,
+  TicketVerification,
   ContractCallResult,
 } from "./types";
 
@@ -75,6 +78,22 @@ export interface InkTixSDK {
     ticketId: number,
     to: string
   ): Promise<ContractCallResult<void>>;
+
+  // Resale marketplace
+  resellTicket(
+    ticketId: number,
+    price: string,
+    currency: string
+  ): Promise<ContractCallResult<void>>;
+  getResaleListings(): Promise<ContractCallResult<ResaleListing[]>>;
+  buyResaleTicket(ticketId: number): Promise<ContractCallResult<void>>;
+
+  // NFT management
+  mintTicketNft(ticketId: number): Promise<ContractCallResult<number>>;
+  verifyTicketNft(tokenId: number): Promise<ContractCallResult<TicketVerification>>;
+  useTicketNft(tokenId: number): Promise<ContractCallResult<number>>;
+  getUserNftTickets(userId: string): Promise<ContractCallResult<TicketNft[]>>;
+  getNftByTicket(ticketId: number): Promise<ContractCallResult<TicketNft>>;
 
   // Analytics
   getPlatformStats(): Promise<ContractCallResult<PlatformStats>>;

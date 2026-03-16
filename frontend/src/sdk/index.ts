@@ -18,6 +18,10 @@ export type {
   Ticket,
   PlatformStats,
   AntiScalpingConfig,
+  ResaleListing,
+  TicketNft,
+  TicketVerification,
+  AttendanceToken,
   ContractCallResult,
 } from "./types";
 

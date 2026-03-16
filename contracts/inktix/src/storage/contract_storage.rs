@@ -148,6 +148,17 @@ pub struct InkTixStorage {
     pub chain_xcm_messages: Mapping<String, Vec<u64>>,
 
     // =========================================================================
+    // NFT MANAGEMENT
+    // =========================================================================
+    pub total_nft_tokens: u64,
+    pub total_attendance_tokens: u64,
+    pub nft_tickets: Mapping<u64, TicketNft>,
+    pub ticket_to_nft: Mapping<u64, u64>,
+    pub user_nft_tokens: Mapping<AccountId, Vec<u64>>,
+    pub attendance_tokens: Mapping<u64, AttendanceToken>,
+    pub user_attendance_tokens: Mapping<AccountId, Vec<u64>>,
+
+    // =========================================================================
     // CONCERT-SPECIFIC FIELDS
     // =========================================================================
     pub artists: Mapping<u32, Artist>,
@@ -286,6 +297,15 @@ impl Default for InkTixStorage {
             xcm_chain_connectivity: Mapping::default(),
             chain_xcm_messages: Mapping::default(),
 
+            // NFT management
+            total_nft_tokens: 0,
+            total_attendance_tokens: 0,
+            nft_tickets: Mapping::default(),
+            ticket_to_nft: Mapping::default(),
+            user_nft_tokens: Mapping::default(),
+            attendance_tokens: Mapping::default(),
+            user_attendance_tokens: Mapping::default(),
+
             // Concert-specific
             artists: Mapping::default(),
             per_event_purchase_count: Mapping::default(),
@@ -342,6 +362,16 @@ impl InkTixStorage {
     pub fn get_next_fantasy_reward_id(&mut self) -> u32 { self.total_fantasy_rewards += 1; self.total_fantasy_rewards }
     pub fn get_next_fantasy_game_week_id(&mut self) -> u32 { self.total_fantasy_game_weeks += 1; self.total_fantasy_game_weeks }
     pub fn get_next_fantasy_transfer_id(&mut self) -> u32 { self.total_fantasy_transfers += 1; self.total_fantasy_transfers }
+
+    pub fn get_next_nft_token_id(&mut self) -> u64 {
+        self.total_nft_tokens += 1;
+        self.total_nft_tokens
+    }
+
+    pub fn get_next_attendance_token_id(&mut self) -> u64 {
+        self.total_attendance_tokens += 1;
+        self.total_attendance_tokens
+    }
 
     /// Get the next artist ID (concert-specific)
     pub fn get_next_artist_id(&mut self) -> u32 {

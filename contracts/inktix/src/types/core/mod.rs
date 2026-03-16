@@ -9,6 +9,7 @@ pub mod seat;
 pub mod ticket;
 pub mod user;
 pub mod venue;
+pub mod nft;
 pub mod xcm;
 
 pub use anti_scalping::*;
@@ -21,4 +22,5 @@ pub use seat::*;
 pub use ticket::*;
 pub use user::*;
 pub use venue::*;
+pub use nft::*;
 pub use xcm::*;

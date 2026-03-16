@@ -10,8 +10,11 @@ import type {
   Venue,
   Event,
   Ticket,
+  ResaleListing,
   PlatformStats,
   AntiScalpingConfig,
+  TicketNft,
+  TicketVerification,
   ContractCallResult,
 } from "./types";
 
@@ -124,6 +127,87 @@ const mockTickets: Ticket[] = [
     loyaltyPointsEarned: 150,
   },
 ];
+
+const mockResaleListings: ResaleListing[] = [
+  {
+    ticketId: 101,
+    seller: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    askingPrice: "180",
+    originalPrice: "150",
+    currency: "DOT",
+    expiryTime: Date.now() + 86400000,
+    isActive: true,
+    approved: true,
+    eventId: 1,
+    eventName: "Lakers vs Warriors",
+    section: "A",
+    row: "12",
+    seatNumber: 45,
+  },
+  {
+    ticketId: 102,
+    seller: "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MRQg3gKrUYgw6J9",
+    askingPrice: "95",
+    originalPrice: "85",
+    currency: "DOT",
+    expiryTime: Date.now() + 172800000,
+    isActive: true,
+    approved: true,
+    eventId: 3,
+    eventName: "Taylor Swift - Eras Tour",
+    section: "Floor",
+    row: "3",
+    seatNumber: 18,
+  },
+  {
+    ticketId: 103,
+    seller: "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
+    askingPrice: "200",
+    originalPrice: "150",
+    currency: "DOT",
+    expiryTime: Date.now() + 43200000,
+    isActive: true,
+    approved: true,
+    eventId: 1,
+    eventName: "Lakers vs Warriors",
+    section: "VIP",
+    row: "1",
+    seatNumber: 8,
+  },
+  {
+    ticketId: 104,
+    seller: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmkMEpch5HKGR5kiVh",
+    askingPrice: "60",
+    originalPrice: "50",
+    currency: "DOT",
+    expiryTime: Date.now() + 259200000,
+    isActive: true,
+    approved: true,
+    eventId: 5,
+    eventName: "Kendrick Lamar Live",
+    section: "B",
+    row: "8",
+    seatNumber: 22,
+  },
+  {
+    ticketId: 105,
+    seller: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy",
+    askingPrice: "130",
+    originalPrice: "120",
+    currency: "DOT",
+    expiryTime: Date.now() + 345600000,
+    isActive: true,
+    approved: false,
+    eventId: 2,
+    eventName: "Celtics vs Heat",
+    section: "C",
+    row: "15",
+    seatNumber: 33,
+  },
+];
+
+const mockNftTickets: TicketNft[] = [];
+let nextNftTokenId = 1;
 
 let nextTeamId = 3;
 let nextArtistId = 2;
@@ -337,6 +421,117 @@ export class MockProvider implements InkTixSDK {
     if (!ticket) return { success: false, error: "Ticket not found" };
     ticket.owner = to;
     return { success: true, message: "Ticket transferred successfully" };
+  }
+
+  // Resale marketplace
+  async resellTicket(
+    ticketId: number,
+    price: string,
+    currency: string,
+    metadata?: { eventName?: string; section?: string; row?: string; seatNumber?: number; originalPrice?: string }
+  ): Promise<ContractCallResult<void>> {
+    const ticket = mockTickets.find((t) => t.id === ticketId);
+    mockResaleListings.push({
+      ticketId,
+      seller: ticket?.owner || "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      askingPrice: price,
+      originalPrice: metadata?.originalPrice || ticket?.purchasePrice || price,
+      currency,
+      expiryTime: Date.now() + 86400000,
+      isActive: true,
+      approved: false,
+      eventId: ticket?.eventId || 0,
+      eventName: metadata?.eventName || (ticket ? `Event #${ticket.eventId}` : `Ticket #${ticketId}`),
+      section: metadata?.section || ticket?.section || "GA",
+      row: metadata?.row || ticket?.row || "1",
+      seatNumber: metadata?.seatNumber || ticket?.seatNumber || ticketId,
+    });
+    return { success: true, message: "Ticket listed for resale successfully" };
+  }
+
+  async getResaleListings(): Promise<ContractCallResult<ResaleListing[]>> {
+    const active = mockResaleListings.filter(
+      (l) => l.isActive && l.expiryTime > Date.now()
+    );
+    return { success: true, data: active };
+  }
+
+  async buyResaleTicket(
+    ticketId: number
+  ): Promise<ContractCallResult<void>> {
+    const listing = mockResaleListings.find(
+      (l) => l.ticketId === ticketId && l.isActive
+    );
+    if (!listing) return { success: false, error: "Listing not found or expired" };
+    listing.isActive = false;
+    return { success: true, message: "Resale ticket purchased successfully" };
+  }
+
+  // NFT management
+  async mintTicketNft(ticketId: number): Promise<ContractCallResult<number>> {
+    const existing = mockNftTickets.find(n => n.ticketId === ticketId);
+    if (existing) return { success: false, error: "NFT already minted for this ticket" };
+
+    const ticket = mockTickets.find(t => t.id === ticketId);
+    const tokenId = nextNftTokenId++;
+    const nft: TicketNft = {
+      tokenId,
+      ticketId,
+      owner: ticket?.owner || "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      eventId: ticket?.eventId || 1,
+      eventName: "Lakers vs Warriors",
+      venueName: "Crypto.com Arena",
+      eventDate: Date.now() + 86400000,
+      section: ticket?.section || "GA",
+      row: ticket?.row || "1",
+      seatNumber: ticket?.seatNumber || 1,
+      seatType: "Reserved",
+      accessLevel: "Standard",
+      mintedAt: Date.now(),
+      metadataUri: "",
+      verificationHash: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+      isUsed: false,
+    };
+    mockNftTickets.push(nft);
+    return { success: true, data: tokenId, message: "NFT minted successfully" };
+  }
+
+  async verifyTicketNft(tokenId: number): Promise<ContractCallResult<TicketVerification>> {
+    const nft = mockNftTickets.find(n => n.tokenId === tokenId);
+    if (!nft) return { success: false, error: "NFT not found" };
+    return {
+      success: true,
+      data: {
+        isValid: true,
+        isUsed: nft.isUsed,
+        owner: nft.owner,
+        eventId: nft.eventId,
+        eventName: nft.eventName,
+        section: nft.section,
+        row: nft.row,
+        seatNumber: nft.seatNumber,
+      },
+    };
+  }
+
+  async useTicketNft(tokenId: number): Promise<ContractCallResult<number>> {
+    const nft = mockNftTickets.find(n => n.tokenId === tokenId);
+    if (!nft) return { success: false, error: "NFT not found" };
+    if (nft.isUsed) return { success: false, error: "Ticket already used" };
+    nft.isUsed = true;
+    return { success: true, data: tokenId, message: "Ticket used, attendance token minted" };
+  }
+
+  async getUserNftTickets(userId: string): Promise<ContractCallResult<TicketNft[]>> {
+    const nfts = mockNftTickets.filter(n => n.owner === userId);
+    return { success: true, data: nfts };
+  }
+
+  async getNftByTicket(ticketId: number): Promise<ContractCallResult<TicketNft>> {
+    const nft = mockNftTickets.find(n => n.ticketId === ticketId);
+    return nft
+      ? { success: true, data: nft }
+      : { success: false, error: "No NFT for this ticket" };
   }
 
   // Analytics

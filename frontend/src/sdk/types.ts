@@ -85,6 +85,60 @@ export interface PlatformStats {
   averageTicketPrice: string;
 }
 
+export interface ResaleListing {
+  ticketId: number;
+  seller: string;
+  askingPrice: string;
+  originalPrice: string;
+  currency: string;
+  expiryTime: number;
+  isActive: boolean;
+  approved: boolean;
+  eventId: number;
+  eventName: string;
+  section: string;
+  row: string;
+  seatNumber: number;
+}
+
+export interface TicketNft {
+  tokenId: number;
+  ticketId: number;
+  owner: string;
+  eventId: number;
+  eventName: string;
+  venueName: string;
+  eventDate: number;
+  section: string;
+  row: string;
+  seatNumber: number;
+  seatType: string;
+  accessLevel: string;
+  mintedAt: number;
+  metadataUri: string;
+  verificationHash: string;
+  isUsed: boolean;
+}
+
+export interface TicketVerification {
+  isValid: boolean;
+  isUsed: boolean;
+  owner: string;
+  eventId: number;
+  eventName: string;
+  section: string;
+  row: string;
+  seatNumber: number;
+}
+
+export interface AttendanceToken {
+  tokenId: number;
+  ticketId: number;
+  eventId: number;
+  owner: string;
+  attendedAt: number;
+}
+
 export interface ContractCallResult<T = any> {
   success: boolean;
   data?: T;

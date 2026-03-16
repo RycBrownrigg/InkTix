@@ -92,6 +92,20 @@ export default function HomePage() {
                 <Shield className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span>Connect Wallet</span>
               </Link>
+              <Link
+                href="/resale"
+                className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+              >
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <span>Resale Market</span>
+              </Link>
+              <Link
+                href="/my-tickets"
+                className="btn-outline text-lg px-10 py-4 inline-flex items-center gap-3 group"
+              >
+                <Sparkles className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span>My Tickets</span>
+              </Link>
             </div>
 
             {/* Trust Indicators */}
