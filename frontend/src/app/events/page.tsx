@@ -12,8 +12,11 @@ import {
   Globe,
   ArrowLeft,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useBlockchain } from "../../contexts/BlockchainContext";
+import { MockProvider } from "../../sdk/mockProvider";
+import { Database, Wifi } from "lucide-react";
 
 // Comprehensive events data for 2025
 const mockEvents = [
@@ -720,19 +723,74 @@ const categories = [
 ];
 
 export default function EventsPage() {
+  const { isConnected, isContractDeployed, callContract } = useBlockchain();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isVisible, setIsVisible] = useState(false);
   const [displayedEvents, setDisplayedEvents] = useState(6);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [dataSource, setDataSource] = useState<"mock" | "contract">("mock");
+  const [allEvents, setAllEvents] = useState<any[]>(mockEvents);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  const [platformStats, setPlatformStats] = useState<any>(null);
+
+  // Try to load events from contract, fall back to mock
+  const loadContractEvents = useCallback(async () => {
+    if (!isConnected || !isContractDeployed) return;
+    setIsLoadingEvents(true);
+    try {
+      const result = await callContract("get_all_events", []);
+      if (result.success && result.data && Array.isArray(result.data) && result.data.length > 0) {
+        // Map contract events to page format
+        const contractEvents = result.data.map((e: any, i: number) => {
+          const isSports = e.category?.type === "Sports" || e.category?.Sports;
+          const isConcert = e.category?.type === "Concert" || e.category?.Concert;
+          return {
+            id: e.id || i + 1,
+            title: e.name || `Event #${e.id}`,
+            type: isSports ? "sports" : isConcert ? "concert" : "special",
+            sport: isSports ? (e.category?.Sports?.sport_type || e.category?.sportType || "Sports") : undefined,
+            date: e.date ? new Date(typeof e.date === "number" ? e.date : parseInt(e.date)).toISOString().split("T")[0] : "TBD",
+            time: e.date ? new Date(typeof e.date === "number" ? e.date : parseInt(e.date)).toTimeString().slice(0, 5) : "TBD",
+            venue: e.venueName || `Venue #${e.venueId || e.venue_id}`,
+            location: "",
+            price: typeof e.basePrice === "string" ? parseFloat(e.basePrice) : (e.base_price ? Number(e.base_price) / 1e12 : 0),
+            availableTickets: (e.capacity || 0) - (e.soldTickets || e.sold_tickets || 0),
+            image: "",
+            category: isSports ? (e.category?.Sports?.sport_type || "Sports") : isConcert ? "Pop" : "Special",
+            featured: false,
+            popularity: e.capacity > 0 ? Math.round(((e.soldTickets || e.sold_tickets || 0) / e.capacity) * 100) : 0,
+          };
+        });
+        // Merge: contract events first, then mock events
+        setAllEvents([...contractEvents, ...mockEvents]);
+        setDataSource("contract");
+      }
+    } catch {
+      // Keep mock events
+    }
+
+    // Try loading platform stats
+    try {
+      const statsResult = await callContract("get_platform_stats", []);
+      if (statsResult.success && statsResult.data) {
+        setPlatformStats(statsResult.data);
+      }
+    } catch {
+      // Keep default stats
+    }
+
+    setIsLoadingEvents(false);
+  }, [isConnected, isContractDeployed, callContract]);
 
   useEffect(() => {
     setIsVisible(true);
-  }, []);
+    loadContractEvents();
+  }, [loadContractEvents]);
 
   const filteredEvents =
     selectedCategory === "All"
-      ? mockEvents
-      : mockEvents.filter((event) => event.category === selectedCategory);
+      ? allEvents
+      : allEvents.filter((event: any) => event.category === selectedCategory);
 
   const eventsToShow = filteredEvents.slice(0, displayedEvents);
   const hasMoreEvents = displayedEvents < filteredEvents.length;
@@ -783,6 +841,20 @@ export default function EventsPage() {
             Discover and book tickets for sports, concerts, festivals, and
             theater events across all chains
           </p>
+          {/* Data source indicator */}
+          <div className="mt-4 flex justify-center">
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
+              dataSource === "contract"
+                ? "bg-green-100 text-green-700"
+                : "bg-blue-100 text-blue-700"
+            }`}>
+              {dataSource === "contract" ? (
+                <><Wifi className="w-4 h-4" /> Live from blockchain</>
+              ) : (
+                <><Database className="w-4 h-4" /> Demo data{isLoadingEvents ? " (checking chain...)" : ""}</>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Enhanced Filters */}
@@ -1007,29 +1079,41 @@ export default function EventsPage() {
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full p-4 w-fit mx-auto mb-3">
                   <Ticket className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-slate-900">1,247</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {platformStats?.totalEvents ?? allEvents.length}
+                </div>
                 <div className="text-slate-600">Total Events</div>
               </div>
               <div className="text-center">
                 <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-full p-4 w-fit mx-auto mb-3">
                   <Users className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-slate-900">45.2K</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {platformStats?.totalUsers ? `${(platformStats.totalUsers / 1000).toFixed(1)}K` : "45.2K"}
+                </div>
                 <div className="text-slate-600">Active Users</div>
               </div>
               <div className="text-center">
                 <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 w-fit mx-auto mb-3">
                   <Globe className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-slate-900">12</div>
-                <div className="text-slate-600">Connected Chains</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {platformStats?.totalTicketsSold ?? "12"}
+                </div>
+                <div className="text-slate-600">
+                  {platformStats ? "Tickets Sold" : "Connected Chains"}
+                </div>
               </div>
               <div className="text-center">
                 <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-full p-4 w-fit mx-auto mb-3">
                   <Star className="w-8 h-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-slate-900">98.7%</div>
-                <div className="text-slate-600">Satisfaction</div>
+                <div className="text-3xl font-bold text-slate-900">
+                  {platformStats?.totalRevenue ? `${platformStats.totalRevenue} DOT` : "98.7%"}
+                </div>
+                <div className="text-slate-600">
+                  {platformStats ? "Total Revenue" : "Satisfaction"}
+                </div>
               </div>
             </div>
           </div>
