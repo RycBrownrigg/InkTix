@@ -30,7 +30,7 @@ pub use types::*;
 pub mod inktix {
     use super::*;
     use crate::logic::core::{
-        anti_scalping, currency_management, event_management, nft_management, ticket_management, venue_management,
+        anti_scalping, currency_management, event_management, nft_management, pricing, ticket_management, venue_management,
     };
     #[cfg(feature = "sports")]
     use crate::logic::sports::{
@@ -209,6 +209,39 @@ pub mod inktix {
         #[ink(message)]
         pub fn get_anti_scalping_config(&self, event_id: u32) -> Option<AntiScalpingConfig> {
             self.storage.anti_scalping_configs.get(event_id)
+        }
+
+        // =============================================================================
+        // CORE: DYNAMIC PRICING
+        // =============================================================================
+
+        /// Get a price quote for a ticket (does not purchase)
+        #[ink(message)]
+        pub fn get_price_quote(
+            &self, event_id: u32, seat: Seat, is_season_pass: bool,
+        ) -> Result<PriceQuote, String> {
+            pricing::DynamicPricing::get_price_quote(&self.storage, event_id, &seat, is_season_pass)
+        }
+
+        /// Update team performance data for dynamic pricing (owner only)
+        #[ink(message)]
+        pub fn update_team_performance(
+            &mut self, team_id: u32, wins: u32, losses: u32, streak: i32, playoff_probability: u32,
+        ) -> Result<(), String> {
+            self.ensure_owner()?;
+            pricing::DynamicPricing::update_team_performance(
+                &mut self.storage, team_id, wins, losses, streak, playoff_probability,
+            )
+        }
+
+        /// Toggle dynamic pricing for an event (owner only)
+        #[ink(message)]
+        pub fn set_dynamic_pricing(&mut self, event_id: u32, enabled: bool) -> Result<(), String> {
+            self.ensure_owner()?;
+            let mut event = self.storage.events.get(event_id).ok_or("Event not found")?;
+            event.dynamic_pricing_enabled = enabled;
+            self.storage.events.insert(event_id, &event);
+            Ok(())
         }
 
         // =============================================================================
@@ -765,6 +798,74 @@ pub mod inktix {
             ).unwrap();
             let event = contract.get_event(event_id).unwrap();
             assert_eq!(event.category, EventCategory::Generic);
+        }
+
+        #[ink::test]
+        fn test_dynamic_pricing() {
+            let mut contract = InkTix::new();
+            let venue_id = contract.register_venue(
+                "Arena".to_string(), 100, "LA".to_string(), VenueType::Arena,
+            ).unwrap();
+            let event_id = contract.create_event(
+                "Game".to_string(), venue_id, 1640995200, 100, 1000, EventCategory::Generic,
+            ).unwrap();
+
+            // Enable dynamic pricing
+            contract.set_dynamic_pricing(event_id, true).unwrap();
+
+            // Get price quote for general admission
+            let seat = Seat {
+                section: "A".to_string(), row: "1".to_string(), seat_number: "1".to_string(),
+                seat_type: SeatType::GeneralAdmission, access_level: AccessLevel::Standard,
+                price_multiplier: 10000,
+            };
+            let quote = contract.get_price_quote(event_id, seat.clone(), false).unwrap();
+            assert!(quote.final_price > 0);
+            assert_eq!(quote.base_price, 1000);
+
+            // Premium seat should cost more
+            let vip_seat = Seat {
+                section: "VIP".to_string(), row: "1".to_string(), seat_number: "1".to_string(),
+                seat_type: SeatType::Courtside, access_level: AccessLevel::VIP,
+                price_multiplier: 0, // Let algorithm decide
+            };
+            let vip_quote = contract.get_price_quote(event_id, vip_seat, false).unwrap();
+            assert!(vip_quote.final_price > quote.final_price);
+            assert!(vip_quote.seat_multiplier > quote.seat_multiplier);
+
+            // Purchase a ticket and verify dynamic price was applied
+            let ticket_id = contract.purchase_ticket(event_id, seat, CurrencyId::DOT).unwrap();
+            let ticket = contract.get_ticket(ticket_id).unwrap();
+            assert_eq!(ticket.dynamic_price_paid, ticket.purchase_price);
+            assert!(ticket.performance_multiplier_applied > 0);
+        }
+
+        #[ink::test]
+        fn test_dynamic_pricing_demand_surge() {
+            let mut contract = InkTix::new();
+            let venue_id = contract.register_venue(
+                "Arena".to_string(), 10, "LA".to_string(), VenueType::Arena,
+            ).unwrap();
+            let event_id = contract.create_event(
+                "Game".to_string(), venue_id, 1640995200, 10, 1000, EventCategory::Generic,
+            ).unwrap();
+            contract.set_dynamic_pricing(event_id, true).unwrap();
+
+            let seat = Seat {
+                section: "A".to_string(), row: "1".to_string(), seat_number: "1".to_string(),
+                seat_type: SeatType::GeneralAdmission, access_level: AccessLevel::Standard,
+                price_multiplier: 10000,
+            };
+
+            // Buy 9 of 10 tickets to create high demand (90%)
+            for _ in 0..9 {
+                contract.purchase_ticket(event_id, seat.clone(), CurrencyId::DOT).unwrap();
+            }
+
+            // Price quote at 90% should show demand surge
+            let quote = contract.get_price_quote(event_id, seat, false).unwrap();
+            assert!(quote.demand_multiplier > 10000, "Expected demand surge at 90% capacity");
+            assert_eq!(quote.demand_percentage, 90);
         }
     }
 }

@@ -15,6 +15,7 @@ import type {
   AntiScalpingConfig,
   TicketNft,
   TicketVerification,
+  PriceQuote,
   ContractCallResult,
 } from "./types";
 
@@ -532,6 +533,62 @@ export class MockProvider implements InkTixSDK {
     return nft
       ? { success: true, data: nft }
       : { success: false, error: "No NFT for this ticket" };
+  }
+
+  // Dynamic pricing
+  async getPriceQuote(
+    eventId: number,
+    seatType: string,
+    isSeasonPass: boolean
+  ): Promise<ContractCallResult<PriceQuote>> {
+    const event = mockEvents.find((e) => e.id === eventId);
+    const basePrice = event ? parseFloat(event.basePrice) : 100;
+    const capacity = event?.capacity || 1000;
+    const sold = event?.soldTickets || 0;
+    const demandPct = Math.round((sold / capacity) * 100);
+
+    // Simulate pricing factors
+    const seatMults: Record<string, number> = {
+      GeneralAdmission: 10000, Reserved: 11000, PremiumReserved: 13000,
+      Club: 15000, Suite: 20000, FieldLevel: 18000, Courtside: 25000, StudentSection: 7000,
+    };
+    const seatMult = seatMults[seatType] || 10000;
+
+    let demandMult = 10000;
+    if (demandPct >= 95) demandMult = 18000;
+    else if (demandPct >= 90) demandMult = 15000;
+    else if (demandPct >= 75) demandMult = 12500;
+    else if (demandPct >= 60) demandMult = 11000;
+    else if (demandPct < 20) demandMult = 8000;
+
+    const timeMult = 10000; // Can't know event date from mock
+    const rivalryMult = 10000;
+    const discount = isSeasonPass ? 15 : 0;
+    const discountMult = 10000 - discount * 100;
+
+    let finalPrice = basePrice;
+    finalPrice = finalPrice * demandMult / 10000;
+    finalPrice = finalPrice * seatMult / 10000;
+    finalPrice = finalPrice * discountMult / 10000;
+    finalPrice = Math.max(finalPrice, basePrice / 2);
+    finalPrice = Math.min(finalPrice, basePrice * 3);
+
+    const multiplier = basePrice > 0 ? Math.round(finalPrice * 10000 / basePrice) : 10000;
+
+    return {
+      success: true,
+      data: {
+        basePrice,
+        finalPrice: Math.round(finalPrice * 100) / 100,
+        multiplier,
+        demandPercentage: demandPct,
+        demandMultiplier: demandMult,
+        timeMultiplier: timeMult,
+        seatMultiplier: seatMult,
+        rivalryMultiplier: rivalryMult,
+        seasonPassDiscount: discount,
+      },
+    };
   }
 
   // Analytics

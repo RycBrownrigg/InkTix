@@ -19,6 +19,7 @@ import type {
   AntiScalpingConfig,
   TicketNft,
   TicketVerification,
+  PriceQuote,
   ContractCallResult,
 } from "./types";
 import inktixMetadata from "./abi/inktix.json";
@@ -372,6 +373,24 @@ export class ContractProvider implements InkTixSDK {
 
   async getNftByTicket(ticketId: number): Promise<ContractCallResult<TicketNft>> {
     return this.query("get_nft_by_ticket", ticketId);
+  }
+
+  // ─── Dynamic Pricing ───
+
+  async getPriceQuote(
+    eventId: number,
+    seatType: string,
+    isSeasonPass: boolean
+  ): Promise<ContractCallResult<PriceQuote>> {
+    const seat = {
+      section: "A",
+      row: "1",
+      seat_number: "1",
+      seat_type: { [seatType]: null },
+      access_level: { Standard: null },
+      price_multiplier: 0,
+    };
+    return this.query("get_price_quote", eventId, seat, isSeasonPass);
   }
 
   // ─── Analytics ───

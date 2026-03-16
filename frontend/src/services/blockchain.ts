@@ -584,6 +584,10 @@ export class BlockchainService {
         case "get_nft_by_ticket":
           return sdk.getNftByTicket(args[0]);
 
+        // ─── Dynamic Pricing ───
+        case "get_price_quote":
+          return sdk.getPriceQuote(args[0], args[1], args[2]);
+
         // ─── Anti-scalping ───
         case "get_anti_scalping_config":
           return sdk.getAntiScalpingConfig(args[0]);

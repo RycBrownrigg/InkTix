@@ -14,6 +14,7 @@ import type {
   ResaleListing,
   TicketNft,
   TicketVerification,
+  PriceQuote,
   ContractCallResult,
 } from "./types";
 
@@ -94,6 +95,13 @@ export interface InkTixSDK {
   useTicketNft(tokenId: number): Promise<ContractCallResult<number>>;
   getUserNftTickets(userId: string): Promise<ContractCallResult<TicketNft[]>>;
   getNftByTicket(ticketId: number): Promise<ContractCallResult<TicketNft>>;
+
+  // Dynamic pricing
+  getPriceQuote(
+    eventId: number,
+    seatType: string,
+    isSeasonPass: boolean
+  ): Promise<ContractCallResult<PriceQuote>>;
 
   // Analytics
   getPlatformStats(): Promise<ContractCallResult<PlatformStats>>;

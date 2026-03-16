@@ -4,6 +4,7 @@ pub mod event_management;
 pub mod nft_management;
 pub mod ticket_management;
 pub mod venue_management;
+pub mod pricing;
 pub mod xcm_management;
 
 pub use anti_scalping::*;

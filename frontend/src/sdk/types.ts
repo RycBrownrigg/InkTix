@@ -139,6 +139,18 @@ export interface AttendanceToken {
   attendedAt: number;
 }
 
+export interface PriceQuote {
+  basePrice: number;
+  finalPrice: number;
+  multiplier: number;
+  demandPercentage: number;
+  demandMultiplier: number;
+  timeMultiplier: number;
+  seatMultiplier: number;
+  rivalryMultiplier: number;
+  seasonPassDiscount: number;
+}
+
 export interface ContractCallResult<T = any> {
   success: boolean;
   data?: T;

@@ -22,6 +22,7 @@ export type {
   TicketNft,
   TicketVerification,
   AttendanceToken,
+  PriceQuote,
   ContractCallResult,
 } from "./types";
 

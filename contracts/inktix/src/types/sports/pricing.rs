@@ -10,6 +10,21 @@ pub struct TeamPerformance {
     pub points_scored_avg: u32, pub points_allowed_avg: u32,
 }
 
+/// Price quote returned by the dynamic pricing engine
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[ink::scale_derive(Encode, Decode, TypeInfo)]
+pub struct PriceQuote {
+    pub base_price: u128,
+    pub final_price: u128,
+    pub multiplier: u32,
+    pub demand_percentage: u32,
+    pub demand_multiplier: u32,
+    pub time_multiplier: u32,
+    pub seat_multiplier: u32,
+    pub rivalry_multiplier: u32,
+    pub season_pass_discount: u8,
+}
+
 /// Pricing multiplier based on various factors
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]

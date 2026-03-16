@@ -40,12 +40,17 @@ impl TicketManagement {
             storage.per_event_purchase_count.insert(key, &(count + 1));
         }
 
+        // Calculate dynamic price
+        let (dynamic_price, multiplier) = super::pricing::DynamicPricing::calculate_price(
+            storage, event_id, &seat, false
+        )?;
+
         let ticket_id = storage.get_next_ticket_id();
         let ticket = Ticket {
             id: ticket_id,
             event_id,
             owner: buyer,
-            purchase_price: event.base_price,
+            purchase_price: dynamic_price,
             purchase_currency: currency,
             purchase_date: ink::env::block_timestamp::<DefaultEnvironment>(),
             seat_number: 1,
@@ -54,12 +59,12 @@ impl TicketManagement {
             row: seat.row,
             seat_type: seat.seat_type,
             access_level: seat.access_level,
-            loyalty_points_earned: Self::calculate_loyalty_points(event.base_price),
+            loyalty_points_earned: Self::calculate_loyalty_points(dynamic_price),
             season_pass_discount_applied: false,
             is_season_pass_ticket: false,
-            dynamic_price_paid: event.base_price,
-            performance_multiplier_applied: 10000,
-            dot_equivalent_paid: event.base_price,
+            dynamic_price_paid: dynamic_price,
+            performance_multiplier_applied: multiplier,
+            dot_equivalent_paid: dynamic_price,
         };
 
         storage.tickets.insert(ticket_id, &ticket);
@@ -73,18 +78,18 @@ impl TicketManagement {
         if let Some(analytics) = storage.event_analytics.get(event_id) {
             let mut updated_analytics = analytics;
             updated_analytics.tickets_sold += 1;
-            updated_analytics.revenue_generated += event.base_price;
+            updated_analytics.revenue_generated += dynamic_price;
             storage.event_analytics.insert(event_id, &updated_analytics);
         }
 
         // Update event sold tickets
         let mut updated_event = event;
         updated_event.sold_tickets += 1;
-        updated_event.revenue_generated += updated_event.base_price;
+        updated_event.revenue_generated += dynamic_price;
         storage.events.insert(event_id, &updated_event);
 
         storage.platform_stats.total_tickets_sold += 1;
-        storage.platform_stats.total_revenue += updated_event.base_price;
+        storage.platform_stats.total_revenue += dynamic_price;
 
         Ok(ticket_id)
     }
