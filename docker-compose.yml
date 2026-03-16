@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  substrate:
+    image: parity/substrate-contracts-node:latest
+    ports:
+      - "9944:9944"
+    command:
+      - --dev
+      - --tmp
+      - --rpc-external
+      - --rpc-cors=all
+      - --unsafe-rpc-external
+      - --rpc-methods=unsafe
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9944"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_RPC_ENDPOINT=ws://substrate:9944
+      - NEXT_PUBLIC_LOCAL_RPC_ENDPOINT=ws://substrate:9944
+      - NEXT_PUBLIC_CHAIN_NAME=Development
+      - NEXT_PUBLIC_MOCK_MODE=false
+    depends_on:
+      substrate:
+        condition: service_healthy
+    volumes:
+      - ./frontend/src:/app/src
+      - /app/node_modules

@@ -1,7 +1,10 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
+import { CodePromise } from "@polkadot/api-contract";
 import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
-import { web3Accounts, web3Enable } from "@polkadot/extension-dapp";
+import { web3Accounts, web3Enable, web3FromAddress } from "@polkadot/extension-dapp";
 import { cryptoWaitReady } from "@polkadot/util-crypto";
+import { createInkTixSDK, type InkTixSDK } from "../sdk";
+import inktixMetadata from "../sdk/abi/inktix.json";
 
 export interface ContractCallResult<T = any> {
   success: boolean;
@@ -41,6 +44,7 @@ export class BlockchainService {
   private accounts: InjectedAccountWithMeta[] = [];
   private selectedAccount: InjectedAccountWithMeta | null = null;
   private contractAddress: string | null = null;
+  private sdk: InkTixSDK | null = null;
 
   constructor() {
     // Only initialize on client side
@@ -220,15 +224,8 @@ export class BlockchainService {
   }
 
   async selectAccount(account: InjectedAccountWithMeta): Promise<void> {
-    console.log(
-      "🔧 BlockchainService: selectAccount called with:",
-      account.address
-    );
     this.selectedAccount = account;
-    console.log(
-      "🔧 BlockchainService: selectedAccount set to:",
-      this.selectedAccount?.address
-    );
+    this.refreshSDK();
   }
 
   async getBalance(address: string): Promise<ContractCallResult<string>> {
@@ -373,78 +370,86 @@ export class BlockchainService {
     endowment: string
   ): Promise<ContractCallResult<string>> {
     try {
-      // Check if we have a selected account
-      console.log("🔍 deployContract: Checking selected account...");
-      console.log(
-        "🔍 deployContract: this.selectedAccount:",
-        this.selectedAccount
-      );
-      console.log(
-        "🔍 deployContract: this.selectedAccount?.address:",
-        this.selectedAccount?.address
-      );
-
       if (!this.selectedAccount) {
-        console.log("❌ deployContract: No selected account found");
         return { success: false, error: "No wallet account selected" };
       }
 
-      // Check if we have an API connection
       if (!this.api || !this.api.isConnected) {
-        // Try to restore connection if we have stored connection info
-        const isConnected =
-          localStorage.getItem("blockchain_connected") === "true";
-        const endpoint = localStorage.getItem("blockchain_endpoint");
-
-        if (isConnected && endpoint) {
-          console.log("🔄 Attempting to restore connection for deployment...");
-          const restored = await this.restoreConnection();
-          if (!restored) {
-            return {
-              success: false,
-              error: "Not connected to network and restoration failed",
-            };
-          }
-        } else {
+        const restored = await this.restoreConnection();
+        if (!restored) {
           return { success: false, error: "Not connected to network" };
         }
       }
 
-      console.log(
-        "Starting contract deployment (mock mode for development)..."
-      );
-      console.log(
-        "🔍 Deployment check - API connected:",
-        !!this.api && this.api.isConnected
-      );
-      console.log(
-        "🔍 Deployment check - Selected account:",
-        !!this.selectedAccount
-      );
-      console.log(
-        "🔍 Deployment check - Account address:",
-        this.selectedAccount?.address
+      // Check if contracts pallet is available
+      if (!this.api!.tx.contracts) {
+        console.log("Contracts pallet not available, using mock deployment");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        const mockAddr = "0x" + Math.random().toString(16).substr(2, 40);
+        this.contractAddress = mockAddr;
+        this.refreshSDK();
+        return {
+          success: true,
+          data: mockAddr,
+          message: "Contract deployed (mock — chain has no contracts pallet)",
+          txHash: "0x" + Math.random().toString(16).substr(2, 64),
+        };
+      }
+
+      console.log("Deploying contract on-chain...");
+
+      const code = new CodePromise(
+        this.api!,
+        inktixMetadata,
+        new Uint8Array(contractWasm)
       );
 
-      // For development purposes, we'll use a mock deployment
-      // This allows us to test the frontend integration without dealing with complex Substrate API issues
-      console.log("Using mock deployment for development...");
+      const injector = await web3FromAddress(this.selectedAccount.address);
+      const endowmentValue = BigInt(endowment);
 
-      // Simulate deployment delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const tx = code.tx.new(
+        { gasLimit: { refTime: 300_000_000_000, proofSize: 1_000_000 } as any, storageDepositLimit: null, value: endowmentValue }
+      );
 
-      // Generate a mock contract address
-      const mockContractAddress =
-        "0x" + Math.random().toString(16).substr(2, 40);
-      this.contractAddress = mockContractAddress;
-
-      console.log("Mock contract deployment successful:", mockContractAddress);
-      return {
-        success: true,
-        data: mockContractAddress,
-        message: "Contract deployed successfully (mock mode for development)",
-        txHash: "0x" + Math.random().toString(16).substr(2, 64),
-      };
+      return new Promise((resolve) => {
+        tx.signAndSend(
+            this.selectedAccount!.address,
+            { signer: injector.signer },
+            ({ status, contract, dispatchError }: any) => {
+              if (status.isInBlock || status.isFinalized) {
+                if (dispatchError) {
+                  let errorMsg = "Deployment failed";
+                  if (dispatchError.isModule) {
+                    const decoded = this.api!.registry.findMetaError(
+                      dispatchError.asModule
+                    );
+                    errorMsg = `${decoded.section}.${decoded.name}`;
+                  }
+                  resolve({ success: false, error: errorMsg });
+                } else if (contract) {
+                  this.contractAddress = contract.address.toString();
+                  this.refreshSDK();
+                  console.log("Contract deployed at:", this.contractAddress);
+                  resolve({
+                    success: true,
+                    data: this.contractAddress!,
+                    txHash: status.isInBlock
+                      ? status.asInBlock.toHex()
+                      : status.asFinalized.toHex(),
+                  });
+                } else {
+                  resolve({ success: false, error: "No contract address returned" });
+                }
+              }
+            }
+          )
+          .catch((err: any) => {
+            resolve({
+              success: false,
+              error: `Signing cancelled or failed: ${err instanceof Error ? err.message : String(err)}`,
+            });
+          });
+      });
     } catch (error) {
       console.error("Failed to deploy contract:", error);
       return {
@@ -454,6 +459,25 @@ export class BlockchainService {
         }`,
       };
     }
+  }
+
+  /**
+   * Refresh the SDK instance when contract address or account changes
+   */
+  private refreshSDK() {
+    if (this.contractAddress && this.api && this.selectedAccount) {
+      this.sdk = createInkTixSDK(this.contractAddress, this.api, this.selectedAccount);
+    }
+  }
+
+  /**
+   * Get the SDK instance for typed contract calls
+   */
+  getSDK(): InkTixSDK | null {
+    if (!this.sdk && this.contractAddress && this.api && this.selectedAccount) {
+      this.refreshSDK();
+    }
+    return this.sdk;
   }
 
   async callContract(
@@ -468,208 +492,85 @@ export class BlockchainService {
         };
       }
 
-      console.log(`Real contract call: ${method}`, args);
+      console.log(`Contract call: ${method}`, args);
 
-      // For now, return mock data while we implement real contract calls
-      // In the next phase, this will use the contracts pallet to call methods
+      const sdk = this.getSDK();
+      if (!sdk) {
+        return { success: false, error: "SDK not initialized" };
+      }
+
+      // Route method calls through the typed SDK
       switch (method) {
-        // Getter methods (no arguments)
-        case "get_total_teams":
-          return { success: true, data: 2 };
-        case "get_total_venues":
-          return { success: true, data: 2 };
-        case "get_total_events":
-          return { success: true, data: 2 };
-        case "get_total_tickets":
-          return { success: true, data: 5 };
+        // ─── Getters ───
         case "get_owner":
-          return {
-            success: true,
-            data: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-          };
+          return sdk.getOwner();
+        case "get_totals":
+        case "get_stats":
+          return sdk.getTotals();
+        case "get_platform_stats":
+          return sdk.getPlatformStats();
 
-        // Registration & Creation methods
+        // ─── Team ───
         case "register_team":
-          if (args.length >= 3) {
-            const [name, sport, city] = args;
-            return {
-              success: true,
-              data: 3, // New team ID
-              message: `Team "${name}" registered successfully in ${city} for ${sport}`,
-            };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for register_team",
-          };
-
-        case "register_venue":
-          if (args.length >= 3) {
-            const [name, capacity, location] = args;
-            return {
-              success: true,
-              data: 3, // New venue ID
-              message: `Venue "${name}" registered successfully in ${location} with capacity ${capacity}`,
-            };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for register_venue",
-          };
-
-        case "create_event":
-          if (args.length >= 5) {
-            const [homeTeamId, awayTeamId, venueId, date, price] = args;
-            return {
-              success: true,
-              data: 3, // New event ID
-              message: `Event created: Team ${homeTeamId} vs Team ${awayTeamId} at Venue ${venueId} on ${date} for ${price}`,
-            };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for create_event",
-          };
-
-        case "purchase_ticket":
-          if (args.length >= 4) {
-            const [eventId, seatNumber, section, row] = args;
-            return {
-              success: true,
-              data: 6, // New ticket ID
-              message: `Ticket purchased for Event ${eventId}: Section ${section}, Row ${row}, Seat ${seatNumber}`,
-            };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for purchase_ticket",
-          };
-
-        // Query methods with parameters
+          return sdk.registerTeam(args[0], args[1], args[2]);
+        case "get_team":
         case "get_team_by_id":
-          if (args.length >= 1) {
-            const teamId = args[0];
-            const mockTeams = [
-              {
-                id: 1,
-                name: "Lakers",
-                sport: "Basketball",
-                city: "Los Angeles",
-              },
-              {
-                id: 2,
-                name: "Warriors",
-                sport: "Basketball",
-                city: "San Francisco",
-              },
-            ];
-            const team = mockTeams.find((t) => t.id === teamId);
-            return team
-              ? { success: true, data: team }
-              : { success: false, error: "Team not found" };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for get_team_by_id",
-          };
+          return sdk.getTeam(args[0]);
+        case "get_all_teams":
+          return sdk.getAllTeams();
 
+        // ─── Artist ───
+        case "register_artist":
+          return sdk.registerArtist(args[0]);
+        case "get_artist":
+          return sdk.getArtist(args[0]);
+        case "verify_artist":
+          return sdk.verifyArtist(args[0]);
+
+        // ─── Venue ───
+        case "register_venue":
+          return sdk.registerVenue(args[0], args[1], args[2]);
+        case "get_venue":
         case "get_venue_by_id":
-          if (args.length >= 1) {
-            const venueId = args[0];
-            const mockVenues = [
-              {
-                id: 1,
-                name: "Crypto.com Arena",
-                capacity: 19068,
-                location: "Los Angeles, CA",
-              },
-              {
-                id: 2,
-                name: "TD Garden",
-                capacity: 19156,
-                location: "Boston, MA",
-              },
-            ];
-            const venue = mockVenues.find((v) => v.id === venueId);
-            return venue
-              ? { success: true, data: venue }
-              : { success: false, error: "Venue not found" };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for get_venue_by_id",
-          };
+          return sdk.getVenue(args[0]);
+        case "get_all_venues":
+          return sdk.getAllVenues();
 
+        // ─── Event ───
+        case "create_event":
+          return sdk.createSportsEvent(
+            args[0], args[1], args[2], args[3], args[4],
+            args[5], args[6], args[7], args[8], args[9]
+          );
+        case "create_concert_event":
+          return sdk.createConcertEvent(
+            args[0], args[1], args[2], args[3], args[4], args[5]
+          );
+        case "get_event":
         case "get_event_by_id":
-          if (args.length >= 1) {
-            const eventId = args[0];
-            const mockEvents = [
-              {
-                id: 1,
-                name: "Lakers vs Warriors",
-                homeTeam: "Lakers",
-                awayTeam: "Warriors",
-                venue: "Crypto.com Arena",
-                date: "2024-01-15",
-                price: "150 DOT",
-                availableTickets: 100,
-              },
-              {
-                id: 2,
-                name: "Celtics vs Heat",
-                homeTeam: "Celtics",
-                awayTeam: "Heat",
-                venue: "TD Garden",
-                date: "2024-01-20",
-                price: "120 DOT",
-                availableTickets: 75,
-              },
-            ];
-            const event = mockEvents.find((e) => e.id === eventId);
-            return event
-              ? { success: true, data: event }
-              : { success: false, error: "Event not found" };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for get_event_by_id",
-          };
+          return sdk.getEvent(args[0]);
+        case "get_all_events":
+          return sdk.getAllEvents();
 
+        // ─── Ticket ───
+        case "purchase_ticket":
+          return sdk.purchaseTicket(args[0], args[1], args[2], args[3]);
+        case "get_ticket":
+          return sdk.getTicket(args[0]);
+        case "get_user_tickets":
+          return sdk.getUserTickets(args[0]);
+        case "transfer_ticket":
+          return sdk.transferTicket(args[0], args[1]);
         case "get_tickets_by_event":
-          if (args.length >= 1) {
-            const eventId = args[0];
-            const mockTickets = [
-              {
-                id: 1,
-                eventId: 1,
-                owner: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                purchasePrice: "150 DOT",
-                purchaseDate: 1705276800,
-                seatNumber: 101,
-                section: "A",
-                row: "15",
-              },
-              {
-                id: 2,
-                eventId: 1,
-                owner: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                purchasePrice: "150 DOT",
-                purchaseDate: 1705276800,
-                seatNumber: 102,
-                section: "A",
-                row: "15",
-              },
-            ];
-            const tickets = mockTickets.filter((t) => t.eventId === eventId);
-            return { success: true, data: tickets };
-          }
-          return {
-            success: false,
-            error: "Invalid arguments for get_tickets_by_event",
-          };
+          return sdk.getUserTickets(args[0]); // Fallback
+
+        // ─── Anti-scalping ───
+        case "get_anti_scalping_config":
+          return sdk.getAntiScalpingConfig(args[0]);
 
         default:
-          return { success: true, data: "Mock response" };
+          console.warn(`Unknown contract method: ${method}, using SDK fallback`);
+          return { success: true, data: null, message: `Method ${method} not mapped` };
       }
     } catch (error) {
       console.error("Failed to call contract:", error);

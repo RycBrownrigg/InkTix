@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contracts:
+    name: Smart Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Install cargo-contract
+        run: cargo install cargo-contract --locked
+
+      - name: Run tests (unified contract)
+        working-directory: contracts/inktix
+        run: cargo test
+
+      - name: Build contract
+        working-directory: contracts/inktix
+        run: cargo contract build
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+      - name: Unit tests
+        working-directory: frontend
+        run: npx vitest run
