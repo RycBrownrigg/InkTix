@@ -16,7 +16,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useBlockchain } from "../../contexts/BlockchainContext";
 import { MockProvider } from "../../sdk/mockProvider";
-import { Database, Wifi } from "lucide-react";
+import { Database, Wifi, ShoppingCart, CheckCircle, TrendingUp, AlertCircle } from "lucide-react";
 
 // Comprehensive events data for 2025
 const mockEvents = [
@@ -733,6 +733,17 @@ export default function EventsPage() {
   const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [platformStats, setPlatformStats] = useState<any>(null);
 
+  // Purchase flow state
+  const [purchaseStep, setPurchaseStep] = useState<"details" | "select" | "confirm" | "success">("details");
+  const [selectedSeatType, setSelectedSeatType] = useState("GeneralAdmission");
+  const [selectedSection, setSelectedSection] = useState("A");
+  const [selectedRow, setSelectedRow] = useState("1");
+  const [selectedSeatNumber, setSelectedSeatNumber] = useState("1");
+  const [selectedCurrency, setSelectedCurrency] = useState("DOT");
+  const [priceQuote, setPriceQuote] = useState<any>(null);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const [purchaseResult, setPurchaseResult] = useState<any>(null);
+
   // Try to load events from contract, fall back to mock
   const loadContractEvents = useCallback(async () => {
     if (!isConnected || !isContractDeployed) return;
@@ -801,10 +812,135 @@ export default function EventsPage() {
 
   const handleViewDetails = (event: any) => {
     setSelectedEvent(event);
+    setPurchaseStep("details");
+    setPurchaseResult(null);
+    setPriceQuote(null);
   };
 
   const closeEventDetails = () => {
     setSelectedEvent(null);
+    setPurchaseStep("details");
+    setPurchaseResult(null);
+    setPriceQuote(null);
+  };
+
+  const seatTypes = [
+    { value: "GeneralAdmission", label: "General Admission", icon: "🎫" },
+    { value: "Reserved", label: "Reserved", icon: "💺" },
+    { value: "PremiumReserved", label: "Premium Reserved", icon: "⭐" },
+    { value: "Club", label: "Club", icon: "🏆" },
+    { value: "Suite", label: "Suite", icon: "👑" },
+    { value: "Courtside", label: "Courtside / Field Level", icon: "🔥" },
+    { value: "StudentSection", label: "Student Section", icon: "🎓" },
+  ];
+
+  const currencies = [
+    { value: "DOT", label: "DOT (Polkadot)" },
+    { value: "KSM", label: "KSM (Kusama)" },
+    { value: "AUSD", label: "aUSD (Stablecoin)" },
+    { value: "ACA", label: "ACA (Acala)" },
+  ];
+
+  const handleStartPurchase = async () => {
+    setPurchaseStep("select");
+    // Get price quote
+    try {
+      const result = await callContract("get_price_quote", [
+        selectedEvent.id, selectedSeatType, false,
+      ]);
+      if (result.success && result.data) {
+        setPriceQuote(result.data);
+      } else {
+        // Mock price quote
+        const seatMults: Record<string, number> = {
+          GeneralAdmission: 1.0, Reserved: 1.1, PremiumReserved: 1.3,
+          Club: 1.5, Suite: 2.0, Courtside: 2.5, StudentSection: 0.7,
+        };
+        const mult = seatMults[selectedSeatType] || 1.0;
+        setPriceQuote({
+          basePrice: selectedEvent.price,
+          finalPrice: Math.round(selectedEvent.price * mult * 100) / 100,
+          multiplier: Math.round(mult * 10000),
+          demandPercentage: selectedEvent.popularity || 50,
+          demandMultiplier: 10000,
+          timeMultiplier: 10000,
+          seatMultiplier: Math.round(mult * 10000),
+          rivalryMultiplier: 10000,
+          seasonPassDiscount: 0,
+        });
+      }
+    } catch {
+      const seatMults: Record<string, number> = {
+        GeneralAdmission: 1.0, Reserved: 1.1, PremiumReserved: 1.3,
+        Club: 1.5, Suite: 2.0, Courtside: 2.5, StudentSection: 0.7,
+      };
+      const mult = seatMults[selectedSeatType] || 1.0;
+      setPriceQuote({
+        basePrice: selectedEvent.price,
+        finalPrice: Math.round(selectedEvent.price * mult * 100) / 100,
+        multiplier: Math.round(mult * 10000),
+        demandPercentage: selectedEvent.popularity || 50,
+        demandMultiplier: 10000,
+        timeMultiplier: 10000,
+        seatMultiplier: Math.round(mult * 10000),
+        rivalryMultiplier: 10000,
+        seasonPassDiscount: 0,
+      });
+    }
+  };
+
+  const handleUpdateQuote = async (newSeatType: string) => {
+    setSelectedSeatType(newSeatType);
+    const seatMults: Record<string, number> = {
+      GeneralAdmission: 1.0, Reserved: 1.1, PremiumReserved: 1.3,
+      Club: 1.5, Suite: 2.0, Courtside: 2.5, StudentSection: 0.7,
+    };
+    const mult = seatMults[newSeatType] || 1.0;
+    setPriceQuote((prev: any) => prev ? {
+      ...prev,
+      finalPrice: Math.round(prev.basePrice * mult * 100) / 100,
+      seatMultiplier: Math.round(mult * 10000),
+      multiplier: Math.round(mult * 10000),
+    } : null);
+  };
+
+  const handleConfirmPurchase = async () => {
+    setIsPurchasing(true);
+    setPurchaseResult(null);
+    try {
+      let result;
+      try {
+        result = await callContract("purchase_ticket", [
+          selectedEvent.id,
+          { section: selectedSection, row: selectedRow, seat_number: selectedSeatNumber,
+            seat_type: { [selectedSeatType]: null }, access_level: { Standard: null },
+            price_multiplier: priceQuote?.seatMultiplier || 10000 },
+          { [selectedCurrency]: null },
+        ]);
+      } catch {
+        result = { success: false, error: "contract unavailable" };
+      }
+      if (!result.success && (result.error?.includes("not deployed") || result.error?.includes("contract unavailable"))) {
+        // Mock success
+        await new Promise(r => setTimeout(r, 1500));
+        result = {
+          success: true,
+          data: Math.floor(Math.random() * 1000) + 100,
+          message: "Ticket purchased successfully (demo mode)",
+        };
+      }
+      setPurchaseResult(result);
+      if (result.success) {
+        setPurchaseStep("success");
+      }
+    } catch (error) {
+      setPurchaseResult({
+        success: false,
+        error: error instanceof Error ? error.message : "Purchase failed",
+      });
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   return (
@@ -1273,24 +1409,204 @@ export default function EventsPage() {
                   </div>
                 </div>
 
-                {/* Price and Action */}
+                {/* Purchase Flow */}
                 <div className="border-t border-slate-200 pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <DollarSign className="w-6 h-6 text-green-600" />
+                  {purchaseStep === "details" && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <DollarSign className="w-6 h-6 text-green-600" />
+                        <div>
+                          <span className="text-4xl font-bold text-green-600">
+                            {selectedEvent.price} DOT
+                          </span>
+                          <span className="text-lg text-slate-500 ml-2">
+                            starting price
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleStartPurchase}
+                        className="btn-primary px-8 py-4 text-lg flex items-center gap-2"
+                      >
+                        <ShoppingCart className="w-5 h-5" />
+                        Buy Tickets
+                      </button>
+                    </div>
+                  )}
+
+                  {purchaseStep === "select" && (
+                    <div className="space-y-5">
+                      <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <ShoppingCart className="w-5 h-5 text-inktix-blue-600" />
+                        Select Your Seats
+                      </h3>
+
+                      {/* Seat Type */}
                       <div>
-                        <span className="text-4xl font-bold text-green-600">
-                          ${selectedEvent.price}
-                        </span>
-                        <span className="text-lg text-slate-500 ml-2">
-                          per ticket
-                        </span>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Seat Type</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {seatTypes.map((st) => (
+                            <button
+                              key={st.value}
+                              onClick={() => handleUpdateQuote(st.value)}
+                              className={`text-left px-3 py-2.5 rounded-lg border text-sm transition-all ${
+                                selectedSeatType === st.value
+                                  ? "border-inktix-blue-500 bg-inktix-blue-50 text-inktix-blue-700 font-medium"
+                                  : "border-gray-200 hover:border-gray-300 text-gray-700"
+                              }`}
+                            >
+                              {st.icon} {st.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Section & Seat */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+                          <input
+                            type="text"
+                            value={selectedSection}
+                            onChange={(e) => setSelectedSection(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-inktix-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Row</label>
+                          <input
+                            type="text"
+                            value={selectedRow}
+                            onChange={(e) => setSelectedRow(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-inktix-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Seat #</label>
+                          <input
+                            type="text"
+                            value={selectedSeatNumber}
+                            onChange={(e) => setSelectedSeatNumber(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-inktix-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Currency */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pay with</label>
+                        <select
+                          value={selectedCurrency}
+                          onChange={(e) => setSelectedCurrency(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-inktix-blue-500"
+                        >
+                          {currencies.map((c) => (
+                            <option key={c.value} value={c.value}>{c.label}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Price Quote Breakdown */}
+                      {priceQuote && (
+                        <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-xl p-4 space-y-2">
+                          <h4 className="text-sm font-semibold text-slate-700 flex items-center gap-1">
+                            <TrendingUp className="w-4 h-4" /> Dynamic Price Breakdown
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Base price</span>
+                              <span className="text-gray-700">{priceQuote.basePrice} DOT</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Seat type ({seatTypes.find(s => s.value === selectedSeatType)?.label})</span>
+                              <span className={priceQuote.seatMultiplier > 10000 ? "text-red-600" : priceQuote.seatMultiplier < 10000 ? "text-green-600" : "text-gray-700"}>
+                                {priceQuote.seatMultiplier > 10000 ? "+" : ""}{((priceQuote.seatMultiplier / 10000 - 1) * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-500">Demand ({priceQuote.demandPercentage}% sold)</span>
+                              <span className={priceQuote.demandMultiplier > 10000 ? "text-red-600" : priceQuote.demandMultiplier < 10000 ? "text-green-600" : "text-gray-700"}>
+                                {priceQuote.demandMultiplier > 10000 ? "+" : ""}{((priceQuote.demandMultiplier / 10000 - 1) * 100).toFixed(0)}%
+                              </span>
+                            </div>
+                            {priceQuote.seasonPassDiscount > 0 && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-500">Season pass discount</span>
+                                <span className="text-green-600">-{priceQuote.seasonPassDiscount}%</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between pt-2 border-t border-slate-200 font-semibold">
+                              <span className="text-slate-800">Total</span>
+                              <span className="text-xl text-green-600">{priceQuote.finalPrice} DOT</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {purchaseResult && !purchaseResult.success && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                          {purchaseResult.error}
+                        </div>
+                      )}
+
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => setPurchaseStep("details")}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                        >
+                          Back
+                        </button>
+                        <button
+                          onClick={handleConfirmPurchase}
+                          disabled={isPurchasing}
+                          className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold px-4 py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                        >
+                          {isPurchasing ? (
+                            <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div> Processing...</>
+                          ) : (
+                            <><ShoppingCart className="w-4 h-4" /> Confirm Purchase</>
+                          )}
+                        </button>
                       </div>
                     </div>
-                    <button className="btn-primary px-8 py-4 text-lg">
-                      Buy Tickets
-                    </button>
-                  </div>
+                  )}
+
+                  {purchaseStep === "success" && purchaseResult?.success && (
+                    <div className="text-center space-y-4">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle className="w-10 h-10 text-green-600" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-900">Purchase Successful!</h3>
+                      <p className="text-slate-600">
+                        Ticket #{purchaseResult.data} for <strong>{selectedEvent.title}</strong>
+                      </p>
+                      <div className="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 space-y-1">
+                        <div className="flex justify-between">
+                          <span>Section {selectedSection}, Row {selectedRow}, Seat {selectedSeatNumber}</span>
+                          <span className="font-medium">{priceQuote?.finalPrice} {selectedCurrency}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Seat type</span>
+                          <span>{seatTypes.find(s => s.value === selectedSeatType)?.label}</span>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={closeEventDetails}
+                          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                        >
+                          Continue Browsing
+                        </button>
+                        <Link
+                          href="/my-tickets"
+                          className="flex-1 bg-gradient-to-r from-inktix-purple-600 to-inktix-blue-600 text-white font-semibold px-4 py-3 rounded-lg text-center flex items-center justify-center gap-2"
+                        >
+                          <Ticket className="w-4 h-4" /> View My Tickets
+                        </Link>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
