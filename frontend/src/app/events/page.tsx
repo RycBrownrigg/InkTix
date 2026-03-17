@@ -16,7 +16,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useBlockchain } from "../../contexts/BlockchainContext";
 import { MockProvider } from "../../sdk/mockProvider";
-import { Database, Wifi, ShoppingCart, CheckCircle, TrendingUp, AlertCircle } from "lucide-react";
+import { Database, Wifi, ShoppingCart, CheckCircle, TrendingUp, AlertCircle, Share2, Copy, UsersRound } from "lucide-react";
 
 // Comprehensive events data for 2025
 const mockEvents = [
@@ -798,6 +798,60 @@ export default function EventsPage() {
     loadContractEvents();
   }, [loadContractEvents]);
 
+  // Share functionality
+  const [shareToast, setShareToast] = useState("");
+  const [showGroupBuyModal, setShowGroupBuyModal] = useState(false);
+  const [groupBuyEvent, setGroupBuyEvent] = useState<any>(null);
+  const [groupCode, setGroupCode] = useState("");
+  const [groupSize, setGroupSize] = useState(4);
+  const [joinCode, setJoinCode] = useState("");
+  const [groupBuyStep, setGroupBuyStep] = useState<"create" | "created" | "join" | "joined">("create");
+
+  const handleShare = async (event: any, method: "copy" | "twitter" | "native") => {
+    const url = `${typeof window !== "undefined" ? window.location.origin : ""}/events?id=${event.id}`;
+    const text = `Check out ${event.title} at ${event.venue} on InkTix!`;
+
+    if (method === "copy") {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setShareToast("Link copied!");
+      setTimeout(() => setShareToast(""), 2000);
+    } else if (method === "twitter") {
+      const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      window.open(twitterUrl, "_blank", "width=550,height=420");
+    } else if (method === "native" && navigator.share) {
+      try {
+        await navigator.share({ title: event.title, text, url });
+      } catch {
+        // User cancelled
+      }
+    }
+  };
+
+  const handleCreateGroup = (event: any) => {
+    setGroupBuyEvent(event);
+    setShowGroupBuyModal(true);
+    setGroupBuyStep("create");
+    setGroupSize(4);
+    setGroupCode("");
+    setJoinCode("");
+  };
+
+  const handleGenerateGroupCode = () => {
+    const code = `INK-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${groupBuyEvent?.id || 0}`;
+    setGroupCode(code);
+    setGroupBuyStep("created");
+  };
+
+  const handleJoinGroup = () => {
+    setGroupBuyStep("join");
+  };
+
+  const handleSubmitJoinCode = () => {
+    if (joinCode.startsWith("INK-")) {
+      setGroupBuyStep("joined");
+    }
+  };
+
   const filteredEvents =
     selectedCategory === "All"
       ? allEvents
@@ -1162,25 +1216,46 @@ export default function EventsPage() {
                 </div>
 
                 {/* Enhanced Price and Action */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-green-600" />
-                    <div>
-                      <span className="text-3xl font-bold text-green-600">
-                        ${event.price}
-                      </span>
-                      <span className="text-sm text-slate-500 ml-1">
-                        per ticket
-                      </span>
+                <div className="pt-4 border-t border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <div>
+                        <span className="text-3xl font-bold text-green-600">
+                          {event.price} DOT
+                        </span>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => handleViewDetails(event)}
+                      className="btn-primary text-sm px-6 py-3 group-hover:scale-105 transition-transform"
+                    >
+                      View Details
+                    </button>
                   </div>
-
-                  <button
-                    onClick={() => handleViewDetails(event)}
-                    className="btn-primary text-sm px-6 py-3 group-hover:scale-105 transition-transform"
-                  >
-                    View Details
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleShare(event, "copy")}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-inktix-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                      title="Copy link"
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Share
+                    </button>
+                    <button
+                      onClick={() => handleShare(event, "twitter")}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-inktix-blue-600 transition-colors px-2 py-1 rounded hover:bg-blue-50"
+                      title="Share on X"
+                    >
+                      <Share2 className="w-3.5 h-3.5" /> Post
+                    </button>
+                    <button
+                      onClick={() => handleCreateGroup(event)}
+                      className="flex items-center gap-1 text-xs text-gray-500 hover:text-inktix-purple-600 transition-colors px-2 py-1 rounded hover:bg-purple-50 ml-auto"
+                      title="Group buy"
+                    >
+                      <UsersRound className="w-3.5 h-3.5" /> Group Buy
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1298,9 +1373,47 @@ export default function EventsPage() {
 
               {/* Modal Content */}
               <div className="p-6">
-                <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                  {selectedEvent.title}
-                </h2>
+                <div className="flex items-start justify-between mb-4">
+                  <h2 className="text-3xl font-bold text-slate-900">
+                    {selectedEvent.title}
+                  </h2>
+                  <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                    <button
+                      onClick={() => handleShare(selectedEvent, "copy")}
+                      className="p-2 text-gray-400 hover:text-inktix-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Copy link"
+                    >
+                      <Copy className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleShare(selectedEvent, "twitter")}
+                      className="p-2 text-gray-400 hover:text-inktix-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Share on X"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </button>
+                    {typeof navigator !== "undefined" && "share" in navigator && (
+                      <button
+                        onClick={() => handleShare(selectedEvent, "native")}
+                        className="p-2 text-gray-400 hover:text-inktix-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Share"
+                      >
+                        <Share2 className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Group Buy Button */}
+                {purchaseStep === "details" && (
+                  <button
+                    onClick={() => handleCreateGroup(selectedEvent)}
+                    className="w-full mb-4 flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-purple-300 rounded-xl text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors text-sm font-medium"
+                  >
+                    <UsersRound className="w-4 h-4" />
+                    Organize a Group Buy
+                  </button>
+                )}
 
                 {/* Event Type Specific Info */}
                 {selectedEvent.type === "concert" && selectedEvent.artist && (
@@ -1609,6 +1722,200 @@ export default function EventsPage() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Share Toast */}
+      {shareToast && (
+        <div className="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2 animate-fade-in">
+          <CheckCircle className="w-4 h-4" />
+          {shareToast}
+        </div>
+      )}
+
+      {/* Group Buy Modal */}
+      {showGroupBuyModal && groupBuyEvent && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-1 flex items-center gap-2">
+                <UsersRound className="w-5 h-5 text-inktix-purple-600" />
+                Group Buy
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">{groupBuyEvent.title}</p>
+
+              {groupBuyStep === "create" && (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Create a group purchase and share the code with friends.
+                    Everyone buys their own ticket with adjacent seats.
+                  </p>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Group Size
+                    </label>
+                    <select
+                      value={groupSize}
+                      onChange={(e) => setGroupSize(parseInt(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-inktix-purple-500"
+                    >
+                      {[2, 3, 4, 5, 6, 8, 10].map((n) => (
+                        <option key={n} value={n}>{n} people</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-3 text-sm text-purple-700">
+                    <p className="font-medium">Group benefits:</p>
+                    <ul className="mt-1 space-y-0.5 text-purple-600">
+                      <li>Adjacent seats guaranteed</li>
+                      <li>Each person pays individually</li>
+                      <li>5% group discount on 4+ tickets</li>
+                    </ul>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleJoinGroup}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium text-sm"
+                    >
+                      Join Existing Group
+                    </button>
+                    <button
+                      onClick={handleGenerateGroupCode}
+                      className="flex-1 bg-gradient-to-r from-inktix-purple-600 to-inktix-blue-600 text-white font-semibold px-4 py-3 rounded-lg text-sm"
+                    >
+                      Create Group
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {groupBuyStep === "created" && (
+                <div className="space-y-4 text-center">
+                  <div className="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center mx-auto">
+                    <UsersRound className="w-8 h-8 text-inktix-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-2">Share this code with your group:</p>
+                    <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center gap-3">
+                      <span className="text-2xl font-mono font-bold text-gray-900 tracking-wider">
+                        {groupCode}
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(groupCode);
+                          setShareToast("Group code copied!");
+                          setTimeout(() => setShareToast(""), 2000);
+                        }}
+                        className="p-2 text-gray-400 hover:text-inktix-blue-600 hover:bg-blue-50 rounded-lg"
+                      >
+                        <Copy className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-3 text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Event</span>
+                      <span className="font-medium">{groupBuyEvent.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Group size</span>
+                      <span className="font-medium">{groupSize} people</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Price per ticket</span>
+                      <span className="font-medium text-green-600">
+                        {groupSize >= 4
+                          ? `${Math.round(groupBuyEvent.price * 0.95)} DOT (5% off)`
+                          : `${groupBuyEvent.price} DOT`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Status</span>
+                      <span className="font-medium text-amber-600">1 / {groupSize} joined</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleViewDetails(groupBuyEvent);
+                      setShowGroupBuyModal(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart className="w-4 h-4" /> Buy My Ticket
+                  </button>
+                </div>
+              )}
+
+              {groupBuyStep === "join" && (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Enter the group code shared by your friend:
+                  </p>
+                  <input
+                    type="text"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    placeholder="INK-XXXX-0"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-lg font-mono tracking-wider focus:ring-2 focus:ring-inktix-purple-500"
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setGroupBuyStep("create")}
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleSubmitJoinCode}
+                      disabled={!joinCode.startsWith("INK-")}
+                      className="flex-1 bg-gradient-to-r from-inktix-purple-600 to-inktix-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold px-4 py-3 rounded-lg"
+                    >
+                      Join Group
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {groupBuyStep === "joined" && (
+                <div className="space-y-4 text-center">
+                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">Joined Group!</h3>
+                  <p className="text-sm text-gray-600">
+                    You&apos;ve joined group <strong className="font-mono">{joinCode}</strong>.
+                    Your seats will be adjacent to your group.
+                  </p>
+                  <div className="bg-slate-50 rounded-lg p-3 text-sm text-gray-600 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Event</span>
+                      <span className="font-medium">{groupBuyEvent.title}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Group discount</span>
+                      <span className="font-medium text-green-600">5% off</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleViewDetails(groupBuyEvent);
+                      setShowGroupBuyModal(false);
+                    }}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold px-4 py-3 rounded-lg flex items-center justify-center gap-2"
+                  >
+                    <ShoppingCart className="w-4 h-4" /> Buy My Ticket
+                  </button>
+                </div>
+              )}
+
+              <button
+                onClick={() => setShowGroupBuyModal(false)}
+                className="w-full mt-3 text-sm text-gray-500 hover:text-gray-700"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
