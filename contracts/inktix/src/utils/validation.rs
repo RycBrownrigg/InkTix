@@ -1,3 +1,13 @@
+//! Input validation helpers.
+//!
+//! Provides guard functions that return `InkTixError::InvalidData` for
+//! empty strings, zero-value numbers, and zero-balance amounts.
+//!
+//! # Functions
+//! - `validate_non_empty_string` -- rejects empty or whitespace-only strings
+//! - `validate_positive_number` -- rejects zero-valued u32 inputs
+//! - `validate_positive_balance` -- rejects zero-valued u128 inputs
+
 use crate::types::core::error::{InkTixError, InkTixResult};
 
 /// Validate that a string is not empty

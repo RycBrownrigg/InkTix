@@ -1,3 +1,9 @@
+/**
+ * Tests for the ContractDeployment component.
+ *
+ * Verifies form rendering, deploy button disabled state, and endowment
+ * input interaction with a mocked useBlockchain hook.
+ */
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";

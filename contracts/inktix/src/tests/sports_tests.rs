@@ -1,6 +1,9 @@
-/// Sports-specific tests are included inline in lib.rs under #[cfg(test)]
-/// This module provides additional sports test helpers.
+//! Sports test helpers for contract verification.
+//!
+//! Provides reusable assertion helpers for sports-specific contract state.
+//! Primary tests live inline in `lib.rs` under `#[cfg(test)]`.
 
+/// Helper utilities for sports-related contract tests
 pub struct SportsTestHelpers;
 
 impl SportsTestHelpers {

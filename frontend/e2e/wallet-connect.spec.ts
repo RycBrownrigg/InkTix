@@ -1,3 +1,9 @@
+/**
+ * E2E tests for the wallet connection page.
+ *
+ * Verifies that the connect page renders correctly, displays setup
+ * instructions, and is reachable from the home page navigation.
+ */
 import { test, expect } from "@playwright/test";
 
 test.describe("Wallet Connection", () => {

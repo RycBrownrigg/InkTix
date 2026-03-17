@@ -1,27 +1,37 @@
+//! Fantasy sports type definitions.
+//!
+//! Contains leagues, teams, player stats, leaderboards, rewards, game weeks,
+//! transfers, and settings for the ticket-holder fantasy sports integration.
+
 use ink::primitives::AccountId;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 
+/// Duration type for a fantasy league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum FantasyLeagueType { SeasonLong, Weekly, Daily, Tournament, Custom }
 
+/// Lifecycle status of a fantasy league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum FantasyLeagueStatus { Open, InProgress, Completed, Cancelled }
 
+/// Roster positions for fantasy player assignments
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum PlayerPosition { Quarterback, RunningBack, WideReceiver, TightEnd, Kicker, Defense, Flex, Unknown }
 
+/// Status of a user's fantasy team within a league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub enum FantasyTeamStatus { Active, Eliminated, Champion, Inactive }
 
+/// Performance statistics for a fantasy-eligible player
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -31,6 +41,7 @@ pub struct PlayerStats {
     pub completion_percentage: Option<u32>, pub field_goal_percentage: Option<u32>, pub last_updated: u64,
 }
 
+/// A fantasy league with entry fees, prize pools, and scoring rules
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -42,6 +53,7 @@ pub struct FantasyLeague {
     pub season_id: u32, pub sport_type: String, pub rules: String, pub scoring_system: String,
 }
 
+/// A user's team roster within a fantasy league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -52,6 +64,7 @@ pub struct FantasyTeam {
     pub captain_id: Option<u32>, pub vice_captain_id: Option<u32>,
 }
 
+/// Tracks a user's participation in a specific fantasy league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -61,6 +74,7 @@ pub struct FantasyLeagueParticipation {
     pub bonus_points: u32, pub loyalty_multiplier: u32,
 }
 
+/// Ranked standings for a fantasy league
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -68,6 +82,7 @@ pub struct FantasyLeaderboard {
     pub league_id: u32, pub season_id: u32, pub entries: Vec<FantasyLeaderboardEntry>, pub last_updated: u64,
 }
 
+/// A single entry on the fantasy leaderboard
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -76,6 +91,7 @@ pub struct FantasyLeaderboardEntry {
     pub games_played: u32, pub win_streak: u32, pub bonus_points: u32, pub loyalty_multiplier: u32,
 }
 
+/// Claimable rewards earned from fantasy league performance
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -85,6 +101,7 @@ pub struct FantasyRewards {
     pub loyalty_points: u32, pub claimed_at: Option<u64>, pub is_claimed: bool,
 }
 
+/// A scoring period within a fantasy league season
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -93,6 +110,7 @@ pub struct FantasyGameWeek {
     pub games: Vec<u32>, pub is_active: bool, pub transfer_deadline: u64, pub captain_selection_deadline: u64,
 }
 
+/// Record of a player swap on a fantasy team
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -102,6 +120,7 @@ pub struct FantasyTransfer {
     pub transfer_time: u64, pub week_id: u32,
 }
 
+/// Configurable rules for a fantasy league (transfers, captain boosts, etc.)
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]

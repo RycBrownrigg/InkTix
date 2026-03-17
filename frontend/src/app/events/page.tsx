@@ -1,3 +1,8 @@
+/**
+ * Events browsing page with category filters, search, ticket purchasing, and dynamic pricing.
+ *
+ * @module app/events/page
+ */
 "use client";
 
 import {

@@ -1,3 +1,8 @@
+//! Core business logic modules.
+//!
+//! Contains event, ticket, venue, currency, anti-scalping, dynamic pricing,
+//! NFT, and XCM management logic used by all contract features.
+
 pub mod anti_scalping;
 pub mod currency_management;
 pub mod event_management;

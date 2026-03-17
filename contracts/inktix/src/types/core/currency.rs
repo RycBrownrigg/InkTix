@@ -1,3 +1,8 @@
+//! Currency type definitions for multi-chain payment support.
+//!
+//! Defines supported currency identifiers (DOT, ACA, aUSD, LDOT, KSM),
+//! exchange rate tracking, and a conversion trait for flexible implementations.
+
 use ink::prelude::string::String;
 
 /// Multi-currency support for Acala integration

@@ -1,3 +1,11 @@
+/**
+ * Client-side wrapper that defers BlockchainProvider rendering until hydration is complete.
+ *
+ * Prevents SSR mismatches by rendering a loading placeholder on the server
+ * and mounting the provider tree only on the client.
+ *
+ * @module components/BlockchainWrapper
+ */
 "use client";
 
 import { useEffect, useState } from "react";

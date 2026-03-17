@@ -1,3 +1,15 @@
+/**
+ * Default argument templates for contract method calls.
+ *
+ * Returns pre-filled JSON argument strings for each known contract
+ * method, giving users a starting point when invoking methods from
+ * the ContractInteraction panel.
+ *
+ * @module utils/methodArgs
+ *
+ * Exported functions:
+ * - {@link getDefaultArgs} - Returns a default JSON args string for a method
+ */
 import { ContractType } from "./contractMethods";
 
 export function getDefaultArgs(method: string, contractType: ContractType): string {

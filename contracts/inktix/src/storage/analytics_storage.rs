@@ -1,3 +1,14 @@
+//! Standalone analytics storage helper.
+//!
+//! Provides `AnalyticsStorage` with convenience methods for initializing
+//! event, team, and user analytics records and updating platform-wide stats.
+//!
+//! # Functions
+//! - `create_event_analytics` -- initializes analytics for a newly created event
+//! - `create_team_analytics` -- initializes analytics for a newly registered team
+//! - `create_user_analytics` -- initializes analytics for a new user
+//! - `update_platform_stats` -- increments platform-wide counters
+
 use crate::types::*;
 use ink::prelude::*;
 use ink::storage::Mapping;

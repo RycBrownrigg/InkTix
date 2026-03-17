@@ -1,3 +1,20 @@
+/**
+ * Singleton service managing all Polkadot.js API interactions.
+ *
+ * Handles WebSocket connection lifecycle, wallet extension discovery,
+ * account selection, balance queries, contract deployment, and method
+ * calls. Routes contract calls through the typed InkTix SDK layer.
+ *
+ * @module services/blockchain
+ *
+ * Exported interfaces:
+ * - {@link ContractCallResult} - Generic result wrapper for async operations
+ * - {@link EventData} - Shape of event data returned to the UI
+ * - {@link VenueData} - Shape of venue data returned to the UI
+ *
+ * Exported classes:
+ * - {@link BlockchainService} - Singleton service for all chain interactions
+ */
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { CodePromise } from "@polkadot/api-contract";
 import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";

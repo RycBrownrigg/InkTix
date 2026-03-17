@@ -1,6 +1,16 @@
 /**
- * InkTix SDK interface - defines the contract for interacting with
- * the InkTix smart contract (both mock and real implementations).
+ * Defines the abstract SDK interface for all InkTix contract interactions.
+ *
+ * The {@link InkTixSDK} interface is the single contract that both
+ * {@link MockProvider} and {@link ContractProvider} implement, enabling
+ * seamless switching between mock and on-chain backends.
+ *
+ * @module sdk/inktixContract
+ *
+ * Exported interfaces:
+ * - {@link InkTixSDK} - Full contract interaction surface covering teams,
+ *   artists, venues, events, tickets, resale, NFTs, pricing, analytics,
+ *   anti-scalping, and utility queries
  */
 
 import type {

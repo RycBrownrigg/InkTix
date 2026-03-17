@@ -1,3 +1,18 @@
+/**
+ * Zustand slice managing event, venue, and balance data.
+ *
+ * Loads initial mock data on startup and can refresh from the blockchain
+ * service when a live connection is established. Also handles balance
+ * queries for the selected account.
+ *
+ * @module store/slices/dataSlice
+ *
+ * Exported interfaces:
+ * - {@link DataSlice} - State and actions for domain data and balances
+ *
+ * Exported functions:
+ * - {@link createDataSlice} - Zustand StateCreator factory
+ */
 import { StateCreator } from "zustand";
 import {
   BlockchainService,

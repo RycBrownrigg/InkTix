@@ -1,3 +1,8 @@
+/**
+ * NFT ticket portfolio page for viewing, minting, using, and verifying on-chain ticket NFTs.
+ *
+ * @module app/my-tickets/page
+ */
 "use client";
 
 import Link from "next/link";

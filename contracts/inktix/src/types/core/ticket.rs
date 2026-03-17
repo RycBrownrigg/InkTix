@@ -1,3 +1,8 @@
+//! Ticket type definition.
+//!
+//! Contains the unified `Ticket` struct representing a purchased event ticket,
+//! including pricing, seating, ownership, and dynamic pricing metadata.
+
 use ink::prelude::string::String;
 use ink::primitives::AccountId;
 

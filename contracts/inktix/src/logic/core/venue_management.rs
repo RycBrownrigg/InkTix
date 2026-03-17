@@ -1,3 +1,16 @@
+//! Venue registration and venue-service management.
+//!
+//! Handles venue creation with default amenity configurations, capacity updates,
+//! and purchasing of venue-specific services (parking, concessions, merchandise).
+//!
+//! # Functions
+//! - `register_venue` -- creates a venue with default parking, concession, and merchandise info
+//! - `get_all_venues` -- returns all registered venues
+//! - `update_venue_capacity` -- adjusts venue capacity and recalculates availability
+//! - `purchase_parking_pass` -- issues a parking pass for a venue
+//! - `purchase_concession_credits` -- issues concession credits for a venue
+//! - `purchase_merchandise_bundle` -- purchases a merchandise bundle from a venue
+
 use crate::storage::*;
 use crate::types::*;
 use crate::types::core::venue;

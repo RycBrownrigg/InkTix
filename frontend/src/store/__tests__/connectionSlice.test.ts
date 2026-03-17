@@ -1,3 +1,10 @@
+/**
+ * Tests for the combined InkTix Zustand store.
+ *
+ * Covers connection state transitions, wallet connect/disconnect, contract
+ * deployment state, and data slice balance updates using a mocked
+ * BlockchainService.
+ */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useInkTixStore } from "../index";
 

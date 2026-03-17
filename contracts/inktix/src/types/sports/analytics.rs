@@ -1,3 +1,9 @@
+//! Analytics and reporting type definitions.
+//!
+//! Provides platform-wide stats, per-event analytics, team performance metrics,
+//! user behavior analytics, and comprehensive report structures with configurable
+//! time periods and report types.
+
 use ink::primitives::AccountId;
 use ink::prelude::vec::Vec;
 use crate::types::core::{CurrencyId, SportType};

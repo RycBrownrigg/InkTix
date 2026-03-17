@@ -1,3 +1,8 @@
+//! Event-related type definitions.
+//!
+//! Defines the unified `Event` struct, event categories (sports, concert, generic),
+//! game types, sport types, and event lifecycle statuses.
+
 use ink::prelude::string::String;
 
 #[allow(clippy::cast_possible_truncation)]

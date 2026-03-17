@@ -1,3 +1,12 @@
+//! Global loyalty profile and points management.
+//!
+//! Creates loyalty profiles, awards points based on activity, and
+//! automatically promotes users through tier levels based on accumulated points.
+//!
+//! # Functions
+//! - `create_loyalty_profile` -- initializes a loyalty profile for a user
+//! - `award_points` -- grants loyalty points and recalculates the user's tier
+
 use crate::storage::*;
 use crate::types::*;
 use ink::env::DefaultEnvironment;
@@ -12,6 +21,7 @@ pub struct Loyalty;
 
 #[allow(clippy::arithmetic_side_effects)]
 impl Loyalty {
+    /// Create a new loyalty profile for a user
     pub fn create_loyalty_profile(storage: &mut InkTixStorage, user: AccountId) -> Result<(), String> {
         if storage.loyalty_profiles.get(user).is_some() { return Err("Loyalty profile already exists".to_string()); }
         let profile = LoyaltyProfile {
@@ -26,6 +36,7 @@ impl Loyalty {
         Ok(())
     }
 
+    /// Award loyalty points to a user and recalculate their tier
     pub fn award_points(storage: &mut InkTixStorage, user: AccountId, points: u32, _reason: String) -> Result<(), String> {
         let mut profile = storage.loyalty_profiles.get(user).ok_or("Loyalty profile not found")?;
         profile.total_points += points;

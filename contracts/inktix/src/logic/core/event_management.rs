@@ -1,3 +1,13 @@
+//! Event creation and lifecycle management.
+//!
+//! Handles event creation with category-specific validation (sports rivalry,
+//! concert artist lookup), status updates, and analytics initialization.
+//!
+//! # Functions
+//! - `create_event` -- creates a new event with venue and category validation
+//! - `get_all_events` -- returns all registered events
+//! - `update_event_status` -- changes an event's active/inactive state
+
 use ink::primitives::AccountId;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;

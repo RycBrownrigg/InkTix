@@ -1,3 +1,8 @@
+/**
+ * Resale marketplace page for browsing, buying, and listing tickets with anti-scalping enforcement.
+ *
+ * @module app/resale/page
+ */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

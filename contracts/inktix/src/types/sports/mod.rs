@@ -1,3 +1,8 @@
+//! Sports-specific type definitions.
+//!
+//! Contains data structures for teams, seasons, season passes, fantasy sports,
+//! loyalty programs, analytics, and dynamic pricing related to sporting events.
+
 pub mod analytics;
 pub mod fantasy_sports;
 pub mod loyalty;

@@ -1,3 +1,18 @@
+/**
+ * XCM cross-chain transfer service for Polkadot parachains.
+ *
+ * Constructs and submits `polkadotXcm.limitedReserveTransferAssets`
+ * extrinsics using V3 MultiLocation format to move native tokens
+ * between relay chains and parachains.
+ *
+ * @module services/xcm
+ *
+ * Exported interfaces:
+ * - {@link XcmTransferParams} - Parameters for a reserve transfer
+ *
+ * Exported functions:
+ * - {@link limitedReserveTransferAssets} - Executes an XCM reserve transfer
+ */
 "use client";
 
 import { ApiPromise } from "@polkadot/api";

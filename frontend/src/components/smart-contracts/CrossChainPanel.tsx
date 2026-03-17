@@ -1,3 +1,8 @@
+/**
+ * Renders a static information panel showing cross-chain XCM capabilities and supported networks.
+ *
+ * @module components/smart-contracts/CrossChainPanel
+ */
 "use client";
 
 import React from "react";

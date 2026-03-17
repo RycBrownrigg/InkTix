@@ -1,3 +1,12 @@
+//! Currency conversion utilities.
+//!
+//! Provides bidirectional conversion between DOT and other supported currencies
+//! using pre-stored exchange rate arrays.
+//!
+//! # Functions
+//! - `convert_to_dot_equivalent` -- converts a currency amount to its DOT equivalent
+//! - `convert_from_dot_equivalent` -- converts a DOT amount to a target currency
+
 use crate::types::core::currency::CurrencyId;
 use crate::types::core::error::{InkTixError, InkTixResult};
 

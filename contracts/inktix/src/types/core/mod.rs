@@ -1,3 +1,8 @@
+//! Core domain types shared across all InkTix features.
+//!
+//! Contains fundamental data structures for events, tickets, venues, currencies,
+//! seating, anti-scalping, NFTs, cross-chain operations, and user profiles.
+
 #[allow(clippy::cast_possible_truncation)]
 pub mod anti_scalping;
 pub mod cross_chain;

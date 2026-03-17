@@ -1,3 +1,8 @@
+/**
+ * Root layout wrapping all pages with fonts, global CSS, ClientOnly guard, and BlockchainWrapper.
+ *
+ * @module app/layout
+ */
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";

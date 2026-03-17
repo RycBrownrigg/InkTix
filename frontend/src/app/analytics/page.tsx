@@ -1,3 +1,8 @@
+/**
+ * Analytics dashboard page displaying platform KPIs, revenue charts, and event performance metrics.
+ *
+ * @module app/analytics/page
+ */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

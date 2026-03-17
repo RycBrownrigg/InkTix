@@ -1,3 +1,9 @@
+//! Loyalty and team engagement type definitions.
+//!
+//! Covers global loyalty tiers and profiles, reward types and redemptions,
+//! point-earning rules, promotions, referrals, team-specific loyalty profiles,
+//! staking, attendance tracking, performance rewards, and fan challenges.
+
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::primitives::AccountId;

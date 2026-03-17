@@ -1,5 +1,18 @@
 /**
- * SDK factory - returns mock or real provider based on configuration.
+ * Public entry point and factory for the InkTix SDK.
+ *
+ * Re-exports all SDK types and provides {@link createInkTixSDK} which
+ * returns either a {@link MockProvider} or {@link ContractProvider}
+ * depending on environment variables and available connection state.
+ *
+ * @module sdk/index
+ *
+ * Exported functions:
+ * - {@link createInkTixSDK} - Factory that selects the appropriate provider
+ *
+ * Re-exported types:
+ * - All interfaces from `sdk/types`
+ * - {@link InkTixSDK} from `sdk/inktixContract`
  */
 
 import { ApiPromise } from "@polkadot/api";

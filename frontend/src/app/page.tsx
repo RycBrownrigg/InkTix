@@ -1,3 +1,8 @@
+/**
+ * Landing page for InkTix featuring a hero section, CTA buttons, and feature cards.
+ *
+ * @module app/page
+ */
 "use client";
 
 import Link from "next/link";

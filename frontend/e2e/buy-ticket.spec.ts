@@ -1,3 +1,9 @@
+/**
+ * E2E tests for the events page and ticket browsing flow.
+ *
+ * Verifies that the events page renders event listings, shows category
+ * filters, and displays platform statistics.
+ */
 import { test, expect } from "@playwright/test";
 
 test.describe("Events & Tickets", () => {

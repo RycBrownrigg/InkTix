@@ -1,3 +1,8 @@
+//! Anti-scalping type definitions.
+//!
+//! Provides configuration structs for per-event purchase limits, transfer restrictions,
+//! resale controls, user behavior monitoring, and blacklist management.
+
 use ink::primitives::AccountId;
 use ink::prelude::vec::Vec;
 

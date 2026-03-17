@@ -1,3 +1,11 @@
+/**
+ * Renders a method selector and argument input for calling deployed contract methods.
+ *
+ * Methods are grouped by category (getters, creators, queries) based on the
+ * active contract type, and arguments auto-fill with sensible defaults.
+ *
+ * @module components/smart-contracts/ContractInteraction
+ */
 "use client";
 
 import React, { useState } from "react";

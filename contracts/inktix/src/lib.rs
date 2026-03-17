@@ -1,3 +1,11 @@
+//! Unified InkTix smart contract for decentralized event ticketing.
+//!
+//! This is the top-level crate for the InkTix ink! contract, combining core
+//! ticketing (events, tickets, venues, currencies, anti-scalping, NFTs, XCM),
+//! sports features (teams, seasons, season passes, fantasy sports, loyalty, analytics),
+//! and concert features (artist management) into a single deployable contract.
+//! Sports and concert modules are gated behind feature flags.
+
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::arithmetic_side_effects)]
@@ -184,12 +192,15 @@ pub mod inktix {
         // CORE: CURRENCY MANAGEMENT
         // =============================================================================
 
+        /// Get all supported currency identifiers
         #[ink(message)]
         pub fn get_supported_currencies(&self) -> Vec<CurrencyId> { self.storage.supported_currencies.clone() }
 
+        /// Get the exchange rate for a currency
         #[ink(message)]
         pub fn get_currency_rate(&self, currency: CurrencyId) -> Option<u128> { self.storage.currency_rates.get(currency) }
 
+        /// Update the exchange rate for a currency
         #[ink(message)]
         pub fn update_currency_rate(&mut self, currency: CurrencyId, rate: u128) -> Result<(), String> {
             self.ensure_owner()?;
@@ -200,12 +211,14 @@ pub mod inktix {
         // CORE: ANTI-SCALPING
         // =============================================================================
 
+        /// Configure anti-scalping rules for an event
         #[ink(message)]
         pub fn configure_anti_scalping(&mut self, event_id: u32, config: AntiScalpingConfig) -> Result<(), String> {
             self.ensure_owner()?;
             anti_scalping::AntiScalping::configure_anti_scalping(&mut self.storage, event_id, config)
         }
 
+        /// Get the anti-scalping configuration for an event
         #[ink(message)]
         pub fn get_anti_scalping_config(&self, event_id: u32) -> Option<AntiScalpingConfig> {
             self.storage.anti_scalping_configs.get(event_id)
@@ -291,6 +304,7 @@ pub mod inktix {
         // SPORTS: TEAM MANAGEMENT (feature = "sports")
         // =============================================================================
 
+        /// Register a new sports team
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn register_team(&mut self, name: String, city: String, sport_type: SportType) -> Result<u32, String> {
@@ -298,14 +312,17 @@ pub mod inktix {
             team_management::TeamManagement::register_team(&mut self.storage, name, city, sport_type)
         }
 
+        /// Get team information by ID
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_team(&self, team_id: u32) -> Option<Team> { self.storage.teams.get(team_id) }
 
+        /// Get all registered teams
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_all_teams(&self) -> Vec<Team> { team_management::TeamManagement::get_all_teams(&self.storage) }
 
+        /// Update team attributes
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn update_team(&mut self, team_id: u32, name: Option<String>, city: Option<String>, sport_type: Option<SportType>) -> Result<(), String> {
@@ -317,6 +334,7 @@ pub mod inktix {
         // SPORTS: SEASON PASS MANAGEMENT
         // =============================================================================
 
+        /// Create a season pass package for a team and season
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn create_season_pass_package(
@@ -329,6 +347,7 @@ pub mod inktix {
             )
         }
 
+        /// Purchase a season pass from a package
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_season_pass(&mut self, package_id: u32) -> Result<u32, String> {
@@ -336,6 +355,7 @@ pub mod inktix {
             season_pass_management::SeasonPassManagement::purchase_season_pass(&mut self.storage, caller, package_id)
         }
 
+        /// Use a season pass to gain entry to an event
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn use_season_pass_for_event(&mut self, season_pass_id: u32, event_id: u32) -> Result<u64, String> {
@@ -343,6 +363,7 @@ pub mod inktix {
             season_pass_management::SeasonPassManagement::use_season_pass_for_event(&mut self.storage, caller, season_pass_id, event_id)
         }
 
+        /// Get all season pass IDs for a user
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_user_season_passes(&self, user: AccountId) -> Vec<u32> {
@@ -353,6 +374,7 @@ pub mod inktix {
         // SPORTS: FANTASY SPORTS
         // =============================================================================
 
+        /// Create a new fantasy league
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn create_fantasy_league(&mut self, name: String, description: String, max_participants: u32, entry_fee: u128, currency: CurrencyId) -> Result<u32, String> {
@@ -360,6 +382,7 @@ pub mod inktix {
             fantasy_sports_management::FantasySportsManagement::create_fantasy_league(&mut self.storage, caller, name, description, max_participants, entry_fee, currency)
         }
 
+        /// Join an existing fantasy league
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn join_fantasy_league(&mut self, league_id: u32) -> Result<u32, String> {
@@ -367,6 +390,7 @@ pub mod inktix {
             fantasy_sports_management::FantasySportsManagement::join_fantasy_league(&mut self.storage, caller, league_id)
         }
 
+        /// Create a fantasy team in a league
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn create_fantasy_team(&mut self, league_id: u32, name: String) -> Result<u32, String> {
@@ -374,6 +398,7 @@ pub mod inktix {
             fantasy_sports_management::FantasySportsManagement::create_fantasy_team(&mut self.storage, caller, league_id, name)
         }
 
+        /// Get the leaderboard for a fantasy league
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_fantasy_leaderboard(&self, league_id: u32) -> Option<FantasyLeaderboard> {
@@ -384,6 +409,7 @@ pub mod inktix {
         // SPORTS: TEAM LOYALTY
         // =============================================================================
 
+        /// Create a team loyalty profile for the caller
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn create_team_loyalty_profile(&mut self, team_id: u32) -> Result<u32, String> {
@@ -391,6 +417,7 @@ pub mod inktix {
             advanced_team_loyalty::AdvancedTeamLoyalty::create_team_loyalty_profile(&mut self.storage, caller, team_id)
         }
 
+        /// Stake tokens on a team for loyalty rewards
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn stake_on_team(&mut self, team_id: u32, amount: u128, currency: CurrencyId) -> Result<u32, String> {
@@ -398,6 +425,7 @@ pub mod inktix {
             advanced_team_loyalty::AdvancedTeamLoyalty::stake_on_team(&mut self.storage, caller, team_id, amount, currency)
         }
 
+        /// Record attendance at a team event for loyalty tracking
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn record_attendance(&mut self, team_id: u32, event_id: u32) -> Result<u32, String> {
@@ -405,6 +433,7 @@ pub mod inktix {
             advanced_team_loyalty::AdvancedTeamLoyalty::record_attendance(&mut self.storage, caller, team_id, event_id)
         }
 
+        /// Get the team loyalty profile for a user-team pair
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_team_loyalty_profile(&self, user: AccountId, team_id: u32) -> Option<TeamLoyaltyProfile> {
@@ -415,6 +444,7 @@ pub mod inktix {
         // SPORTS: VENUE-SPECIFIC FEATURES
         // =============================================================================
 
+        /// Purchase a parking pass for a venue event
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_parking_pass(&mut self, venue_id: u32, event_id: u32, pass_type: ParkingPassType) -> Result<u32, String> {
@@ -427,6 +457,7 @@ pub mod inktix {
             )
         }
 
+        /// Purchase concession credits for a venue
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_concession_credits(&mut self, venue_id: u32, amount: u128, currency: CurrencyId) -> Result<u32, String> {
@@ -439,6 +470,7 @@ pub mod inktix {
             )
         }
 
+        /// Purchase a merchandise bundle from a venue
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_merchandise_bundle(&mut self, venue_id: u32, bundle_id: u32) -> Result<u32, String> {
@@ -453,6 +485,7 @@ pub mod inktix {
         // SPORTS: CROSS-CHAIN
         // =============================================================================
 
+        /// Create a cross-chain event on a target network
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn create_cross_chain_event(&mut self, event_id: u32, target_chain: BlockchainNetwork) -> Result<u32, String> {
@@ -460,6 +493,7 @@ pub mod inktix {
             cross_chain_management::CrossChainManagement::create_cross_chain_event(&mut self.storage, event_id, target_chain)
         }
 
+        /// Request a cross-chain ticket purchase
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn request_cross_chain_ticket_purchase(&mut self, event_id: u32, target_chain: BlockchainNetwork, seat: Seat, currency: CurrencyId) -> Result<u32, String> {
@@ -467,6 +501,7 @@ pub mod inktix {
             cross_chain_management::CrossChainManagement::request_cross_chain_ticket_purchase(&mut self.storage, caller, event_id, target_chain, seat, currency)
         }
 
+        /// Get connectivity status for a blockchain network
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_chain_connectivity(&self, chain: BlockchainNetwork) -> Option<ChainConnectivityStatus> {
@@ -477,10 +512,12 @@ pub mod inktix {
         // SPORTS: ANALYTICS
         // =============================================================================
 
+        /// Get platform-wide statistics
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_platform_stats(&self) -> PlatformStats { self.storage.platform_stats.clone() }
 
+        /// Generate an analytics report for a date range
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn generate_analytics_report(&mut self, report_type: ReportType, start_date: u64, end_date: u64) -> Result<u32, String> {
@@ -488,12 +525,14 @@ pub mod inktix {
             analytics::Analytics::generate_analytics_report(&mut self.storage, report_type, start_date, end_date)
         }
 
+        /// Retrieve an analytics report by ID
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_analytics_report(&self, report_id: u32) -> Option<AnalyticsReport> {
             self.storage.analytics_reports.get(report_id)
         }
 
+        /// Get analytics data for a specific event
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn get_event_analytics(&self, event_id: u32) -> Option<EventAnalytics> {

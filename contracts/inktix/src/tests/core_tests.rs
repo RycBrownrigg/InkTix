@@ -1,6 +1,9 @@
-/// Core tests are included inline in lib.rs under #[cfg(test)]
-/// This module provides additional test helpers if needed.
+//! Core test helpers for contract verification.
+//!
+//! Provides reusable assertion helpers for core contract state.
+//! Primary tests live inline in `lib.rs` under `#[cfg(test)]`.
 
+/// Helper utilities for core contract tests
 pub struct CoreTestHelpers;
 
 impl CoreTestHelpers {

@@ -1,3 +1,9 @@
+/**
+ * E2E tests for the smart contracts deployment page.
+ *
+ * Verifies that the page loads, shows prerequisite information, and
+ * displays a connection prompt when no wallet is connected.
+ */
 import { test, expect } from "@playwright/test";
 
 test.describe("Contract Deployment Page", () => {

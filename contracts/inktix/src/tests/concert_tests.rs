@@ -1,6 +1,9 @@
-/// Concert-specific tests are included inline in lib.rs under #[cfg(test)]
-/// This module provides additional concert test helpers.
+//! Concert test helpers for contract verification.
+//!
+//! Provides reusable assertion helpers for concert-specific contract state.
+//! Primary tests live inline in `lib.rs` under `#[cfg(test)]`.
 
+/// Helper utilities for concert-related contract tests
 pub struct ConcertTestHelpers;
 
 impl ConcertTestHelpers {

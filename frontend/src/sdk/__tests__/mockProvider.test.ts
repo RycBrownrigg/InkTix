@@ -1,3 +1,9 @@
+/**
+ * Tests for the MockProvider in-memory SDK implementation.
+ *
+ * Verifies CRUD operations for teams, artists, venues, events, and tickets,
+ * as well as platform stats, anti-scalping config, and utility methods.
+ */
 import { describe, it, expect, beforeEach } from "vitest";
 import { MockProvider } from "../mockProvider";
 

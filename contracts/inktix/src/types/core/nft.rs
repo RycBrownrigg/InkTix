@@ -1,3 +1,8 @@
+//! NFT type definitions for ticket tokenization.
+//!
+//! Defines `TicketNft` for on-chain ticket representation, `AttendanceToken`
+//! for proof-of-attendance, and `TicketVerification` for QR-based entry validation.
+
 use ink::prelude::string::String;
 use ink::primitives::AccountId;
 

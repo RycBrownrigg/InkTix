@@ -1,3 +1,22 @@
+//! Primary contract storage definition.
+//!
+//! Contains `InkTixStorage`, the single ink! storage item holding all on-chain state:
+//! core entity mappings, currency rates, analytics, anti-scalping configs, loyalty,
+//! season passes, fantasy sports, team loyalty, venue services, cross-chain data,
+//! XCM messaging, NFTs, and concert-specific fields.
+//!
+//! # Functions
+//! - `initialize_currency_rates` -- seeds default exchange rates for supported currencies
+//! - `get_next_id` -- allocates the next sequential ID for a given entity type
+//! - `get_next_ticket_id` -- allocates the next ticket ID
+//! - `get_next_report_id` -- allocates the next analytics report ID
+//! - `get_next_season_pass_id` -- allocates the next season pass ID
+//! - `get_next_season_pass_package_id` -- allocates the next season pass package ID
+//! - `get_next_nft_token_id` -- allocates the next NFT token ID
+//! - `get_next_attendance_token_id` -- allocates the next attendance token ID
+//! - `get_next_artist_id` -- allocates the next artist ID
+//! - `get_current_timestamp` -- returns the current block timestamp
+
 use crate::types::*;
 use ink::prelude::*;
 use ink::primitives::AccountId;
@@ -352,22 +371,34 @@ impl InkTixStorage {
         }
     }
 
+    /// Allocate and return the next ticket ID
     pub fn get_next_ticket_id(&mut self) -> u64 { self.total_tickets += 1; self.total_tickets }
+    /// Allocate and return the next analytics report ID
     pub fn get_next_report_id(&mut self) -> u32 { let id = self.next_report_id; self.next_report_id += 1; id }
+    /// Allocate and return the next season pass ID
     pub fn get_next_season_pass_id(&mut self) -> u32 { let id = self.total_season_passes + 1; self.total_season_passes = id; id }
+    /// Allocate and return the next season pass package ID
     pub fn get_next_season_pass_package_id(&mut self) -> u32 { let id = self.next_report_id; self.next_report_id += 1; id }
+    /// Allocate and return the next fantasy league ID
     pub fn get_next_fantasy_league_id(&mut self) -> u32 { self.total_fantasy_leagues += 1; self.total_fantasy_leagues }
+    /// Allocate and return the next fantasy team ID
     pub fn get_next_fantasy_team_id(&mut self) -> u32 { self.total_fantasy_teams += 1; self.total_fantasy_teams }
+    /// Allocate and return the next fantasy participation ID
     pub fn get_next_fantasy_participation_id(&mut self) -> u32 { self.total_fantasy_participations += 1; self.total_fantasy_participations }
+    /// Allocate and return the next fantasy reward ID
     pub fn get_next_fantasy_reward_id(&mut self) -> u32 { self.total_fantasy_rewards += 1; self.total_fantasy_rewards }
+    /// Allocate and return the next fantasy game week ID
     pub fn get_next_fantasy_game_week_id(&mut self) -> u32 { self.total_fantasy_game_weeks += 1; self.total_fantasy_game_weeks }
+    /// Allocate and return the next fantasy transfer ID
     pub fn get_next_fantasy_transfer_id(&mut self) -> u32 { self.total_fantasy_transfers += 1; self.total_fantasy_transfers }
 
+    /// Allocate and return the next NFT token ID
     pub fn get_next_nft_token_id(&mut self) -> u64 {
         self.total_nft_tokens += 1;
         self.total_nft_tokens
     }
 
+    /// Allocate and return the next attendance token ID
     pub fn get_next_attendance_token_id(&mut self) -> u64 {
         self.total_attendance_tokens += 1;
         self.total_attendance_tokens

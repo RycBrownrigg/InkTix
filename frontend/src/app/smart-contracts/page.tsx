@@ -1,3 +1,8 @@
+/**
+ * Smart contracts management page for deploying and interacting with ink! contracts.
+ *
+ * @module app/smart-contracts/page
+ */
 "use client";
 
 import dynamic from "next/dynamic";

@@ -1,6 +1,18 @@
 /**
- * Persistence layer for Zustand store.
- * Handles migration from old localStorage keys to single "inktix-store" key.
+ * Persistence and migration utilities for the Zustand store.
+ *
+ * When upgrading from the legacy BlockchainContext approach, this module
+ * detects old `inktix_*` and `blockchain_*` localStorage keys, reads their
+ * values into a unified shape, and removes the originals so the new
+ * `inktix-store` key becomes the single source of truth.
+ *
+ * @module store/persistence
+ *
+ * Exported interfaces:
+ * - {@link MigratedState} - Shape of migrated localStorage values
+ *
+ * Exported functions:
+ * - {@link migrateFromOldKeys} - One-time migration from legacy keys
  */
 
 // Old keys used by BlockchainContext and BlockchainService

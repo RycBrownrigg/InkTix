@@ -1,3 +1,8 @@
+//! XCM (Cross-Consensus Messaging) type definitions.
+//!
+//! Models XCM messages, statuses, fee structures, connectivity tracking,
+//! and analytics for cross-chain ticket operations between parachains.
+
 use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
 

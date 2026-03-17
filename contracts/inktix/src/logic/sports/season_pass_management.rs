@@ -1,3 +1,13 @@
+//! Season pass package creation, purchasing, and event redemption logic.
+//!
+//! Manages the full lifecycle of season passes: creating package configurations,
+//! processing purchases with staking requirements, and redeeming passes for individual events.
+//!
+//! # Functions
+//! - `create_season_pass_package` -- defines a purchasable season pass offering
+//! - `purchase_season_pass` -- issues a season pass to a buyer
+//! - `use_season_pass_for_event` -- redeems a pass for entry to a specific event
+
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::sports::season_pass::*;
 use ink::env::DefaultEnvironment;
@@ -6,10 +16,12 @@ use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
 
+/// Season pass lifecycle management
 pub struct SeasonPassManagement;
 
 #[allow(clippy::arithmetic_side_effects)]
 impl SeasonPassManagement {
+    /// Create a new season pass package with pricing and benefits
     pub fn create_season_pass_package(
         storage: &mut InkTixStorage, name: String, team_id: u32, season_id: u32,
         price: u128, currency: crate::types::core::currency::CurrencyId,
@@ -30,6 +42,7 @@ impl SeasonPassManagement {
         Ok(package_id)
     }
 
+    /// Purchase a season pass from an active package
     pub fn purchase_season_pass(storage: &mut InkTixStorage, user: AccountId, package_id: u32) -> Result<u32, String> {
         let package = storage.season_pass_packages.get(package_id).ok_or("Package not found")?;
         if !package.active { return Err("Package is not active".to_string()); }
@@ -56,6 +69,7 @@ impl SeasonPassManagement {
         Ok(pass_id)
     }
 
+    /// Redeem a season pass for entry to a specific event, issuing a free ticket
     pub fn use_season_pass_for_event(storage: &mut InkTixStorage, user: AccountId, season_pass_id: u32, event_id: u32) -> Result<u64, String> {
         let mut season_pass = storage.season_passes.get(season_pass_id).ok_or("Season pass not found")?;
         if season_pass.owner != user { return Err("Not the owner of this season pass".to_string()); }

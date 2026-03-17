@@ -1,3 +1,10 @@
+//! Currency exchange rate management.
+//!
+//! Provides the ability to update on-chain exchange rates for supported currencies.
+//!
+//! # Functions
+//! - `update_currency_rate` -- sets a new exchange rate for a given currency
+
 use crate::storage::*;
 use crate::types::*;
 use ink::prelude::string::String;

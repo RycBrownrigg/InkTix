@@ -1,6 +1,15 @@
 /**
- * Real contract implementation of the InkTix SDK.
- * Uses @polkadot/api-contract to interact with the deployed unified contract.
+ * On-chain implementation of the InkTix SDK using Polkadot.js.
+ *
+ * Wraps `@polkadot/api-contract` to execute read-only queries and
+ * signed transactions against a deployed ink! contract. Gas estimation
+ * is performed via dry-run before every transaction.
+ *
+ * @module sdk/contractProvider
+ *
+ * Exported classes:
+ * - {@link ContractProvider} - Implements {@link InkTixSDK} against a live
+ *   Substrate chain with the contracts pallet
  */
 
 import { ApiPromise } from "@polkadot/api";

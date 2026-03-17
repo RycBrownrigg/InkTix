@@ -1,3 +1,13 @@
+//! Ticket purchase, transfer, and resale logic.
+//!
+//! Manages the full ticket lifecycle including dynamic price calculation at purchase,
+//! anti-scalping enforcement for concert events, ownership transfers, and resale listings.
+//!
+//! # Functions
+//! - `purchase_ticket` -- buys a ticket with dynamic pricing and anti-scalping checks
+//! - `transfer_ticket` -- transfers ticket ownership between accounts
+//! - `resell_ticket` -- lists a ticket on the resale marketplace
+
 use crate::storage::*;
 use crate::types::*;
 use ink::env::DefaultEnvironment;

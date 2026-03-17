@@ -1,3 +1,18 @@
+/**
+ * Combined Zustand store for all InkTix client-side state.
+ *
+ * Composes four domain slices (connection, wallet, contract, data) into a
+ * single store with `zustand/persist` middleware for localStorage
+ * persistence of key fields across page reloads.
+ *
+ * @module store/index
+ *
+ * Exported types:
+ * - {@link InkTixStore} - Union of all slice interfaces plus initialization
+ *
+ * Exported hooks:
+ * - {@link useInkTixStore} - Zustand hook providing the combined store
+ */
 "use client";
 
 import { create } from "zustand";

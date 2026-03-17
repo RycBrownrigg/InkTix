@@ -1,3 +1,23 @@
+/**
+ * Contract method registry, organized by contract type and category.
+ *
+ * Provides curated lists of getter, creator, and query methods for
+ * each supported contract variant (sports_broker, concert_broker, or
+ * unknown), used by the ContractInteraction UI to populate method
+ * selectors.
+ *
+ * @module utils/contractMethods
+ *
+ * Exported types:
+ * - {@link ContractType} - Discriminator for contract variants
+ *
+ * Exported interfaces:
+ * - {@link ContractMethod} - Value/label pair for a single method
+ * - {@link ContractMethodGroups} - Grouped method lists (getters, creators, queries)
+ *
+ * Exported functions:
+ * - {@link getContractMethods} - Returns grouped methods for a contract type
+ */
 export type ContractType = "sports" | "concert" | "unknown";
 
 export interface ContractMethod {

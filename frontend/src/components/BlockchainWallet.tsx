@@ -1,3 +1,11 @@
+/**
+ * Renders the wallet connection UI with account selection, balance display, and network info.
+ *
+ * Guides users through a three-step flow: connect wallet, connect to network,
+ * then display full account details with an account switcher.
+ *
+ * @module components/BlockchainWallet
+ */
 "use client";
 
 import React, { useState } from "react";

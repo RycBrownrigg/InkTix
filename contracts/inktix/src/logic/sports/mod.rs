@@ -1,3 +1,8 @@
+//! Sports-specific business logic modules.
+//!
+//! Contains team, season, season pass, fantasy sports, loyalty, analytics,
+//! and cross-chain management logic gated behind the "sports" feature flag.
+
 pub mod advanced_team_loyalty;
 pub mod analytics;
 pub mod cross_chain_management;

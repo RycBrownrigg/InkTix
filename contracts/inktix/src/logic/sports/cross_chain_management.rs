@@ -1,3 +1,12 @@
+//! Cross-chain event and ticket request management.
+//!
+//! Bridges events to other blockchain networks and processes cross-chain
+//! ticket purchase requests.
+//!
+//! # Functions
+//! - `create_cross_chain_event` -- publishes an event to a target chain
+//! - `request_cross_chain_ticket_purchase` -- submits a cross-chain ticket purchase request
+
 use crate::storage::*;
 use crate::types::*;
 use ink::primitives::AccountId;
@@ -7,10 +16,12 @@ use ink::prelude::string::ToString;
 use ink::prelude::vec;
 
 #[allow(clippy::arithmetic_side_effects)]
+/// Cross-chain event bridging and ticket request management
 pub struct CrossChainManagement;
 
 #[allow(clippy::arithmetic_side_effects)]
 impl CrossChainManagement {
+    /// Publish an existing event to a target blockchain network
     pub fn create_cross_chain_event(storage: &mut InkTixStorage, event_id: u32, target_chain: BlockchainNetwork) -> Result<u32, String> {
         let _event = storage.events.get(event_id).ok_or("Event not found")?;
         let cross_chain_event_id = storage.get_next_id("cross_chain_event");
@@ -41,6 +52,7 @@ impl CrossChainManagement {
         Ok(cross_chain_event_id)
     }
 
+    /// Submit a cross-chain ticket purchase request for a user
     pub fn request_cross_chain_ticket_purchase(storage: &mut InkTixStorage, user: AccountId, event_id: u32, _target_chain: BlockchainNetwork, _seat: Seat, _currency: CurrencyId) -> Result<u32, String> {
         let _event = storage.events.get(event_id).ok_or("Event not found")?;
         let request_id = storage.get_next_id("cross_chain_request");

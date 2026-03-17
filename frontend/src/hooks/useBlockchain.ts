@@ -1,3 +1,19 @@
+/**
+ * React hook providing a backward-compatible API over the Zustand store.
+ *
+ * Serves as a drop-in replacement for the legacy `useBlockchain()` from
+ * BlockchainContext. It initialises the store on first render, watches for
+ * account/connection changes to refresh balances, and wraps wallet connect
+ * and disconnect to orchestrate multi-step state transitions.
+ *
+ * @module hooks/useBlockchain
+ *
+ * Exported interfaces:
+ * - {@link UseBlockchainReturn} - Shape of the object returned by the hook
+ *
+ * Exported functions:
+ * - {@link useBlockchain} - Main hook for blockchain state and actions
+ */
 "use client";
 
 import { useEffect } from "react";

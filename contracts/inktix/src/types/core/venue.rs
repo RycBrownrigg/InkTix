@@ -1,3 +1,8 @@
+//! Venue type definitions.
+//!
+//! Provides a comprehensive venue model covering physical facilities, parking,
+//! concessions, merchandise, loyalty programs, capacity management, and pricing tiers.
+
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::primitives::AccountId;

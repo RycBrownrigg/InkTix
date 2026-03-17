@@ -1,3 +1,8 @@
+/**
+ * Documentation hub page with links to project docs, smart contract guides, and dev resources.
+ *
+ * @module app/docs/page
+ */
 "use client";
 
 import React from "react";

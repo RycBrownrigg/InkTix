@@ -1,3 +1,8 @@
+/**
+ * Wallet connection page with setup instructions and platform benefit highlights.
+ *
+ * @module app/connect/page
+ */
 "use client";
 
 import React from "react";

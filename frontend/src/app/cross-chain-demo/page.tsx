@@ -1,3 +1,8 @@
+/**
+ * Interactive cross-chain demo page showcasing XCM reserve transfers, ticket purchasing, and NFT minting.
+ *
+ * @module app/cross-chain-demo/page
+ */
 "use client";
 
 import { useState, useEffect } from "react";

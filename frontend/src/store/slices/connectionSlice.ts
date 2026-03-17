@@ -1,3 +1,18 @@
+/**
+ * Zustand slice managing Substrate network connection state.
+ *
+ * Handles connecting to and disconnecting from an RPC endpoint, tracking
+ * connection progress, and fetching basic network metadata (chain name,
+ * node version).
+ *
+ * @module store/slices/connectionSlice
+ *
+ * Exported interfaces:
+ * - {@link ConnectionSlice} - State and actions for network connection
+ *
+ * Exported functions:
+ * - {@link createConnectionSlice} - Zustand StateCreator factory
+ */
 import { StateCreator } from "zustand";
 import {
   BlockchainService,

@@ -1,6 +1,14 @@
 /**
- * Mock implementation of the InkTix SDK.
- * All mock data extracted from blockchain.ts callContract switch cases.
+ * In-memory mock implementation of the InkTix SDK for offline development and testing.
+ *
+ * Provides deterministic seed data (teams, venues, events, tickets, resale
+ * listings) and maintains mutable state so that create/update operations
+ * are reflected in subsequent reads within the same session.
+ *
+ * @module sdk/mockProvider
+ *
+ * Exported classes:
+ * - {@link MockProvider} - Implements {@link InkTixSDK} with in-memory data stores
  */
 
 import type { InkTixSDK } from "./inktixContract";
@@ -216,6 +224,7 @@ let nextVenueId = 3;
 let nextEventId = 3;
 let nextTicketId = 3;
 
+/** In-memory implementation of InkTixSDK backed by mutable arrays of seed data. */
 export class MockProvider implements InkTixSDK {
   // Team management
   async registerTeam(

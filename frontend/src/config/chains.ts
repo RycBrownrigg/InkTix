@@ -1,6 +1,24 @@
 /**
- * Chain configuration - single source of truth for all network settings.
- * Replaces hardcoded endpoint references throughout the codebase.
+ * Chain configuration and environment helpers for supported Polkadot networks.
+ *
+ * Provides a static registry of chain metadata (RPC endpoints, token info,
+ * capabilities) and utility functions to resolve the active chain from
+ * `NEXT_PUBLIC_*` environment variables at build time.
+ *
+ * @module config/chains
+ *
+ * Exported interfaces:
+ * - {@link ChainConfig} - Metadata for a single chain/parachain
+ *
+ * Exported constants:
+ * - {@link CHAINS} - Registry of all known chain configurations
+ *
+ * Exported functions:
+ * - {@link getActiveChainConfig} - Resolves active chain from environment
+ * - {@link getDefaultEndpoint} - Returns the default RPC WebSocket URL
+ * - {@link getLocalEndpoint} - Returns the local dev node endpoint
+ * - {@link isMockMode} - Whether NEXT_PUBLIC_MOCK_MODE is enabled
+ * - {@link getContractAddress} - Pre-configured contract address, if any
  */
 
 export interface ChainConfig {

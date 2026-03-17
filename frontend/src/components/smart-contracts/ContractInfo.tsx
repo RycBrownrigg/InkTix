@@ -1,3 +1,8 @@
+/**
+ * Renders metadata about the active contract type (name, features, target network).
+ *
+ * @module components/smart-contracts/ContractInfo
+ */
 "use client";
 
 import React from "react";

@@ -1,3 +1,18 @@
+/**
+ * Zustand slice managing Polkadot wallet connection and account selection.
+ *
+ * Discovers browser extension wallets (Polkadot.js, Talisman, SubWallet,
+ * Nova), enumerates injected accounts, and tracks the currently selected
+ * account for signing transactions.
+ *
+ * @module store/slices/walletSlice
+ *
+ * Exported interfaces:
+ * - {@link WalletSlice} - State and actions for wallet management
+ *
+ * Exported functions:
+ * - {@link createWalletSlice} - Zustand StateCreator factory
+ */
 import { StateCreator } from "zustand";
 import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
 import {

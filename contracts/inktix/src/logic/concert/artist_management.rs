@@ -1,3 +1,12 @@
+//! Artist registration and verification logic for concert events.
+//!
+//! Manages artist registration by any caller and owner-only verification.
+//!
+//! # Functions
+//! - `register_artist` -- registers a new artist with the caller's account
+//! - `verify_artist` -- marks an artist as verified (owner only)
+//! - `get_artist` -- retrieves an artist by ID
+
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::concert::artist::Artist;
 use ink::primitives::AccountId;

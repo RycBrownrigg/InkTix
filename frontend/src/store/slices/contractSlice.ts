@@ -1,3 +1,17 @@
+/**
+ * Zustand slice managing smart contract deployment and interaction state.
+ *
+ * Tracks the deployed contract address and provides actions to deploy a
+ * new contract from a .wasm binary or call methods on the active contract.
+ *
+ * @module store/slices/contractSlice
+ *
+ * Exported interfaces:
+ * - {@link ContractSlice} - State and actions for contract lifecycle
+ *
+ * Exported functions:
+ * - {@link createContractSlice} - Zustand StateCreator factory
+ */
 import { StateCreator } from "zustand";
 import {
   BlockchainService,

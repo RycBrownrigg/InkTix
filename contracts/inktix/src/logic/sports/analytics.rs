@@ -1,3 +1,12 @@
+//! Analytics report generation and platform statistics.
+//!
+//! Generates comprehensive analytics reports covering platform-wide stats,
+//! event performance, and team metrics over configurable time periods.
+//!
+//! # Functions
+//! - `generate_analytics_report` -- builds and stores an analytics report for a date range
+//! - `update_platform_stats` -- recalculates aggregate platform statistics
+
 use crate::storage::contract_storage::InkTixStorage;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
@@ -6,11 +15,13 @@ use crate::types::*;
 
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
+/// Analytics report generation and platform statistics
 pub struct Analytics;
 
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
 impl Analytics {
+    /// Generate an analytics report for the given date range and report type
     pub fn generate_analytics_report(storage: &mut InkTixStorage, report_type: ReportType, start_date: u64, end_date: u64) -> Result<u32, String> {
         let report_id = storage.get_next_report_id();
         let platform_stats = Self::update_platform_stats(storage);
@@ -37,6 +48,7 @@ impl Analytics {
         Ok(report_id)
     }
 
+    /// Recalculate and return aggregate platform statistics
     pub fn update_platform_stats(storage: &mut InkTixStorage) -> PlatformStats {
         let mut stats = PlatformStats {
             total_revenue: 0, total_tickets_sold: storage.total_tickets as u32,

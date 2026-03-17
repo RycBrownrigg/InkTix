@@ -1,3 +1,8 @@
+//! User profile and loyalty tier types.
+//!
+//! Defines `UserProfile` for fan management and `UserLoyaltyTier` for
+//! tiered benefits based on engagement and spending history.
+
 use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
 use crate::types::core::currency::CurrencyId;

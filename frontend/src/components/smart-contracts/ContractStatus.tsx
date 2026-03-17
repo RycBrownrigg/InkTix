@@ -1,3 +1,8 @@
+/**
+ * Renders the current deployment status and address of the active smart contract.
+ *
+ * @module components/smart-contracts/ContractStatus
+ */
 "use client";
 
 import React from "react";

@@ -1,3 +1,8 @@
+//! Season pass type definitions.
+//!
+//! Covers season pass types, statuses, benefits, packages, usage tracking,
+//! renewal options, and analytics for recurring ticket holders.
+
 use ink::primitives::AccountId;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;

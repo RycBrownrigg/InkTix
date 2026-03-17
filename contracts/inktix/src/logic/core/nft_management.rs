@@ -1,3 +1,17 @@
+//! NFT ticket minting, verification, usage, and transfer logic.
+//!
+//! Manages the lifecycle of ticket NFTs: minting from purchased tickets,
+//! verifying ownership for event entry, marking tickets as used (with attendance
+//! token issuance), and transferring NFTs between accounts.
+//!
+//! # Functions
+//! - `mint_ticket_nft` -- creates an NFT for an owned ticket with a Blake2 verification hash
+//! - `verify_ticket_nft` -- returns verification details for a token ID
+//! - `use_ticket_nft` -- marks a ticket NFT as used and mints an attendance token
+//! - `get_user_nft_tickets` -- returns all NFT tickets owned by a user
+//! - `get_nft_by_ticket` -- looks up the NFT for a specific ticket ID
+//! - `transfer_nft` -- transfers NFT ownership to a new account
+
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::*;
 use ink::prelude::string::String;
@@ -5,6 +19,7 @@ use ink::prelude::string::ToString;
 use ink::prelude::vec::Vec;
 use ink::primitives::AccountId;
 
+/// NFT lifecycle management for ticket tokenization
 pub struct NftManagement;
 
 impl NftManagement {

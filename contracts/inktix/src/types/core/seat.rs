@@ -1,3 +1,8 @@
+//! Seat and access-level type definitions.
+//!
+//! Models seating categories (general admission through courtside), access levels,
+//! and the composite `Seat` struct used during ticket purchase.
+
 use ink::prelude::string::String;
 
 /// Seat types for venues

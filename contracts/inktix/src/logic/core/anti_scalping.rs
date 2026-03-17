@@ -1,3 +1,11 @@
+//! Anti-scalping configuration logic.
+//!
+//! Allows the contract owner to configure per-event anti-scalping rules
+//! such as purchase limits, transfer restrictions, and bot-detection flags.
+//!
+//! # Functions
+//! - `configure_anti_scalping` -- stores an anti-scalping config for a specific event
+
 use crate::storage::*;
 use crate::types::*;
 use ink::prelude::string::String;

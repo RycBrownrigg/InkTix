@@ -1,3 +1,8 @@
+//! Season type definition for sports scheduling.
+//!
+//! Defines a `Season` with date boundaries, game counts, pass pricing,
+//! and early-bird discount configuration.
+
 use ink::prelude::string::String;
 use crate::types::core::event::SportType;
 

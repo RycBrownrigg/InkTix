@@ -1,3 +1,8 @@
+//! Team type definition for sports events.
+//!
+//! Contains the `Team` struct representing a registered sports team
+//! with identity, location, sport classification, and verification status.
+
 use ink::prelude::string::String;
 use crate::types::core::event::SportType;
 

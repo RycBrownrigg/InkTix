@@ -1,3 +1,14 @@
+//! Team registration and performance tracking.
+//!
+//! Handles team CRUD operations and performance-based pricing multiplier updates.
+//!
+//! # Functions
+//! - `register_team` -- creates a new team record
+//! - `get_team` -- retrieves a team by ID
+//! - `get_all_teams` -- returns all registered teams
+//! - `update_team` -- updates team name, city, or sport type
+//! - `update_team_performance` -- records win/loss stats and adjusts pricing multipliers
+
 use crate::storage::*;
 use crate::types::*;
 use ink::prelude::string::String;
@@ -10,6 +21,7 @@ pub struct TeamManagement;
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
 impl TeamManagement {
+    /// Register a new sports team
     pub fn register_team(storage: &mut InkTixStorage, name: String, city: String, sport_type: SportType) -> Result<u32, String> {
         let team_id = storage.get_next_id("team");
         let team = Team { id: team_id, name, sport_type, city, verified: false };
@@ -17,8 +29,10 @@ impl TeamManagement {
         Ok(team_id)
     }
 
+    /// Retrieve a team by its ID
     pub fn get_team(storage: &InkTixStorage, team_id: u32) -> Option<Team> { storage.teams.get(team_id) }
 
+    /// Update a team's performance statistics and recalculate pricing multipliers
     pub fn update_team_performance(
         storage: &mut InkTixStorage, team_id: u32, season_id: u32,
         wins: u32, losses: u32, points_scored: u32, _playoff_rounds: u32,
@@ -37,6 +51,7 @@ impl TeamManagement {
         Ok(())
     }
 
+    /// Return all registered teams
     pub fn get_all_teams(storage: &InkTixStorage) -> Vec<Team> {
         let mut teams = Vec::new();
         for team_id in 1..=storage.total_teams {
@@ -45,6 +60,7 @@ impl TeamManagement {
         teams
     }
 
+    /// Update team attributes (name, city, or sport type)
     pub fn update_team(storage: &mut InkTixStorage, team_id: u32, name: Option<String>, city: Option<String>, sport_type: Option<SportType>) -> Result<(), String> {
         let mut team = storage.teams.get(team_id).ok_or("Team not found")?;
         if let Some(n) = name { team.name = n; }

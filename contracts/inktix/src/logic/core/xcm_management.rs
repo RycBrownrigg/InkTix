@@ -1,3 +1,14 @@
+//! XCM cross-chain messaging management.
+//!
+//! Extends `InkTixStorage` with methods for sending XCM messages, tracking
+//! chain connectivity, calculating message fees, and retrieving XCM analytics.
+//!
+//! # Functions
+//! - `send_xcm_message` -- constructs and stores an outbound XCM message
+//! - `get_xcm_message` -- retrieves an XCM message by ID
+//! - `get_xcm_analytics` -- returns aggregate XCM statistics
+//! - `update_xcm_chain_connectivity` -- updates a chain's connectivity status
+
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::core::xcm::*;
 use ink::prelude::vec::Vec;

@@ -1,3 +1,10 @@
+//! Season creation and management logic.
+//!
+//! Creates seasons with sport type mapping, date ranges, and early-bird pricing.
+//!
+//! # Functions
+//! - `create_season` -- registers a new season with default game counts and pricing
+
 use crate::storage::*;
 use crate::types::*;
 use ink::prelude::string::String;
@@ -6,6 +13,7 @@ use ink::prelude::string::String;
 pub struct SeasonManagement;
 
 impl SeasonManagement {
+    /// Create a new season with sport type, date range, and early-bird pricing defaults
     pub fn create_season(storage: &mut InkTixStorage, name: String, sport: String, _year: u32, start_date: u64, end_date: u64) -> u32 {
         let season_id = storage.get_next_id("season");
         let sport_type = match sport.as_str() {

@@ -1,3 +1,8 @@
+/**
+ * Displays deployed contracts and a summary of available methods for the active contract type.
+ *
+ * @module components/smart-contracts/ContractRegistry
+ */
 "use client";
 
 import React from "react";

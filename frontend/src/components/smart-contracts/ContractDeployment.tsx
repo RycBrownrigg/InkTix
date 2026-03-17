@@ -1,3 +1,11 @@
+/**
+ * Renders a form for uploading a .wasm contract binary and deploying it on-chain.
+ *
+ * Detects the contract type (sports/concert) from the filename and reports
+ * deployment results back to the parent via callback.
+ *
+ * @module components/smart-contracts/ContractDeployment
+ */
 "use client";
 
 import React, { useState } from "react";

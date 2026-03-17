@@ -1,3 +1,8 @@
+//! Dynamic pricing type definitions.
+//!
+//! Contains `TeamPerformance` for win/loss tracking, `PriceQuote` for presenting
+//! calculated prices to users, and `PricingMultiplier` for factor-based price adjustments.
+
 /// Team performance for dynamic pricing
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]

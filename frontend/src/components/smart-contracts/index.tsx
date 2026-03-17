@@ -1,3 +1,12 @@
+/**
+ * Top-level smart contract manager composing status, deployment, interaction,
+ * registry, cross-chain, and info sub-components into a unified panel.
+ *
+ * Shows a connection prompt when the wallet/network is not ready, and
+ * reveals the full management UI once connected.
+ *
+ * @module components/smart-contracts/index
+ */
 "use client";
 
 import React, { useState, useEffect } from "react";

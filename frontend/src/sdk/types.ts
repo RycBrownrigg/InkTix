@@ -1,5 +1,29 @@
 /**
- * TypeScript interfaces matching the unified InkTix contract types.
+ * Shared TypeScript type definitions for the InkTix smart contract domain model.
+ *
+ * Provides strongly-typed interfaces that mirror the ink! contract structs and
+ * enums, used across the SDK, store, and UI layers.
+ *
+ * @module sdk/types
+ *
+ * Exported interfaces:
+ * - {@link Team} - Registered sports team
+ * - {@link Artist} - Registered artist/performer
+ * - {@link Venue} - Event venue with capacity info
+ * - {@link Event} - Scheduled event with ticket and status data
+ * - {@link Ticket} - Purchased ticket with seat and pricing details
+ * - {@link AntiScalpingConfig} - Per-event anti-scalping rules
+ * - {@link PlatformStats} - Aggregate platform analytics
+ * - {@link ResaleListing} - Ticket listed on the resale marketplace
+ * - {@link TicketNft} - On-chain NFT representation of a ticket
+ * - {@link TicketVerification} - Result of verifying an NFT ticket
+ * - {@link AttendanceToken} - Proof-of-attendance token
+ * - {@link PriceQuote} - Dynamic pricing calculation result
+ * - {@link ContractCallResult} - Generic result wrapper for contract calls
+ *
+ * Exported types:
+ * - {@link EventStatus} - Event lifecycle status union
+ * - {@link EventCategory} - Discriminated union for Sports/Concert/Generic events
  */
 
 export interface Team {

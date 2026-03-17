@@ -1,3 +1,14 @@
+//! Dynamic pricing engine for ticket sales.
+//!
+//! Calculates ticket prices based on demand, time urgency, seat type,
+//! team performance, rivalry multipliers, and season pass discounts.
+//! All multipliers use basis points (10000 = 1.0x) to avoid floating point.
+//!
+//! # Functions
+//! - `calculate_price` -- computes the final dynamic price for a ticket
+//! - `update_team_performance` -- stores team win/loss data for pricing factors
+//! - `get_price_quote` -- returns a detailed price breakdown without purchasing
+
 use crate::storage::*;
 use crate::types::*;
 use ink::prelude::string::String;

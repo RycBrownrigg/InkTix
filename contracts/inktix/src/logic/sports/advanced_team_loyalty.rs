@@ -1,3 +1,13 @@
+//! Advanced team-specific loyalty management.
+//!
+//! Provides per-team loyalty profiles, token staking on teams, and
+//! attendance recording with automatic tier promotion based on engagement.
+//!
+//! # Functions
+//! - `create_team_loyalty_profile` -- initializes a loyalty profile for a user-team pair
+//! - `stake_on_team` -- stakes tokens on a team for loyalty rewards
+//! - `record_attendance` -- records event attendance and awards loyalty points
+
 use crate::storage::*;
 use crate::types::*;
 use ink::primitives::AccountId;
@@ -10,6 +20,7 @@ pub struct AdvancedTeamLoyalty;
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
 impl AdvancedTeamLoyalty {
+    /// Create a loyalty profile linking a user to a specific team
     pub fn create_team_loyalty_profile(storage: &mut InkTixStorage, user: AccountId, team_id: u32) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let profile_id = storage.get_next_id("team_loyalty_profile");
@@ -25,6 +36,7 @@ impl AdvancedTeamLoyalty {
         Ok(profile_id)
     }
 
+    /// Stake tokens on a team to earn loyalty rewards
     pub fn stake_on_team(storage: &mut InkTixStorage, user: AccountId, team_id: u32, amount: u128, _currency: CurrencyId) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let stake_id = storage.get_next_id("team_stake");
@@ -43,6 +55,7 @@ impl AdvancedTeamLoyalty {
         Ok(stake_id)
     }
 
+    /// Record a user's attendance at a team event and update loyalty tier
     pub fn record_attendance(storage: &mut InkTixStorage, user: AccountId, team_id: u32, event_id: u32) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let _event = storage.events.get(event_id).ok_or("Event not found")?;

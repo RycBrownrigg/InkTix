@@ -1,6 +1,13 @@
+//! Cross-chain type definitions for multi-network ticket distribution.
+//!
+//! Defines blockchain network identifiers, cross-chain event metadata,
+//! transaction and request statuses, fee structures, filtering, and analytics
+//! for bridging ticket operations across Polkadot ecosystem chains.
+
 use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
 
+/// Supported blockchain networks for cross-chain operations
 #[allow(clippy::cast_possible_truncation)]
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
@@ -16,6 +23,7 @@ pub enum BlockchainNetwork {
     Other(String),
 }
 
+/// Lifecycle status of a cross-chain event
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -27,6 +35,7 @@ pub enum CrossChainEventStatus {
     Expired,
 }
 
+/// Rich metadata attached to a cross-chain event listing
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -38,6 +47,7 @@ pub struct CrossChainEventMetadata {
     pub chain_specific_data: Vec<String>,
 }
 
+/// Payment methods available for cross-chain transactions
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -50,6 +60,7 @@ pub enum CrossChainPaymentMethod {
     Other(String),
 }
 
+/// Categories of fees charged during cross-chain operations
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -62,6 +73,7 @@ pub enum FeeType {
     Other(String),
 }
 
+/// A single fee line item for a cross-chain operation
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -72,6 +84,7 @@ pub struct CrossChainFee {
     pub is_optional: bool,
 }
 
+/// Native and wrapped currencies supported across connected chains
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -89,6 +102,7 @@ pub enum SupportedCurrency {
     Other(String),
 }
 
+/// Types of requirements for cross-chain event participation
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -102,6 +116,7 @@ pub enum RequirementType {
     Other(String),
 }
 
+/// A prerequisite that must be satisfied for cross-chain participation
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -111,6 +126,7 @@ pub struct ChainRequirement {
     pub is_mandatory: bool,
 }
 
+/// Full representation of an event bridged to another chain
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -144,6 +160,7 @@ pub struct CrossChainEvent {
     pub completion_timestamp: Option<u64>,
 }
 
+/// Status of a cross-chain ticket purchase request
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -156,6 +173,7 @@ pub enum CrossChainRequestStatus {
     Failed,
 }
 
+/// A user's request to purchase a ticket on another chain
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -164,6 +182,7 @@ pub struct CrossChainTicketRequest {
     pub request_status: CrossChainRequestStatus,
 }
 
+/// Lifecycle status of a cross-chain transaction
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -176,6 +195,7 @@ pub enum CrossChainTransactionStatus {
     Cancelled,
 }
 
+/// Tracks the state of a cross-chain bridging transaction
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -184,6 +204,7 @@ pub struct CrossChainTransaction {
     pub updated_at: u64,
 }
 
+/// A start/end date pair for filtering operations
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -192,6 +213,7 @@ pub struct DateRange {
     pub end_date: u64,
 }
 
+/// A min/max price range with currency for filtering
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -201,6 +223,7 @@ pub struct PriceRange {
     pub currency: String,
 }
 
+/// Filter criteria for searching cross-chain events
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -213,6 +236,7 @@ pub struct CrossChainEventFilters {
     pub team_names: Vec<String>,
 }
 
+/// Aggregate statistics for cross-chain operations
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
@@ -225,6 +249,7 @@ pub struct CrossChainAnalytics {
     pub total_fees_collected: u128,
 }
 
+/// Real-time connectivity status for a connected blockchain
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]

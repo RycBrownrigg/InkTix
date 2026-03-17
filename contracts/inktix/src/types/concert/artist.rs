@@ -1,3 +1,8 @@
+//! Artist type definition for concert events.
+//!
+//! Defines the `Artist` struct representing a performer who can be
+//! associated with concert events and optionally verified by the platform owner.
+
 use ink::prelude::string::String;
 use ink::primitives::AccountId;
 
