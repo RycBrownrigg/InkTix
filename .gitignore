@@ -12,6 +12,9 @@ contracts/*/*.contract
 contracts/*/*.wasm
 contracts/*/*.json
 
+# Local dev tooling binaries (ink-node, etc.)
+.tooling/
+
 # macOS-specific ignores
 .DS_Store
 .AppleDouble
