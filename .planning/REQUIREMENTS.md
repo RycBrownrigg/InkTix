@@ -64,35 +64,33 @@ Explicitly excluded. Documented to prevent scope creep.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| VALIDATE-01 | — | Pending |
-| VALIDATE-02 | — | Pending |
-| VALIDATE-03 | — | Pending |
-| DEPLOY-01 | — | Pending |
-| DEPLOY-02 | — | Pending |
-| DEPLOY-03 | — | Pending |
-| DEPLOY-04 | — | Pending |
-| PAYMENT-01 | — | Pending |
-| PAYMENT-02 | — | Pending |
-| PAYMENT-03 | — | Pending |
-| PAYMENT-04 | — | Pending |
-| FRONTEND-01 | — | Pending |
-| FRONTEND-02 | — | Pending |
-| FRONTEND-03 | — | Pending |
-| FRONTEND-04 | — | Pending |
-| FRONTEND-05 | — | Pending |
-| FRONTEND-06 | — | Pending |
-| FRONTEND-07 | — | Pending |
-| FRONTEND-08 | — | Pending |
+| VALIDATE-01 | Phase 1 | Pending |
+| VALIDATE-02 | Phase 1 | Pending |
+| VALIDATE-03 | Phase 1 | Pending |
+| DEPLOY-01 | Phase 2 | Pending |
+| DEPLOY-02 | Phase 2 | Pending |
+| DEPLOY-03 | Phase 2 | Pending |
+| DEPLOY-04 | Phase 2 | Pending |
+| PAYMENT-01 | Phase 3 | Pending |
+| PAYMENT-02 | Phase 3 | Pending |
+| PAYMENT-03 | Phase 3 | Pending |
+| PAYMENT-04 | Phase 3 | Pending |
+| FRONTEND-01 | Phase 4 | Pending |
+| FRONTEND-02 | Phase 4 | Pending |
+| FRONTEND-03 | Phase 4 | Pending |
+| FRONTEND-04 | Phase 4 | Pending |
+| FRONTEND-05 | Phase 4 | Pending |
+| FRONTEND-06 | Phase 4 | Pending |
+| FRONTEND-07 | Phase 4 | Pending |
+| FRONTEND-08 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️ (populated by roadmap creation)
+- Mapped to phases: 19
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-20*
-*Last updated: 2026-09-20 after initialization*
+*Last updated: 2026-09-20 after roadmap creation*
