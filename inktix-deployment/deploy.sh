@@ -154,36 +154,16 @@ build_contracts() {
         return 0
     fi
     
-    # Build sports broker
-    if [ -d "contracts/sports_broker" ]; then
-        log "Building sports broker contract..."
-        cd contracts/sports_broker
+    # Build unified inktix contract
+    if [ -d "contracts/inktix" ]; then
+        log "Building inktix contract..."
+        cd contracts/inktix
         cargo contract build --release
         cd ../..
     else
-        warning "Sports broker contract directory not found, skipping..."
+        warning "InkTix contract directory not found, skipping..."
     fi
-    
-    # Build concert broker
-    if [ -d "contracts/concert_broker" ]; then
-        log "Building concert broker contract..."
-        cd contracts/concert_broker
-        cargo contract build --release
-        cd ../..
-    else
-        warning "Concert broker contract directory not found, skipping..."
-    fi
-    
-    # Build inktix core
-    if [ -d "contracts/inktix_core" ]; then
-        log "Building inktix core contract..."
-        cd contracts/inktix_core
-        cargo contract build --release
-        cd ../..
-    else
-        warning "InkTix core contract directory not found, skipping..."
-    fi
-    
+
     success "Smart contracts built successfully"
 }
 

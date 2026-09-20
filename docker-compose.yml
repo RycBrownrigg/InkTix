@@ -1,6 +1,10 @@
 version: "3.8"
 
 services:
+  # NOT SUPPORTED for the v2 (ink! v6 / pallet-revive) contract — this image runs
+  # pallet-contracts and cannot host a pallet-revive contract. Use
+  # `./scripts/dev-node.sh` for local dev against contracts/inktix instead.
+  # See docs/v2_plan.md Phase 1a. Kept here for v1/legacy reference only.
   substrate:
     image: parity/substrate-contracts-node:latest
     ports:

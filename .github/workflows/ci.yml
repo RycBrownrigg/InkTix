@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, redesign/polkadot-hub]
   pull_request:
     branches: [main]
 
@@ -16,11 +16,15 @@ jobs:
       - name: Install Rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
+          # Pinned nightly, matching contracts/inktix/rust-toolchain.toml — see
+          # docs/v2_plan.md Phase 0 for why (upstream Rust regression, no fixed
+          # cargo-contract release expected). No explicit `target:` — cargo-contract
+          # v6 manages its own PolkaVM target spec internally.
+          toolchain: nightly-2026-01-15
+          components: rust-src
 
       - name: Install cargo-contract
-        run: cargo install cargo-contract --locked
+        run: cargo install --locked --version 6.0.0-beta.2 cargo-contract
 
       - name: Run tests (unified contract)
         working-directory: contracts/inktix
