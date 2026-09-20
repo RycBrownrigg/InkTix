@@ -17,7 +17,7 @@ use crate::types::*;
 use ink::prelude::string::String;
 use ink::prelude::string::ToString;
 use ink::prelude::vec::Vec;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// NFT lifecycle management for ticket tokenization
 pub struct NftManagement;
@@ -26,7 +26,7 @@ impl NftManagement {
     /// Mint an NFT for an existing ticket
     pub fn mint_ticket_nft(
         storage: &mut InkTixStorage,
-        caller: AccountId,
+        caller: Address,
         ticket_id: u64,
     ) -> Result<u64, String> {
         // Check ticket exists and caller owns it
@@ -116,7 +116,7 @@ impl NftManagement {
     /// Mark ticket as used (for event entry)
     pub fn use_ticket_nft(
         storage: &mut InkTixStorage,
-        _caller: AccountId,
+        _caller: Address,
         token_id: u64,
     ) -> Result<u64, String> {
         let mut nft = storage.nft_tickets.get(token_id)
@@ -151,7 +151,7 @@ impl NftManagement {
     /// Get all NFT tokens for a user
     pub fn get_user_nft_tickets(
         storage: &InkTixStorage,
-        user: AccountId,
+        user: Address,
     ) -> Vec<TicketNft> {
         let token_ids = storage.user_nft_tokens.get(user).unwrap_or_default();
         token_ids.iter()
@@ -171,9 +171,9 @@ impl NftManagement {
     /// Transfer NFT to new owner (follows ticket transfer)
     pub fn transfer_nft(
         storage: &mut InkTixStorage,
-        caller: AccountId,
+        caller: Address,
         token_id: u64,
-        to: AccountId,
+        to: Address,
     ) -> Result<(), String> {
         let mut nft = storage.nft_tickets.get(token_id)
             .ok_or("NFT not found".to_string())?;

@@ -10,7 +10,7 @@
 //! - `update_xcm_chain_connectivity` -- updates a chain's connectivity status
 
 use crate::storage::contract_storage::InkTixStorage;
-use crate::types::core::xcm::*;
+use crate::types::core_types::xcm::*;
 use ink::prelude::vec::Vec;
 use ink::env::DefaultEnvironment;
 use ink::prelude::string::String;

@@ -4,7 +4,7 @@
 //! with identity, location, sport classification, and verification status.
 
 use ink::prelude::string::String;
-use crate::types::core::event::SportType;
+use crate::types::core_types::event::SportType;
 
 /// Enhanced Team structure
 #[derive(Debug, PartialEq, Eq, Clone)]

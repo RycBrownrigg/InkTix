@@ -4,7 +4,7 @@
 //! for proof-of-attendance, and `TicketVerification` for QR-based entry validation.
 
 use ink::prelude::string::String;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// NFT metadata for a ticket
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -13,7 +13,7 @@ use ink::primitives::AccountId;
 pub struct TicketNft {
     pub token_id: u64,
     pub ticket_id: u64,
-    pub owner: AccountId,
+    pub owner: Address,
     pub event_id: u32,
     pub event_name: String,
     pub venue_name: String,
@@ -38,7 +38,7 @@ pub struct AttendanceToken {
     pub token_id: u64,
     pub ticket_id: u64,
     pub event_id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub attended_at: u64,
 }
 
@@ -48,7 +48,7 @@ pub struct AttendanceToken {
 pub struct TicketVerification {
     pub is_valid: bool,
     pub is_used: bool,
-    pub owner: AccountId,
+    pub owner: Address,
     pub event_id: u32,
     pub event_name: String,
     pub section: String,

@@ -5,7 +5,7 @@
 
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// Enhanced Venue structure with comprehensive venue-specific features
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -482,7 +482,7 @@ pub enum OverflowStrategy {
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct ParkingPass {
     pub id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub venue_id: u32,
     pub pass_type: ParkingPassType,
     pub valid_from: u64,
@@ -516,7 +516,7 @@ pub enum ParkingPassType {
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct ConcessionCredits {
     pub id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub venue_id: u32,
     pub credit_amount: u128,
     pub remaining_amount: u128,
@@ -561,7 +561,7 @@ pub struct CreditUsage {
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct MerchandiseBundlePurchase {
     pub id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub venue_id: u32,
     pub bundle_id: u32,
     pub purchase_date: u64,
@@ -596,7 +596,7 @@ pub struct CapacityReservation {
     pub id: u32,
     pub venue_id: u32,
     pub event_id: u32,
-    pub reserved_by: AccountId,
+    pub reserved_by: Address,
     pub reservation_type: ReservationType,
     pub capacity_reserved: u32,
     pub reservation_date: u64,

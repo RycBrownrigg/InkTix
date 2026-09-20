@@ -20,7 +20,7 @@ pub struct AnalyticsStorage {
     pub platform_stats: PlatformStats,
     pub event_analytics: Mapping<u32, EventAnalytics>,
     pub team_analytics: Mapping<u32, TeamAnalytics>,
-    pub user_analytics: Mapping<ink::primitives::AccountId, UserAnalytics>,
+    pub user_analytics: Mapping<ink::primitives::Address, UserAnalytics>,
     pub analytics_reports: Mapping<u32, AnalyticsReport>,
 }
 
@@ -58,7 +58,7 @@ impl AnalyticsStorage {
     }
 
     /// Create or update user analytics
-    pub fn create_user_analytics(&mut self, user_id: ink::primitives::AccountId) {
+    pub fn create_user_analytics(&mut self, user_id: ink::primitives::Address) {
         let analytics = UserAnalytics {
             user_id,
             total_tickets_purchased: 0,

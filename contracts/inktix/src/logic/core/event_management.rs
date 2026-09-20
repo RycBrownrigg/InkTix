@@ -8,7 +8,7 @@
 //! - `get_all_events` -- returns all registered events
 //! - `update_event_status` -- changes an event's active/inactive state
 
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;

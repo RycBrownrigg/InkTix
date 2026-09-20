@@ -4,7 +4,7 @@
 //! and early-bird discount configuration.
 
 use ink::prelude::string::String;
-use crate::types::core::event::SportType;
+use crate::types::core_types::event::SportType;
 
 /// Enhanced Season structure
 #[derive(Debug, PartialEq, Eq, Clone)]

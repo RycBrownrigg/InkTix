@@ -11,7 +11,7 @@
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::sports::season_pass::*;
 use ink::env::DefaultEnvironment;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -24,7 +24,7 @@ impl SeasonPassManagement {
     /// Create a new season pass package with pricing and benefits
     pub fn create_season_pass_package(
         storage: &mut InkTixStorage, name: String, team_id: u32, season_id: u32,
-        price: u128, currency: crate::types::core::currency::CurrencyId,
+        price: u128, currency: crate::types::core_types::currency::CurrencyId,
         staking_requirement: u128, benefits: Vec<SeasonPassBenefits>,
     ) -> Result<u32, String> {
         let package_id = storage.get_next_season_pass_package_id();
@@ -43,7 +43,7 @@ impl SeasonPassManagement {
     }
 
     /// Purchase a season pass from an active package
-    pub fn purchase_season_pass(storage: &mut InkTixStorage, user: AccountId, package_id: u32) -> Result<u32, String> {
+    pub fn purchase_season_pass(storage: &mut InkTixStorage, user: Address, package_id: u32) -> Result<u32, String> {
         let package = storage.season_pass_packages.get(package_id).ok_or("Package not found")?;
         if !package.active { return Err("Package is not active".to_string()); }
         let pass_id = storage.get_next_season_pass_id();
@@ -70,7 +70,7 @@ impl SeasonPassManagement {
     }
 
     /// Redeem a season pass for entry to a specific event, issuing a free ticket
-    pub fn use_season_pass_for_event(storage: &mut InkTixStorage, user: AccountId, season_pass_id: u32, event_id: u32) -> Result<u64, String> {
+    pub fn use_season_pass_for_event(storage: &mut InkTixStorage, user: Address, season_pass_id: u32, event_id: u32) -> Result<u64, String> {
         let mut season_pass = storage.season_passes.get(season_pass_id).ok_or("Season pass not found")?;
         if season_pass.owner != user { return Err("Not the owner of this season pass".to_string()); }
         if season_pass.status != SeasonPassStatus::Active { return Err("Season pass is not active".to_string()); }
@@ -79,13 +79,13 @@ impl SeasonPassManagement {
         season_pass.games_remaining -= 1;
         storage.season_passes.insert(season_pass_id, &season_pass);
         let ticket_id = storage.get_next_ticket_id();
-        let ticket = crate::types::core::ticket::Ticket {
+        let ticket = crate::types::core_types::ticket::Ticket {
             id: ticket_id, event_id, owner: user, purchase_price: 0,
             purchase_currency: season_pass.purchase_currency,
             purchase_date: ink::env::block_timestamp::<DefaultEnvironment>(),
             seat_number: 1, section: "Season Pass".to_string(), row: "N/A".to_string(),
-            seat_type: crate::types::core::seat::SeatType::GeneralAdmission,
-            access_level: crate::types::core::seat::AccessLevel::Standard,
+            seat_type: crate::types::core_types::seat::SeatType::GeneralAdmission,
+            access_level: crate::types::core_types::seat::AccessLevel::Standard,
             transferable: true, loyalty_points_earned: 0, season_pass_discount_applied: true,
             is_season_pass_ticket: true, dynamic_price_paid: 0, performance_multiplier_applied: 0,
             dot_equivalent_paid: 0,

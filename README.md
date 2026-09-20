@@ -123,7 +123,6 @@ InkTix/
 │
 ├── .github/workflows/ci.yml       # CI: cargo test + npm lint/build/test
 ├── docker-compose.yml             # Substrate node + frontend
-├── CLAUDE.md                      # AI assistant context
 └── docs/
     ├── product_specification.md   # Full product spec
     ├── HACKATHON_SUBMISSION.md    # Hackathon submission details
@@ -268,6 +267,22 @@ cd frontend && npm run lint
 
 ---
 
+## v2 Rearchitecture (In Progress)
+
+InkTix is migrating from ink! 5.1.1 / `pallet-contracts` (Westend Asset Hub) to
+ink! v6 / `pallet-revive` (Passet Hub → Polkadot Hub), following Polkadot's system
+chains toward the PolkaVM execution environment. This is a toolchain/runtime
+migration, not a product pivot — v1's feature set carries over, but contract
+identity (`AccountId` → `H160`), value types (`u128` → `U256`), and the deploy
+target all change.
+
+**Status:** Phase 0 (toolchain validation) complete. Full architecture rationale,
+phase-by-phase scope, decisions, and issues/resolutions are tracked in
+[`docs/v2_plan.md`](./docs/v2_plan.md) — the living plan doc, kept current as each
+phase completes.
+
+---
+
 ## Contributing
 
 Contributions are welcome. Please:
@@ -284,7 +299,7 @@ Contributions are welcome. Please:
 - [Product Specification](./docs/product_specification.md) — Full product spec with market analysis
 - [System Architecture](./docs/system_architecture.md) — Technical architecture details
 - [Hackathon Submission](./docs/HACKATHON_SUBMISSION.md) — Polkadot Alumni Hackathon submission
-- [CLAUDE.md](./CLAUDE.md) — AI assistant context and build commands
+- [v2 Rearchitecture Plan](./docs/v2_plan.md) — ink! v6 / pallet-revive migration: rationale, phases, decisions
 
 ---
 

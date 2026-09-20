@@ -8,7 +8,7 @@
 //! - `validate_positive_number` -- rejects zero-valued u32 inputs
 //! - `validate_positive_balance` -- rejects zero-valued u128 inputs
 
-use crate::types::core::error::{InkTixError, InkTixResult};
+use crate::types::core_types::error::{InkTixError, InkTixResult};
 
 /// Validate that a string is not empty
 pub fn validate_non_empty_string(value: &str, _field_name: &str) -> InkTixResult<()> {

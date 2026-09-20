@@ -10,7 +10,7 @@
 
 use crate::storage::*;
 use crate::types::*;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -22,7 +22,7 @@ pub struct FantasySportsManagement;
 #[allow(clippy::arithmetic_side_effects)]
 impl FantasySportsManagement {
     /// Create a new fantasy league with entry fee and prize pool
-    pub fn create_fantasy_league(storage: &mut InkTixStorage, user: AccountId, name: String, description: String, max_participants: u32, entry_fee: u128, _currency: CurrencyId) -> Result<u32, String> {
+    pub fn create_fantasy_league(storage: &mut InkTixStorage, user: Address, name: String, description: String, max_participants: u32, entry_fee: u128, _currency: CurrencyId) -> Result<u32, String> {
         let league_id = storage.get_next_id("fantasy_league");
         let league = FantasyLeague {
             league_id, name, description, league_type: FantasyLeagueType::SeasonLong,
@@ -39,13 +39,13 @@ impl FantasySportsManagement {
     }
 
     /// Join an existing fantasy league
-    pub fn join_fantasy_league(storage: &mut InkTixStorage, _user: AccountId, league_id: u32) -> Result<u32, String> {
+    pub fn join_fantasy_league(storage: &mut InkTixStorage, _user: Address, league_id: u32) -> Result<u32, String> {
         let _league = storage.fantasy_leagues.get(league_id).ok_or("League not found")?;
         Ok(league_id)
     }
 
     /// Create a named fantasy team in a league
-    pub fn create_fantasy_team(storage: &mut InkTixStorage, user: AccountId, league_id: u32, name: String) -> Result<u32, String> {
+    pub fn create_fantasy_team(storage: &mut InkTixStorage, user: Address, league_id: u32, name: String) -> Result<u32, String> {
         let _league = storage.fantasy_leagues.get(league_id).ok_or("League not found")?;
         let team_id = storage.get_next_id("fantasy_team");
         let team = FantasyTeam {

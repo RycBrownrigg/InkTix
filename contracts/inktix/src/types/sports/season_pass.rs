@@ -3,7 +3,7 @@
 //! Covers season pass types, statuses, benefits, packages, usage tracking,
 //! renewal options, and analytics for recurring ticket holders.
 
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 
@@ -55,7 +55,7 @@ pub struct SeasonPassBenefits {
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct SeasonPass {
     pub id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub team_id: u32,
     pub season_id: u32,
     pub pass_type: SeasonPassType,
@@ -67,7 +67,7 @@ pub struct SeasonPass {
     pub games_attended: u32,
     pub games_remaining: u32,
     pub purchase_price: u128,
-    pub purchase_currency: crate::types::core::currency::CurrencyId,
+    pub purchase_currency: crate::types::core_types::currency::CurrencyId,
     pub benefits: SeasonPassBenefits,
     pub staking_amount: u128,
     pub staking_rewards_earned: u128,
@@ -88,7 +88,7 @@ pub struct SeasonPassPackage {
     pub pass_type: SeasonPassType,
     pub total_games: u32,
     pub base_price: u128,
-    pub currency: crate::types::core::currency::CurrencyId,
+    pub currency: crate::types::core_types::currency::CurrencyId,
     pub max_quantity: u32,
     pub sold_quantity: u32,
     pub benefits: SeasonPassBenefits,
@@ -166,7 +166,7 @@ impl Default for SeasonPass {
     fn default() -> Self {
         Self {
             id: 0,
-            owner: AccountId::from([0u8; 32]),
+            owner: Address::zero(),
             team_id: 0,
             season_id: 0,
             pass_type: SeasonPassType::FullSeason,
@@ -178,7 +178,7 @@ impl Default for SeasonPass {
             games_attended: 0,
             games_remaining: 0,
             purchase_price: 0,
-            purchase_currency: crate::types::core::currency::CurrencyId::DOT,
+            purchase_currency: crate::types::core_types::currency::CurrencyId::DOT,
             benefits: SeasonPassBenefits::default(),
             staking_amount: 0,
             staking_rewards_earned: 0,
@@ -199,7 +199,7 @@ impl Default for SeasonPassPackage {
             pass_type: SeasonPassType::FullSeason,
             total_games: 0,
             base_price: 0,
-            currency: crate::types::core::currency::CurrencyId::DOT,
+            currency: crate::types::core_types::currency::CurrencyId::DOT,
             max_quantity: 0,
             sold_quantity: 0,
             benefits: SeasonPassBenefits::default(),

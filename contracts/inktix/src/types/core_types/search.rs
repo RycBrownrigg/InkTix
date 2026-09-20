@@ -3,7 +3,7 @@
 //! Provides an `EventSearchFilter` struct for querying events by sport type,
 //! team, venue, date range, game type, price, and availability.
 
-use crate::types::core::event::{SportType, GameType};
+use crate::types::core_types::event::{SportType, GameType};
 
 /// Search filters for advanced event discovery
 #[derive(Debug, PartialEq, Eq, Clone)]

@@ -9,7 +9,7 @@
 
 use crate::storage::contract_storage::InkTixStorage;
 use crate::types::concert::artist::Artist;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::string::ToString;
 
@@ -21,7 +21,7 @@ impl ArtistManagement {
     /// Register a new artist
     pub fn register_artist(
         storage: &mut InkTixStorage,
-        caller: AccountId,
+        caller: Address,
         name: String,
     ) -> Result<u32, String> {
         if name.is_empty() {

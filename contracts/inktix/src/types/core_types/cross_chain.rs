@@ -178,7 +178,7 @@ pub enum CrossChainRequestStatus {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct CrossChainTicketRequest {
-    pub user: ink::primitives::AccountId,
+    pub user: ink::primitives::Address,
     pub request_status: CrossChainRequestStatus,
 }
 

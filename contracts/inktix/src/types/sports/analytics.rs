@@ -4,9 +4,9 @@
 //! user behavior analytics, and comprehensive report structures with configurable
 //! time periods and report types.
 
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::vec::Vec;
-use crate::types::core::{CurrencyId, SportType};
+use crate::types::core_types::{CurrencyId, SportType};
 
 /// Platform-wide statistics and metrics
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -45,7 +45,7 @@ pub struct TeamAnalytics {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct UserAnalytics {
-    pub user_id: AccountId, pub total_tickets_purchased: u32, pub total_spent: u128,
+    pub user_id: Address, pub total_tickets_purchased: u32, pub total_spent: u128,
     pub favorite_sport: SportType, pub average_ticket_price: u128, pub loyalty_tier: u8,
     pub last_purchase_date: u64, pub purchase_frequency: u8,
 }

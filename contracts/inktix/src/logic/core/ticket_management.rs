@@ -11,7 +11,7 @@
 use crate::storage::*;
 use crate::types::*;
 use ink::env::DefaultEnvironment;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -28,7 +28,7 @@ impl TicketManagement {
     /// Purchase a ticket for an event
     pub fn purchase_ticket(
         storage: &mut InkTixStorage,
-        buyer: AccountId,
+        buyer: Address,
         event_id: u32,
         seat: Seat,
         currency: CurrencyId,
@@ -107,9 +107,9 @@ impl TicketManagement {
     /// Transfer ticket to another user
     pub fn transfer_ticket(
         storage: &mut InkTixStorage,
-        caller: AccountId,
+        caller: Address,
         ticket_id: u64,
-        to: AccountId,
+        to: Address,
     ) -> Result<(), String> {
         let mut ticket = storage.tickets.get(ticket_id).ok_or("Ticket not found")?;
         if ticket.owner != caller { return Err("Only ticket owner can transfer".to_string()); }
@@ -132,7 +132,7 @@ impl TicketManagement {
     /// Resell ticket
     pub fn resell_ticket(
         storage: &mut InkTixStorage,
-        caller: AccountId,
+        caller: Address,
         ticket_id: u64,
         price: u128,
         _currency: CurrencyId,

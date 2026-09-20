@@ -19,7 +19,7 @@
 
 use crate::types::*;
 use ink::prelude::*;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::storage::Mapping;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
@@ -34,7 +34,7 @@ pub struct InkTixStorage {
     // =========================================================================
     // CORE CONTRACT STATE
     // =========================================================================
-    pub owner: AccountId,
+    pub owner: Address,
     pub total_teams: u32,
     pub total_venues: u32,
     pub total_events: u32,
@@ -51,7 +51,7 @@ pub struct InkTixStorage {
     pub seasons: Mapping<u32, Season>,
     pub events: Mapping<u32, Event>,
     pub tickets: Mapping<u64, Ticket>,
-    pub user_tickets: Mapping<AccountId, Vec<u64>>,
+    pub user_tickets: Mapping<Address, Vec<u64>>,
 
     // Currency and pricing
     pub supported_currencies: Vec<CurrencyId>,
@@ -66,21 +66,21 @@ pub struct InkTixStorage {
     pub platform_stats: PlatformStats,
     pub event_analytics: Mapping<u32, EventAnalytics>,
     pub team_analytics: Mapping<u32, TeamAnalytics>,
-    pub user_analytics: Mapping<AccountId, UserAnalytics>,
+    pub user_analytics: Mapping<Address, UserAnalytics>,
     pub analytics_reports: Mapping<u32, AnalyticsReport>,
 
     // Anti-scalping
     pub anti_scalping_configs: Mapping<u32, AntiScalpingConfig>,
     pub ticket_transfer_history: Mapping<u64, TicketTransferHistory>,
-    pub user_behavior_profiles: Mapping<AccountId, UserBehaviorProfile>,
+    pub user_behavior_profiles: Mapping<Address, UserBehaviorProfile>,
     pub resale_listings: Mapping<u64, ResaleListing>,
 
     // Loyalty and rewards
-    pub loyalty_profiles: Mapping<AccountId, LoyaltyProfile>,
+    pub loyalty_profiles: Mapping<Address, LoyaltyProfile>,
     pub reward_redemptions: Mapping<u64, RewardRedemption>,
     pub points_rules: Mapping<u32, PointsRule>,
     pub promotions: Mapping<u32, Promotion>,
-    pub referrals: Mapping<AccountId, Referral>,
+    pub referrals: Mapping<Address, Referral>,
 
     // Season pass management
     pub season_passes: Mapping<u32, SeasonPass>,
@@ -88,7 +88,7 @@ pub struct InkTixStorage {
     pub season_pass_usage: Mapping<u32, SeasonPassUsage>,
     pub renewal_options: Mapping<u32, RenewalOption>,
     pub season_pass_analytics: Mapping<u32, SeasonPassAnalytics>,
-    pub user_season_passes: Mapping<AccountId, Vec<u32>>,
+    pub user_season_passes: Mapping<Address, Vec<u32>>,
     pub team_season_passes: Mapping<u32, Vec<u32>>,
 
     // Fantasy sports management
@@ -106,9 +106,9 @@ pub struct InkTixStorage {
     pub fantasy_game_weeks: Mapping<u32, FantasyGameWeek>,
     pub fantasy_transfers: Mapping<u32, FantasyTransfer>,
     pub fantasy_settings: Mapping<u32, FantasySettings>,
-    pub user_fantasy_leagues: Mapping<AccountId, Vec<u32>>,
-    pub user_fantasy_teams: Mapping<AccountId, Vec<u32>>,
-    pub league_participants: Mapping<u32, Vec<AccountId>>,
+    pub user_fantasy_leagues: Mapping<Address, Vec<u32>>,
+    pub user_fantasy_teams: Mapping<Address, Vec<u32>>,
+    pub league_participants: Mapping<u32, Vec<Address>>,
 
     // Advanced team loyalty management
     pub total_team_loyalty_profiles: u32,
@@ -116,15 +116,15 @@ pub struct InkTixStorage {
     pub total_team_attendance: u32,
     pub total_team_performance_rewards: u32,
     pub total_team_loyalty_challenges: u32,
-    pub team_loyalty_profiles: Mapping<(AccountId, u32), TeamLoyaltyProfile>,
+    pub team_loyalty_profiles: Mapping<(Address, u32), TeamLoyaltyProfile>,
     pub team_stakings: Mapping<u32, TeamStaking>,
     pub team_attendance: Mapping<u32, TeamAttendance>,
     pub team_attendances: Mapping<u32, TeamAttendance>,
     pub team_performance_rewards: Mapping<u32, TeamPerformanceReward>,
     pub team_loyalty_challenges: Mapping<u32, TeamLoyaltyChallenge>,
     pub team_loyalty_analytics: Mapping<u32, TeamLoyaltyAnalytics>,
-    pub user_team_loyalty: Mapping<AccountId, Vec<u32>>,
-    pub team_fans: Mapping<u32, Vec<AccountId>>,
+    pub user_team_loyalty: Mapping<Address, Vec<u32>>,
+    pub team_fans: Mapping<u32, Vec<Address>>,
 
     // Venue-specific management
     pub total_parking_passes: u32,
@@ -132,14 +132,14 @@ pub struct InkTixStorage {
     pub total_merchandise_bundles: u32,
     pub total_bundle_purchases: u32,
     pub total_capacity_reservations: u32,
-    pub parking_passes: Mapping<u32, crate::types::core::venue::ParkingPass>,
-    pub concession_credits: Mapping<u32, crate::types::core::venue::ConcessionCredits>,
-    pub merchandise_bundles: Mapping<u32, crate::types::core::venue::MerchandiseBundle>,
-    pub bundle_purchases: Mapping<u32, crate::types::core::venue::MerchandiseBundlePurchase>,
-    pub capacity_reservations: Mapping<u32, crate::types::core::venue::CapacityReservation>,
-    pub user_parking_passes: Mapping<AccountId, Vec<u32>>,
-    pub user_concession_credits: Mapping<AccountId, Vec<u32>>,
-    pub user_merchandise_bundles: Mapping<AccountId, Vec<u32>>,
+    pub parking_passes: Mapping<u32, crate::types::core_types::venue::ParkingPass>,
+    pub concession_credits: Mapping<u32, crate::types::core_types::venue::ConcessionCredits>,
+    pub merchandise_bundles: Mapping<u32, crate::types::core_types::venue::MerchandiseBundle>,
+    pub bundle_purchases: Mapping<u32, crate::types::core_types::venue::MerchandiseBundlePurchase>,
+    pub capacity_reservations: Mapping<u32, crate::types::core_types::venue::CapacityReservation>,
+    pub user_parking_passes: Mapping<Address, Vec<u32>>,
+    pub user_concession_credits: Mapping<Address, Vec<u32>>,
+    pub user_merchandise_bundles: Mapping<Address, Vec<u32>>,
     pub venue_parking_passes: Mapping<u32, Vec<u32>>,
     pub venue_concession_credits: Mapping<u32, Vec<u32>>,
     pub venue_merchandise_bundles: Mapping<u32, Vec<u32>>,
@@ -153,8 +153,8 @@ pub struct InkTixStorage {
     pub cross_chain_requests: Mapping<u32, CrossChainTicketRequest>,
     pub cross_chain_transactions: Mapping<u32, CrossChainTransaction>,
     pub chain_connectivity: Mapping<BlockchainNetwork, ChainConnectivityStatus>,
-    pub user_cross_chain_requests: Mapping<AccountId, Vec<u32>>,
-    pub user_cross_chain_transactions: Mapping<AccountId, Vec<u32>>,
+    pub user_cross_chain_requests: Mapping<Address, Vec<u32>>,
+    pub user_cross_chain_transactions: Mapping<Address, Vec<u32>>,
     pub chain_events: Mapping<BlockchainNetwork, Vec<u32>>,
 
     // XCM Management
@@ -173,15 +173,15 @@ pub struct InkTixStorage {
     pub total_attendance_tokens: u64,
     pub nft_tickets: Mapping<u64, TicketNft>,
     pub ticket_to_nft: Mapping<u64, u64>,
-    pub user_nft_tokens: Mapping<AccountId, Vec<u64>>,
+    pub user_nft_tokens: Mapping<Address, Vec<u64>>,
     pub attendance_tokens: Mapping<u64, AttendanceToken>,
-    pub user_attendance_tokens: Mapping<AccountId, Vec<u64>>,
+    pub user_attendance_tokens: Mapping<Address, Vec<u64>>,
 
     // =========================================================================
     // CONCERT-SPECIFIC FIELDS
     // =========================================================================
     pub artists: Mapping<u32, Artist>,
-    pub per_event_purchase_count: Mapping<(u32, AccountId), u32>,
+    pub per_event_purchase_count: Mapping<(u32, Address), u32>,
     pub total_artists: u32,
     pub next_artist_id: u32,
 }
@@ -189,7 +189,7 @@ pub struct InkTixStorage {
 impl Default for InkTixStorage {
     fn default() -> Self {
         Self {
-            owner: AccountId::from([0u8; 32]),
+            owner: Address::zero(),
             total_teams: 0,
             total_venues: 0,
             total_events: 0,

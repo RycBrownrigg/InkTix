@@ -4,7 +4,7 @@
 //! including pricing, seating, ownership, and dynamic pricing metadata.
 
 use ink::prelude::string::String;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// Unified Ticket structure (replaces SportsTicket)
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -13,7 +13,7 @@ use ink::primitives::AccountId;
 pub struct Ticket {
     pub id: u64,
     pub event_id: u32,
-    pub owner: AccountId,
+    pub owner: Address,
     pub purchase_price: u128,
     pub purchase_currency: super::currency::CurrencyId,
     pub purchase_date: u64,

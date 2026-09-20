@@ -13,12 +13,12 @@
 
 use crate::storage::*;
 use crate::types::*;
-use crate::types::core::venue;
+use crate::types::core_types::venue;
 use ink::prelude::string::String;
 use ink::prelude::string::ToString;
 use ink::prelude::vec;
 use ink::prelude::vec::Vec;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
@@ -115,7 +115,7 @@ impl VenueManagement {
     /// Purchase parking pass
     pub fn purchase_parking_pass(
         storage: &mut InkTixStorage,
-        buyer: AccountId,
+        buyer: Address,
         venue_id: u32,
         pass_type: venue::ParkingPassType,
         valid_from: u64,
@@ -131,7 +131,7 @@ impl VenueManagement {
     /// Purchase concession credits
     pub fn purchase_concession_credits(
         storage: &mut InkTixStorage,
-        owner: AccountId,
+        owner: Address,
         venue_id: u32,
         credit_amount: u128,
         credit_type: venue::ConcessionCreditType,
@@ -157,7 +157,7 @@ impl VenueManagement {
     /// Purchase merchandise bundle
     pub fn purchase_merchandise_bundle(
         storage: &mut InkTixStorage,
-        owner: AccountId,
+        owner: Address,
         venue_id: u32,
         bundle_id: u32,
         loyalty_discount: Option<u8>,

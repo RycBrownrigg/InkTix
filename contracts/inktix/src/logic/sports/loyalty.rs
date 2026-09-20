@@ -10,7 +10,7 @@
 use crate::storage::*;
 use crate::types::*;
 use ink::env::DefaultEnvironment;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -22,7 +22,7 @@ pub struct Loyalty;
 #[allow(clippy::arithmetic_side_effects)]
 impl Loyalty {
     /// Create a new loyalty profile for a user
-    pub fn create_loyalty_profile(storage: &mut InkTixStorage, user: AccountId) -> Result<(), String> {
+    pub fn create_loyalty_profile(storage: &mut InkTixStorage, user: Address) -> Result<(), String> {
         if storage.loyalty_profiles.get(user).is_some() { return Err("Loyalty profile already exists".to_string()); }
         let profile = LoyaltyProfile {
             user_id: user, total_points: 0, current_tier: LoyaltyTier::Bronze,
@@ -37,7 +37,7 @@ impl Loyalty {
     }
 
     /// Award loyalty points to a user and recalculate their tier
-    pub fn award_points(storage: &mut InkTixStorage, user: AccountId, points: u32, _reason: String) -> Result<(), String> {
+    pub fn award_points(storage: &mut InkTixStorage, user: Address, points: u32, _reason: String) -> Result<(), String> {
         let mut profile = storage.loyalty_profiles.get(user).ok_or("Loyalty profile not found")?;
         profile.total_points += points;
         profile.points_earned_this_month += points;

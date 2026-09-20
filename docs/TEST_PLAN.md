@@ -46,12 +46,13 @@
 **Main Flow (Happy Path)**
 1. User navigates to `/connect` page
 2. User clicks "Connect Wallet" button
-3. Wallet extension popup appears requesting authorization
-4. User approves the connection
-5. Extension returns list of accounts
-6. First account is auto-selected
-7. Wallet status shows "Connected" with account name and truncated address
-8. App automatically attempts network connection to Westend Asset Hub
+3. Extension checks if site is already authorized:
+   - **First visit ever:** Wallet extension popup appears requesting authorization; user approves
+   - **Previously authorized:** Extension auto-approves (no popup)
+4. Extension returns list of accounts
+5. First account is auto-selected
+6. Wallet status shows "Connected" with account name and truncated address
+7. App automatically attempts network connection to Westend Asset Hub
 
 **Alternate Flows**
 - **A1: Multiple accounts available**
@@ -814,14 +815,18 @@
 **Test Steps**
 1. Navigate to `/connect`
 2. Click "Connect Wallet" button
-3. Approve connection in extension popup
-4. Observe wallet status
+3. If first-ever visit: approve connection in extension popup
+4. If previously authorized: extension auto-connects (no popup — this is normal)
+5. Observe wallet status
 
 **Expected Result**
 - Account name and truncated address displayed
 - "Connected" status shown
 - Balance begins loading
-- Network auto-connection attempted
+- Network auto-connection to Westend Asset Hub attempted
+- Network info shows chain name and version
+
+**Note:** The extension remembers authorized sites internally. Clearing browser cache does NOT reset extension authorization. To force the popup, revoke access in the extension: gear icon → Manage Website Access → remove inktix.rycsprojects.com.
 
 **Status:** ☐ Pass / ☐ Fail
 
@@ -835,15 +840,19 @@
 - **Test Type:** Negative
 
 **Preconditions**
-- No Polkadot wallet extension installed
+- No Polkadot wallet extension installed (disable or use incognito without extension enabled)
 
 **Test Steps**
-1. Navigate to `/connect`
-2. Click "Connect Wallet" button
+1. Open Chrome incognito window (extensions disabled by default) OR disable wallet extension in `chrome://extensions`
+2. Navigate to `/connect`
+3. Click "Connect Wallet" button
 
 **Expected Result**
 - Error message: "No web3 extension found. Please install Polkadot.js extension."
 - UI remains on "Connect Wallet" state
+- No crash or unhandled exception
+
+**Note:** Extensions are disabled in incognito by default unless explicitly allowed. This is the easiest way to test.
 
 **Status:** ☐ Pass / ☐ Fail
 

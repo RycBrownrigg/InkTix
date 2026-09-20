@@ -10,7 +10,7 @@
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::arithmetic_side_effects)]
 
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 // Import all modular components
 pub mod logic;
@@ -49,7 +49,7 @@ pub mod inktix {
     use crate::logic::concert::artist_management;
     use crate::storage::contract_storage::InkTixStorage;
     use crate::types::*;
-    use crate::types::core::venue;
+    use crate::types::core_types::venue;
     use ink::prelude::string::String;
     use ink::prelude::string::ToString;
     use ink::prelude::vec::Vec;
@@ -72,7 +72,7 @@ pub mod inktix {
 
         /// Get the contract owner
         #[ink(message)]
-        pub fn get_owner(&self) -> AccountId {
+        pub fn get_owner(&self) -> Address {
             self.storage.owner
         }
 
@@ -170,13 +170,13 @@ pub mod inktix {
 
         /// Get user's tickets
         #[ink(message)]
-        pub fn get_user_tickets(&self, user: AccountId) -> Vec<u64> {
+        pub fn get_user_tickets(&self, user: Address) -> Vec<u64> {
             self.storage.user_tickets.get(user).unwrap_or_default()
         }
 
         /// Transfer ticket to another user
         #[ink(message)]
-        pub fn transfer_ticket(&mut self, ticket_id: u64, to: AccountId) -> Result<(), String> {
+        pub fn transfer_ticket(&mut self, ticket_id: u64, to: Address) -> Result<(), String> {
             let caller = self.env().caller();
             ticket_management::TicketManagement::transfer_ticket(&mut self.storage, caller, ticket_id, to)
         }
@@ -283,7 +283,7 @@ pub mod inktix {
 
         /// Get all NFT tickets for a user
         #[ink(message)]
-        pub fn get_user_nft_tickets(&self, user: AccountId) -> Vec<TicketNft> {
+        pub fn get_user_nft_tickets(&self, user: Address) -> Vec<TicketNft> {
             nft_management::NftManagement::get_user_nft_tickets(&self.storage, user)
         }
 
@@ -295,7 +295,7 @@ pub mod inktix {
 
         /// Transfer NFT to another owner
         #[ink(message)]
-        pub fn transfer_nft(&mut self, token_id: u64, to: AccountId) -> Result<(), String> {
+        pub fn transfer_nft(&mut self, token_id: u64, to: Address) -> Result<(), String> {
             let caller = self.env().caller();
             nft_management::NftManagement::transfer_nft(&mut self.storage, caller, token_id, to)
         }
@@ -366,7 +366,7 @@ pub mod inktix {
         /// Get all season pass IDs for a user
         #[cfg(feature = "sports")]
         #[ink(message)]
-        pub fn get_user_season_passes(&self, user: AccountId) -> Vec<u32> {
+        pub fn get_user_season_passes(&self, user: Address) -> Vec<u32> {
             self.storage.user_season_passes.get(user).unwrap_or_default()
         }
 
@@ -436,7 +436,7 @@ pub mod inktix {
         /// Get the team loyalty profile for a user-team pair
         #[cfg(feature = "sports")]
         #[ink(message)]
-        pub fn get_team_loyalty_profile(&self, user: AccountId, team_id: u32) -> Option<TeamLoyaltyProfile> {
+        pub fn get_team_loyalty_profile(&self, user: Address, team_id: u32) -> Option<TeamLoyaltyProfile> {
             self.storage.team_loyalty_profiles.get((user, team_id))
         }
 

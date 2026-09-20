@@ -3,7 +3,7 @@
 //! Provides configuration structs for per-event purchase limits, transfer restrictions,
 //! resale controls, user behavior monitoring, and blacklist management.
 
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::vec::Vec;
 
 /// Anti-scalping configuration for events
@@ -18,8 +18,8 @@ pub struct AntiScalpingConfig {
     pub max_resale_price_multiplier: u8,
     pub resale_fee_percentage: u8,
     pub transfer_lock_period: u64,
-    pub blacklisted_addresses: Vec<AccountId>,
-    pub whitelisted_addresses: Vec<AccountId>,
+    pub blacklisted_addresses: Vec<Address>,
+    pub whitelisted_addresses: Vec<Address>,
     pub dynamic_pricing_enabled: bool,
     pub anti_bot_measures: bool,
 }
@@ -50,8 +50,8 @@ impl AntiScalpingConfig {
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct TicketTransferHistory {
     pub ticket_id: u64,
-    pub original_owner: AccountId,
-    pub current_owner: AccountId,
+    pub original_owner: Address,
+    pub current_owner: Address,
     pub transfer_count: u32,
     pub first_transfer_time: u64,
     pub last_transfer_time: u64,
@@ -76,7 +76,7 @@ pub enum TransferReason {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct UserBehaviorProfile {
-    pub user_id: AccountId,
+    pub user_id: Address,
     pub total_tickets_purchased: u32,
     pub total_tickets_resold: u32,
     pub average_hold_time: u64,
@@ -105,7 +105,7 @@ pub enum BlacklistStatus {
 pub struct ResaleListing {
     pub listing_id: u64,
     pub ticket_id: u64,
-    pub seller: AccountId,
+    pub seller: Address,
     pub asking_price: u128,
     pub original_price: u128,
     pub listing_time: u64,

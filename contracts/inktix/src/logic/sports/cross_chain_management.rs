@@ -9,7 +9,7 @@
 
 use crate::storage::*;
 use crate::types::*;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -53,7 +53,7 @@ impl CrossChainManagement {
     }
 
     /// Submit a cross-chain ticket purchase request for a user
-    pub fn request_cross_chain_ticket_purchase(storage: &mut InkTixStorage, user: AccountId, event_id: u32, _target_chain: BlockchainNetwork, _seat: Seat, _currency: CurrencyId) -> Result<u32, String> {
+    pub fn request_cross_chain_ticket_purchase(storage: &mut InkTixStorage, user: Address, event_id: u32, _target_chain: BlockchainNetwork, _seat: Seat, _currency: CurrencyId) -> Result<u32, String> {
         let _event = storage.events.get(event_id).ok_or("Event not found")?;
         let request_id = storage.get_next_id("cross_chain_request");
         let request = CrossChainTicketRequest { user, request_status: CrossChainRequestStatus::Pending };

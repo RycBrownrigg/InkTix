@@ -6,7 +6,7 @@
 
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// Loyalty tier levels with increasing benefits
 #[derive(Debug, PartialEq, Eq, Clone, PartialOrd, Ord)]
@@ -21,7 +21,7 @@ pub enum LoyaltyTier {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct LoyaltyProfile {
-    pub user_id: AccountId, pub total_points: u32, pub current_tier: LoyaltyTier,
+    pub user_id: Address, pub total_points: u32, pub current_tier: LoyaltyTier,
     pub points_earned_this_month: u32, pub points_earned_this_year: u32,
     pub total_tickets_purchased: u32, pub total_spent: u128, pub join_date: u64,
     pub last_activity: u64, pub streak_days: u32, pub referral_count: u32,
@@ -44,7 +44,7 @@ pub enum RewardType {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct RewardRedemption {
-    pub id: u64, pub user_id: AccountId, pub reward_type: RewardType, pub points_cost: u32,
+    pub id: u64, pub user_id: Address, pub reward_type: RewardType, pub points_cost: u32,
     pub redeemed_at: u64, pub expires_at: u64, pub is_used: bool, pub event_id: Option<u32>,
 }
 
@@ -72,7 +72,7 @@ pub struct Promotion {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct Referral {
-    pub referrer_id: AccountId, pub referred_id: AccountId, pub referral_date: u64,
+    pub referrer_id: Address, pub referred_id: Address, pub referral_date: u64,
     pub referrer_points_earned: u32, pub referred_bonus_applied: bool, pub referral_code: String,
 }
 
@@ -81,7 +81,7 @@ pub struct Referral {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct TeamLoyaltyProfile {
-    pub user_id: AccountId, pub team_id: u32, pub loyalty_points: u32,
+    pub user_id: Address, pub team_id: u32, pub loyalty_points: u32,
     pub loyalty_tier: TeamLoyaltyTier, pub attendance_streak: u32, pub total_events_attended: u32,
     pub favorite_team_status: bool, pub staked_amount: u128, pub staking_start_date: u64,
     pub last_attendance: u64, pub team_specific_benefits: Vec<TeamBenefit>,
@@ -111,7 +111,7 @@ pub enum TeamBenefit {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct TeamStaking {
-    pub user_id: AccountId, pub team_id: u32, pub staked_amount: u128,
+    pub user_id: Address, pub team_id: u32, pub staked_amount: u128,
     pub staking_start_date: u64, pub staking_end_date: Option<u64>,
     pub reward_multiplier: u32, pub is_active: bool, pub total_rewards_earned: u128,
 }
@@ -121,7 +121,7 @@ pub struct TeamStaking {
 #[ink::scale_derive(Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(ink::storage::traits::StorageLayout))]
 pub struct TeamAttendance {
-    pub user_id: AccountId, pub team_id: u32, pub event_id: u32,
+    pub user_id: Address, pub team_id: u32, pub event_id: u32,
     pub attendance_date: u64, pub points_earned: u32, pub streak_bonus: u32, pub total_streak: u32,
 }
 
@@ -151,7 +151,7 @@ pub struct TeamLoyaltyAnalytics {
     pub team_id: u32, pub total_fans: u32, pub total_loyalty_points: u32,
     pub average_loyalty_tier: TeamLoyaltyTier, pub total_staked_amount: u128,
     pub total_attendance: u32, pub longest_attendance_streak: u32,
-    pub most_loyal_fan: Option<AccountId>, pub last_updated: u64,
+    pub most_loyal_fan: Option<Address>, pub last_updated: u64,
 }
 
 /// Team loyalty challenge for engagement
@@ -162,7 +162,7 @@ pub struct TeamLoyaltyChallenge {
     pub id: u32, pub team_id: u32, pub name: String, pub description: String,
     pub challenge_type: TeamChallengeType, pub points_reward: u32,
     pub start_date: u64, pub end_date: u64, pub is_active: bool,
-    pub participants: Vec<AccountId>, pub completion_criteria: String,
+    pub participants: Vec<Address>, pub completion_criteria: String,
 }
 
 /// Types of team loyalty challenges
@@ -176,7 +176,7 @@ pub enum TeamChallengeType {
 
 impl Default for TeamLoyaltyProfile {
     fn default() -> Self {
-        Self { user_id: AccountId::from([0u8; 32]), team_id: 0, loyalty_points: 0,
+        Self { user_id: Address::zero(), team_id: 0, loyalty_points: 0,
                loyalty_tier: TeamLoyaltyTier::Rookie, attendance_streak: 0,
                total_events_attended: 0, favorite_team_status: false, staked_amount: 0,
                staking_start_date: 0, last_attendance: 0, team_specific_benefits: Vec::new(),
@@ -188,7 +188,7 @@ impl Default for TeamLoyaltyTier { fn default() -> Self { Self::Rookie } }
 
 impl Default for TeamStaking {
     fn default() -> Self {
-        Self { user_id: AccountId::from([0u8; 32]), team_id: 0, staked_amount: 0,
+        Self { user_id: Address::zero(), team_id: 0, staked_amount: 0,
                staking_start_date: 0, staking_end_date: None, reward_multiplier: 10000,
                is_active: false, total_rewards_earned: 0 }
     }

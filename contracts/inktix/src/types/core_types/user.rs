@@ -5,7 +5,7 @@
 
 use ink::prelude::vec::Vec;
 use ink::prelude::string::String;
-use crate::types::core::currency::CurrencyId;
+use crate::types::core_types::currency::CurrencyId;
 
 /// Loyalty tiers for user management
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

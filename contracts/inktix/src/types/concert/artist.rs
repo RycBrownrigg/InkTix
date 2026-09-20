@@ -4,7 +4,7 @@
 //! associated with concert events and optionally verified by the platform owner.
 
 use ink::prelude::string::String;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 
 /// Artist struct from concert_broker
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -14,5 +14,5 @@ pub struct Artist {
     pub id: u32,
     pub name: String,
     pub verified: bool,
-    pub account: Option<AccountId>,
+    pub account: Option<Address>,
 }

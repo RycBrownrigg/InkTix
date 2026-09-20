@@ -10,7 +10,7 @@
 
 use crate::storage::*;
 use crate::types::*;
-use ink::primitives::AccountId;
+use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec;
 
@@ -21,7 +21,7 @@ pub struct AdvancedTeamLoyalty;
 #[allow(clippy::cast_possible_truncation)]
 impl AdvancedTeamLoyalty {
     /// Create a loyalty profile linking a user to a specific team
-    pub fn create_team_loyalty_profile(storage: &mut InkTixStorage, user: AccountId, team_id: u32) -> Result<u32, String> {
+    pub fn create_team_loyalty_profile(storage: &mut InkTixStorage, user: Address, team_id: u32) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let profile_id = storage.get_next_id("team_loyalty_profile");
         let profile = TeamLoyaltyProfile {
@@ -37,7 +37,7 @@ impl AdvancedTeamLoyalty {
     }
 
     /// Stake tokens on a team to earn loyalty rewards
-    pub fn stake_on_team(storage: &mut InkTixStorage, user: AccountId, team_id: u32, amount: u128, _currency: CurrencyId) -> Result<u32, String> {
+    pub fn stake_on_team(storage: &mut InkTixStorage, user: Address, team_id: u32, amount: u128, _currency: CurrencyId) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let stake_id = storage.get_next_id("team_stake");
         let stake = TeamStaking {
@@ -56,7 +56,7 @@ impl AdvancedTeamLoyalty {
     }
 
     /// Record a user's attendance at a team event and update loyalty tier
-    pub fn record_attendance(storage: &mut InkTixStorage, user: AccountId, team_id: u32, event_id: u32) -> Result<u32, String> {
+    pub fn record_attendance(storage: &mut InkTixStorage, user: Address, team_id: u32, event_id: u32) -> Result<u32, String> {
         let _team = storage.teams.get(team_id).ok_or("Team not found")?;
         let _event = storage.events.get(event_id).ok_or("Event not found")?;
         let attendance_id = storage.get_next_id("attendance");
