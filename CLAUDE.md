@@ -19,6 +19,11 @@ InkTix is a decentralized event ticketing platform built on the Polkadot ecosyst
 docker run --rm -p 9944:9944 parity/substrate-contracts-node:latest --dev --tmp --rpc-external --rpc-cors=all --unsafe-rpc-external --rpc-methods=unsafe
 ```
 
+## Git & Docs Workflow
+
+- **Push on every commit.** This project has no per-phase branches (`git.branching_strategy: "none"` in `.planning/config.json`) — GSD planning and execution commits land directly on `redesign/polkadot-hub`. After any commit (including automated GSD `docs(...)`/`chore(...)` commits), immediately `git push` so `origin/redesign/polkadot-hub` stays in sync. Don't batch pushes up for later.
+- **Keep README.md current.** At the end of each completed phase (execution, not planning), refresh README.md's version/test-count badges and the "v2 Rearchitecture (In Progress)" section's status line to match the latest phase status. Use `docs/v2_plan.md`'s `## Status` table as the source of truth. Match the existing badge/table/section style — this is a content refresh, not a redesign.
+
 ## Architecture
 
 ### v2 Rearchitecture (in progress)
