@@ -38,7 +38,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. Each contract module (venue/event, ticket purchase + user_tickets, pricing, nft_management, anti_scalping, loyalty/advanced_team_loyalty, season_pass/fantasy_sports/analytics/artist/xcm) is exercised against a live local `ink-node`, in dependency order, with pass/fail recorded per module — including explicit confirmation that the composite `Mapping<(Address, u32), TeamLoyaltyProfile>` key round-trips correctly via `stake_on_team()` (the flagged riskiest storage item)
   2. All inline unit tests (`cargo test --features std,sports,concert`) remain green after any fixes made during on-chain validation
   3. CI is green on `redesign/polkadot-hub` (correct branch trigger, pinned nightly toolchain, correct target)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — e2e harness + core module chain (dev-node fix, tracer venue/event, ticket + NFT)
+- [ ] 01-02-PLAN.md — risk-tier on-chain edge cases (pricing manual-seal timing, anti-scalping Vec, loyalty composite key)
+- [ ] 01-03-PLAN.md — extended modules (season pass, fantasy, analytics, artist, cross-chain) + Phase 1 exit gate recording
 
 ### Phase 2: Passet Hub Testnet Deployment
 **Goal**: The ported (v1-equivalent) contract is live on the public Passet Hub testnet, instantiated and callable via CLI — surfacing chain-specific reality (gas/storage costs, real network conditions) before Phase 3 tests real money against it.
@@ -82,7 +87,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. On-Chain Module Validation | 0/TBD | Not started | - |
+| 1. On-Chain Module Validation | 0/3 | Planned | - |
 | 2. Passet Hub Testnet Deployment | 0/TBD | Not started | - |
 | 3. Payment Enforcement | 0/TBD | Not started | - |
 | 4. Frontend & SDK Integration | 0/TBD | Not started | - |
