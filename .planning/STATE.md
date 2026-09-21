@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2
 milestone_name: Migration
 current_phase: 01
-current_phase_name: on-chain-module-validation
+current_phase_name: On-Chain Module Validation
 status: executing
 stopped_at: Phase 1 context gathered
-last_updated: "2026-09-21T13:39:32.523Z"
-last_activity: 2026-09-20
-last_activity_desc: Roadmap created, ready for `/gsd-plan-phase 1`
-state_head: a8fe351430f99eb30cadd7dc055f4b48200fcb80
+last_updated: "2026-09-21T17:10:25.133Z"
+last_activity: 2026-09-21
+last_activity_desc: "Completed quick task 260921-g2j: Fix CI failures on redesign/polkadot-hub"
+state_head: 8d4e4c48ecc1e4445426adbc9e72957eeae3d65d
 progress:
   total_phases: 4
   completed_phases: 0
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-20)
 
 **Core value:** The full ticket-purchase flow — browse, pay with real value, mint the ticket NFT, and let funds be withdrawn — works end-to-end against a live ink! v6 / `pallet-revive` chain (Passet Hub).
-**Current focus:** Phase 1 — On-Chain Module Validation
+**Current focus:** Phase 01 — On-Chain Module Validation
 
 ## Current Position
 
-Phase: 01 (on-chain-module-validation) — READY TO EXECUTE
-Plan: 0 of TBD in current phase
-Status: Ready to execute
-Last activity: 2026-09-20 — Roadmap created, ready for `/gsd-plan-phase 1`
+Phase: 01 (On-Chain Module Validation) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 01
+Last activity: 2026-09-21 — Completed quick task 260921-g2j: Fix CI failures on redesign/polkadot-hub
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -71,7 +71,9 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- [`TODO(v2-gap)` @ `contracts/inktix/src/logic/core/venue_management.rs:116`] Gap A — `purchase_parking_pass` is an unimplemented stub: accepts all params, discards them, persists nothing, increments the wrong (`"venue"` instead of `"parking_pass"`) ID counter. Found during the 260921-g2j CI-fix quick task while investigating an "unused variable" warning. Suggest scheduling with venue/sports feature completion.
+- [`TODO(v2-gap)` @ `contracts/inktix/src/lib.rs:468`] Gap B — `purchase_concession_credits` drops the caller's `CurrencyId` and hardcodes `"DOT"`; `CurrencyId` has no string conversion yet. Found during 260921-g2j. Suggest Phase 3 (payment enforcement).
+- [`TODO(v2-gap)` @ `contracts/inktix/src/logic/core/event_management.rs:43`, lower confidence] Gap C — Sports event `sport_type` is destructured but never validated against the team/season `sport_type`. Found during 260921-g2j. Suggest Phase 1 (on-chain module validation) or a dedicated data-integrity pass, pending a product decision on intended validation semantics.
 
 ### Blockers/Concerns
 
@@ -80,6 +82,12 @@ None yet.
 - [CONCERNS.md] ink! v6 (`6.0.0-beta.1`) / `cargo-contract` (`6.0.0-beta.2`) are beta releases from a team whose active development paused as of Jan 2026; `nightly-2026-01-15` is a long-term toolchain pin, not a temporary workaround.
 - [CONCERNS.md] Composite key `Mapping<(Address, u32), TeamLoyaltyProfile>` is flagged as the single riskiest storage item — Phase 1 validation must explicitly exercise `stake_on_team()` on-chain.
 - [CONCERNS.md] Zero on-chain integration tests exist today (14 inline unit tests are off-chain only); Phase 1 closes this gap.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260921-g2j | Fix CI failures on redesign/polkadot-hub: resolve 19 -D-warnings-promoted-to-errors in contracts/inktix and resync frontend/package-lock.json | 2026-09-21 | 2164fdec | [260921-g2j-fix-ci-failures-on-redesign-polkadot-hub](./quick/260921-g2j-fix-ci-failures-on-redesign-polkadot-hub/) |
 
 ## Deferred Items
 
