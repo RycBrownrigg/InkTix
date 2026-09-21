@@ -13,7 +13,6 @@ use crate::types::*;
 use ink::env::DefaultEnvironment;
 use ink::primitives::Address;
 use ink::prelude::string::String;
-use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
 
 #[allow(clippy::arithmetic_side_effects)]

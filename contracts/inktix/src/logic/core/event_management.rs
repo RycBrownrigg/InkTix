@@ -8,7 +8,6 @@
 //! - `get_all_events` -- returns all registered events
 //! - `update_event_status` -- changes an event's active/inactive state
 
-use ink::primitives::Address;
 use ink::prelude::string::String;
 use ink::prelude::vec::Vec;
 use ink::prelude::string::ToString;
@@ -41,11 +40,17 @@ impl EventManagement {
 
         // Validate sport-specific fields
         let (rivalry_multiplier, season_pass_discount) = match &category {
-            EventCategory::Sports { home_team_id, away_team_id, season_id, game_type, sport_type } => {
+            // TODO(v2-gap): `sport_type` is destructured but never checked against the home
+            // team's / away team's / season's own `sport_type` fields. Both `Team` and `Season`
+            // carry their own `sport_type`, and this arm already fetches all three, so a
+            // consistency check (event/team/season sports agree) looks intended and unwritten.
+            // Not fixed here: lower confidence than the venue-management gaps, and validation
+            // semantics (reject vs. warn) need a product decision first.
+            EventCategory::Sports { home_team_id, away_team_id, season_id, game_type, sport_type: _sport_type } => {
                 if *home_team_id == *away_team_id {
                     return Err("Home and away teams must be different".to_string());
                 }
-                let home_team = storage.teams.get(*home_team_id).ok_or("Home team not found")?;
+                let _home_team = storage.teams.get(*home_team_id).ok_or("Home team not found")?;
                 let _away_team = storage.teams.get(*away_team_id).ok_or("Away team not found")?;
                 let _season = storage.seasons.get(*season_id).ok_or("Season not found")?;
 

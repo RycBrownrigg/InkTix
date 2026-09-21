@@ -113,15 +113,25 @@ impl VenueManagement {
     }
 
     /// Purchase parking pass
+    // TODO(v2-gap): this is an unimplemented stub. It accepts `buyer`, `pass_type`,
+    // `valid_from`, `valid_until`, `lot_name`, `currency` and discards all six — no
+    // `ParkingPass` is constructed and nothing is written to storage. The infrastructure
+    // already exists: the `ParkingPass` struct (types/core_types/venue.rs) and the
+    // `parking_passes` / `user_parking_passes` / `venue_parking_passes` mappings
+    // (storage/contract_storage.rs). It also calls `get_next_id("venue")` where a dedicated
+    // `"parking_pass"` counter exists (storage/contract_storage.rs), so it both stores nothing
+    // AND increments the wrong counter. Contrast with the sibling `purchase_concession_credits`
+    // below, which correctly builds and inserts its record. Not fixed here: this is a
+    // behavior change, untested on-chain.
     pub fn purchase_parking_pass(
         storage: &mut InkTixStorage,
-        buyer: Address,
+        _buyer: Address,
         venue_id: u32,
-        pass_type: venue::ParkingPassType,
-        valid_from: u64,
-        valid_until: u64,
-        lot_name: String,
-        currency: String,
+        _pass_type: venue::ParkingPassType,
+        _valid_from: u64,
+        _valid_until: u64,
+        _lot_name: String,
+        _currency: String,
     ) -> Result<u32, String> {
         let _venue = storage.venues.get(venue_id).ok_or("Venue not found")?;
         let pass_id = storage.get_next_id("venue");

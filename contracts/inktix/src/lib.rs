@@ -10,8 +10,6 @@
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::arithmetic_side_effects)]
 
-use ink::primitives::Address;
-
 // Import all modular components
 pub mod logic;
 pub mod storage;
@@ -32,6 +30,9 @@ pub use types::*;
 /// - Sports (feature = "sports"): Teams, seasons, season passes, fantasy sports, team loyalty, analytics
 /// - Concert (feature = "concert"): Artist management, concert-specific events
 ///
+// `unexpected_cfgs` on `ink_abi` is a known false positive from the ink! v6 macro's own
+// internal cfg usage on this ink!/toolchain pairing, not a typo in project code.
+#[allow(unexpected_cfgs)]
 #[ink::contract]
 #[allow(clippy::arithmetic_side_effects)]
 #[allow(clippy::cast_possible_truncation)]
@@ -48,7 +49,7 @@ pub mod inktix {
     #[cfg(feature = "concert")]
     use crate::logic::concert::artist_management;
     use crate::storage::contract_storage::InkTixStorage;
-    use crate::types::*;
+    #[cfg(feature = "sports")]
     use crate::types::core_types::venue;
     use ink::prelude::string::String;
     use ink::prelude::string::ToString;
@@ -448,6 +449,9 @@ pub mod inktix {
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_parking_pass(&mut self, venue_id: u32, event_id: u32, pass_type: ParkingPassType) -> Result<u32, String> {
+            // `event_id` is not yet forwarded to the callee — see the unimplemented-stub note
+            // on `VenueManagement::purchase_parking_pass` in venue_management.rs.
+            let _ = event_id;
             let caller = self.env().caller();
             venue_management::VenueManagement::purchase_parking_pass(
                 &mut self.storage, caller, venue_id, pass_type,
@@ -461,6 +465,12 @@ pub mod inktix {
         #[cfg(feature = "sports")]
         #[ink(message)]
         pub fn purchase_concession_credits(&mut self, venue_id: u32, amount: u128, currency: CurrencyId) -> Result<u32, String> {
+            // TODO(v2-gap): `currency` is accepted from the caller but discarded below in
+            // favour of a hardcoded "DOT" string. `CurrencyId` (types/core_types/currency.rs)
+            // has five variants and no `Display`/`to_string` impl yet, so wiring this through
+            // needs a small conversion that does not exist yet. Not fixed here: this is a
+            // behavior change and currency handling belongs to the upcoming payment phase.
+            let _ = currency;
             let caller = self.env().caller();
             venue_management::VenueManagement::purchase_concession_credits(
                 &mut self.storage, caller, venue_id, amount, venue::ConcessionCreditType::General,
