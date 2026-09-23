@@ -5,11 +5,11 @@ milestone_name: Migration
 current_phase: 01
 current_phase_name: On-Chain Module Validation
 status: executing
-stopped_at: Phase 1 context gathered
-last_updated: "2026-09-21T17:10:25.133Z"
+stopped_at: 01-01 Task 1 complete and committed (288d34c6); Task 2 (tracer) blocked by ink_e2e/ink-node decode incompatibility
+last_updated: "2026-09-23T18:32:29.498Z"
 last_activity: 2026-09-21
-last_activity_desc: "Completed quick task 260921-g2j: Fix CI failures on redesign/polkadot-hub"
-state_head: 8d4e4c48ecc1e4445426adbc9e72957eeae3d65d
+last_activity_desc: Phase 01 execution resumed (wave continue)
+state_head: 288d34c689360f3949920d94298010c56eafa02e
 progress:
   total_phases: 4
   completed_phases: 0
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-09-20)
 Phase: 01 (On-Chain Module Validation) — EXECUTING
 Plan: 1 of 3
 Status: Executing Phase 01
-Last activity: 2026-09-21 — Completed quick task 260921-g2j: Fix CI failures on redesign/polkadot-hub
+Last activity: 2026-09-21 — Phase 01 execution resumed (wave continue)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -82,6 +82,7 @@ Recent decisions affecting current work:
 - [CONCERNS.md] ink! v6 (`6.0.0-beta.1`) / `cargo-contract` (`6.0.0-beta.2`) are beta releases from a team whose active development paused as of Jan 2026; `nightly-2026-01-15` is a long-term toolchain pin, not a temporary workaround.
 - [CONCERNS.md] Composite key `Mapping<(Address, u32), TeamLoyaltyProfile>` is flagged as the single riskiest storage item — Phase 1 validation must explicitly exercise `stake_on_team()` on-chain.
 - [CONCERNS.md] Zero on-chain integration tests exist today (14 inline unit tests are off-chain only); Phase 1 closes this gap.
+- Phase 1 (01-01 Task 2 tracer) BLOCKED: ink_e2e 6.0.0-beta.2's dry-run instantiate (ReviveApi_instantiate) fails to decode ContractInstantiateResult against both ink-node v0.46.0 and v0.47.0 (latest release) -- 'Could not decode ContractResult::gas_consumed: Not enough data to fill buffer'. Reproduced with a minimal official-pattern flipper contract, ruling out InkTix-specific code. cargo-contract CLI instantiate against the same node/contract succeeds fine, so the chain and contract build are healthy -- the bug is isolated to the ink_e2e Rust E2E test harness (D-01's chosen validation approach). No runtime_only backend exists in this ink_e2e version as a fallback. Blocks 01-01 Tasks 2-4 and by extension 01-02/01-03. Needs user decision on how to proceed.
 
 ### Quick Tasks Completed
 
@@ -99,6 +100,6 @@ Items acknowledged and deferred at milestone close, most recent first:
 
 ## Session Continuity
 
-Last session: 2026-09-20T15:57:38.931Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-on-chain-module-validation/01-CONTEXT.md
+Last session: 2026-09-23T18:32:29.457Z
+Stopped at: 01-01 Task 1 complete and committed (288d34c6); Task 2 (tracer) blocked by ink_e2e/ink-node decode incompatibility
+Resume file: .planning/phases/01-on-chain-module-validation/01-01-PLAN.md
